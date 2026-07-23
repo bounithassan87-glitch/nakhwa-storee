@@ -1,0 +1,26 @@
+# === Large media (exceeds GitHub's 100 MB file limit) ===
+# Original 4K master video (~149 MB). The optimized web version
+# (video-web.mp4, ~41 MB, with audio) IS committed and used by the site.
+0722.mp4
+
+# Build archives / artifacts
+dist.zip
+*.zip
+
+# Dependencies
+node_modules/
+
+# Editor / tooling
+.claude/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs / env
+*.log
+.env
+.env.*
