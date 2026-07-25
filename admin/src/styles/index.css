@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* ── Design tokens (premium khaki-luxury, consistent with the landing page) ── */
+@theme {
+  --font-sans: "Tajawal", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand: #7c7043;
+  --color-brand-dark: #5e552f;
+  --color-brand-light: #a0956a;
+  --color-brand-soft: #efe9d6;
+  --color-gold: #b8912f;
+
+  --color-sidebar: #201b12;
+  --color-sidebar-soft: #2c2618;
+
+  --color-bg: #f6f3ec;
+  --color-surface: #ffffff;
+  --color-ink: #2a281e;
+  --color-muted: #6b6555;
+  --color-faint: #9a927e;
+  --color-line: #e6dfce;
+
+  --color-success: #2f855a;
+  --color-success-soft: #e4f2ea;
+  --color-warning: #b7791f;
+  --color-warning-soft: #f7ecd6;
+  --color-danger: #9b2617;
+  --color-danger-soft: #f7e4e0;
+
+  --radius-card: 16px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* thin, unobtrusive scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line) transparent;
+}
