@@ -1,0 +1,38 @@
+{
+  "name": "nakhwa-store",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Nakhwa Store — بوركيني Cache Terazo landing page + backend (Cloudflare Pages + Functions, Prisma, PostgreSQL)",
+  "scripts": {
+    "db:local": "node scripts/local-postgres.mjs start",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "node prisma/seed.mjs",
+    "db:studio": "prisma studio",
+    "verify:db": "node scripts/verify-db.mjs",
+    "dev": "wrangler pages dev --port 8788"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^6.19.3",
+    "@prisma/adapter-pg": "^6.3.1",
+    "@prisma/client": "^6.3.1",
+    "pg": "^8.13.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "embedded-postgres": "^18.4.0-beta.17",
+    "prisma": "^6.3.1",
+    "wrangler": "^4.114.0"
+  },
+  "allowScripts": {
+    "@embedded-postgres/windows-x64@18.4.0-beta.17": true,
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.28.1": true,
+    "prisma@6.19.3": true,
+    "workerd@1.20260722.1": true
+  }
+}

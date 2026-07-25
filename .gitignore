@@ -20,7 +20,13 @@ node_modules/
 Thumbs.db
 desktop.ini
 
-# Logs / env
+# Logs / env / secrets
 *.log
 .env
 .env.*
+.dev.vars
+
+# Backend / tooling
+.data/
+.wrangler/
+prisma/*.db

@@ -1,0 +1,114 @@
+// Nakhwa Store — data model
+// Prisma ORM + PostgreSQL. Client uses a driver adapter (@prisma/adapter-pg)
+// so it runs both in Node (scripts) and the Cloudflare Workers runtime (Pages Functions).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")           // pooled — app runtime
+  directUrl = env("DATABASE_URL_UNPOOLED")  // direct — migrations
+}
+
+/// The product catalog. One row per sellable product (currently the burkini).
+model Product {
+  id             String      @id @default(cuid())
+  slug           String      @unique
+  name           String
+  description    String?
+  basePrice      Int // price in centimes (MAD) — never a float
+  compareAtPrice Int?
+  currency       String      @default("MAD")
+  isActive       Boolean     @default(true)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  colors         Color[]
+  sizes          Size[]
+  orderItems     OrderItem[]
+}
+
+/// Available colour variants for a product (e.g. "كاكي", "نمري أسود").
+model Color {
+  id        String   @id @default(cuid())
+  name      String // Arabic display name shown in the selector
+  swatch    String? // optional thumbnail/hex reference
+  position  Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([productId, name])
+}
+
+/// Available sizes for a product (L, XL, 2XL, 3XL).
+model Size {
+  id        String   @id @default(cuid())
+  label     String
+  position  Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([productId, label])
+}
+
+/// A shopper. Deduplicated by phone number (COD market identity).
+model Customer {
+  id        String   @id @default(cuid())
+  fullName  String
+  phone     String   @unique
+  city      String
+  address   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+/// A COD order. Financial fields are snapshots — history never mutates.
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  customerId    String
+  customer      Customer    @relation(fields: [customerId], references: [id])
+  quantity      Int
+  totalPrice    Int // centimes
+  currency      String      @default("MAD")
+  status        OrderStatus @default(PENDING)
+  paymentMethod String      @default("COD")
+  freeShipping  Boolean     @default(true)
+  note          String?
+  source        String      @default("landing")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+/// One line per piece in an order. Colour/size are snapshotted as text so the
+/// order record stays correct even if the catalog changes later.
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  colorName String
+  sizeLabel String
+  unitPrice Int
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}

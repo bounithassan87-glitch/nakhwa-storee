@@ -1,0 +1,4 @@
+# Copy to .dev.vars and fill in. Local secrets for `wrangler pages dev`.
+# In production these come from Cloudflare (Hyperdrive binding or a Pages secret),
+# NOT from this file.
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5434/nakhwa?schema=public"

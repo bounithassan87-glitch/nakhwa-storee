@@ -1,0 +1,31 @@
+# Cloudflare Pages — Nakhwa Store (static landing page + Pages Functions API)
+name = "nakhwa-store"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-11-01"
+# Prisma + pg driver adapter need Node.js built-ins in the Workers runtime.
+compatibility_flags = ["nodejs_compat"]
+
+# Non-secret runtime config (secrets are NEVER put here — see below).
+[vars]
+ENVIRONMENT = "production"
+
+# Structured logs for Functions (viewable in the dashboard / `wrangler pages deployment tail`).
+[observability]
+enabled = true
+
+# ── Production database ────────────────────────────────────────────────
+# Secrets are provided at deploy time, not committed:
+#
+#   Option A (recommended) — Cloudflare Hyperdrive in front of managed Postgres:
+#     1) wrangler hyperdrive create nakhwa-db --connection-string "postgres://…"
+#     2) uncomment the binding below and set the returned id
+#     The API reads env.HYPERDRIVE.connectionString automatically.
+#
+# [[hyperdrive]]
+# binding = "HYPERDRIVE"
+# id = "<your-hyperdrive-id>"
+#
+#   Option B — a pooled DATABASE_URL as an encrypted secret:
+#     wrangler pages secret put DATABASE_URL
+#
+# Locally, DATABASE_URL is read from .dev.vars (never committed).

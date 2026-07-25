@@ -137,11 +137,124 @@ document.addEventListener('DOMContentLoaded', () => {
     io.observe(card);
   })();
 
-  /* ---------- Gallery Lightbox ---------- */
+  /* ---------- Product Slider (premium carousel) ---------- */
+  (function productSlider(){
+    const root = document.getElementById('product-slider');
+    const viewport = document.getElementById('slider-viewport');
+    const track = document.getElementById('slider-track');
+    const prevBtn = document.getElementById('slider-prev');
+    const nextBtn = document.getElementById('slider-next');
+    const thumbsWrap = document.getElementById('slider-thumbs');
+    if (!root || !viewport || !track) return;
+
+    const realSlides = Array.from(track.children);
+    const N = realSlides.length;
+    if (!N) return;
+    const thumbs = Array.from(thumbsWrap.querySelectorAll('.s-thumb'));
+
+    // Clone edge slides for a seamless infinite loop.
+    const firstClone = realSlides[0].cloneNode(true);
+    const lastClone = realSlides[N - 1].cloneNode(true);
+    [firstClone, lastClone].forEach(c => { c.classList.add('clone'); c.setAttribute('aria-hidden', 'true'); });
+    track.insertBefore(lastClone, realSlides[0]);
+    track.appendChild(firstClone);
+
+    let index = 1;              // real slide 0 sits at position 1 (after lastClone)
+    let width = viewport.clientWidth;
+    let startX = 0, dx = 0, dragging = false, animating = false;
+
+    function apply(animate){
+      track.style.transition = animate ? 'transform .42s cubic-bezier(.22,.61,.36,1)' : 'none';
+      track.style.transform = 'translateX(' + (-(index * width) + dx) + 'px)';
+    }
+    function realIndex(){ return ((index - 1) % N + N) % N; }
+    function updateThumbs(){
+      const ri = realIndex();
+      thumbs.forEach((t, i) => t.classList.toggle('active', i === ri));
+      const a = thumbs[ri];
+      // Center the active thumbnail WITHIN the strip only — must never scroll the
+      // page (scrollIntoView would, jumping the customer away on an image click).
+      if (a && thumbsWrap){
+        const wr = thumbsWrap.getBoundingClientRect();
+        const ar = a.getBoundingClientRect();
+        const delta = (ar.left + ar.width / 2) - (wr.left + wr.width / 2);
+        if (Math.abs(delta) > 1) thumbsWrap.scrollBy({ left: delta, behavior: 'smooth' });
+      }
+    }
+    let animTimer = null;
+    function go(to, animate){
+      const willAnimate = animate !== false;
+      index = to; dx = 0;
+      if (willAnimate){
+        animating = true;
+        clearTimeout(animTimer);
+        // Fallback release: transitionend won't fire if the transform is unchanged.
+        animTimer = setTimeout(() => { animating = false; }, 480);
+      }
+      apply(willAnimate); updateThumbs();
+    }
+    function next(){ if (!animating) go(index + 1, true); }   // guard prevents overshooting the loop clones
+    function prev(){ if (!animating) go(index - 1, true); }
+
+    track.addEventListener('transitionend', () => {
+      animating = false; clearTimeout(animTimer);
+      if (index === N + 1) { index = 1; apply(false); }
+      else if (index === 0) { index = N; apply(false); }
+    });
+
+    if (prevBtn) prevBtn.addEventListener('click', prev);
+    if (nextBtn) nextBtn.addEventListener('click', next);
+    thumbs.forEach((t, i) => t.addEventListener('click', () => go(i + 1, true)));
+
+    // Pointer drag (desktop) + swipe (mobile) via Pointer Events.
+    viewport.addEventListener('pointerdown', (e) => {
+      dragging = true; animating = false; startX = e.clientX; dx = 0; root.dataset.moved = '0';
+      track.style.transition = 'none';
+      if (viewport.setPointerCapture) { try { viewport.setPointerCapture(e.pointerId); } catch (_) {} }
+    });
+    viewport.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      dx = e.clientX - startX;
+      if (Math.abs(dx) > 6) root.dataset.moved = '1';
+      apply(false);
+    });
+    function endDrag(){
+      if (!dragging) return;
+      dragging = false;
+      const threshold = Math.max(40, width * 0.15);
+      if (dx <= -threshold) { dx = 0; next(); }
+      else if (dx >= threshold) { dx = 0; prev(); }
+      else { dx = 0; apply(true); }
+    }
+    viewport.addEventListener('pointerup', endDrag);
+    viewport.addEventListener('pointercancel', endDrag);
+    viewport.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // Keyboard support.
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') prev();
+      else if (e.key === 'ArrowRight') next();
+    });
+
+    // Auto-jump to a colour's first image when the colour selection changes.
+    document.querySelectorAll('input[name="color1"]').forEach(inp => inp.addEventListener('change', () => {
+      const t = realSlides.findIndex(s => s.dataset.color === inp.value);
+      if (t >= 0) go(t + 1, true);
+    }));
+
+    window.addEventListener('resize', () => { width = viewport.clientWidth; apply(false); });
+    apply(false);
+    updateThumbs();
+  })();
+
+  /* ---------- Fullscreen Lightbox (from slider) ---------- */
   (function lightbox(){
-    const grid = document.getElementById('gallery-grid');
-    const images = Array.from(grid.querySelectorAll('img'));
     const box = document.getElementById('lightbox');
+    const slider = document.getElementById('product-slider');
+    const slides = Array.from(document.querySelectorAll('#slider-track .slide:not(.clone)'));
+    const images = slides.map(s => s.querySelector('img'));
+    if (!box || !images.length) return;
+
     const stage = document.getElementById('lightbox-stage');
     const img = document.getElementById('lightbox-img');
     const closeBtn = document.getElementById('lightbox-close');
@@ -152,33 +265,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function render(){
       scale = 1; img.style.transform = 'scale(1)';
-      img.src = images[current].src; img.alt = images[current].alt;
+      img.src = images[current].currentSrc || images[current].src;
+      img.alt = images[current].alt;
     }
     function open(i){ current = i; render(); box.hidden = false; document.body.style.overflow = 'hidden'; }
     function close(){ box.hidden = true; document.body.style.overflow = ''; }
     function show(delta){ current = (current + delta + images.length) % images.length; render(); }
 
-    images.forEach((im, i) => im.addEventListener('click', () => open(i)));
+    images.forEach((im, i) => im.addEventListener('click', () => {
+      // Ignore the click that ends a drag/swipe.
+      if (slider && slider.dataset.moved === '1') { slider.dataset.moved = '0'; return; }
+      open(i);
+    }));
     closeBtn.addEventListener('click', close);
-    prevBtn.addEventListener('click', () => show(1));
-    nextBtn.addEventListener('click', () => show(-1));
+    prevBtn.addEventListener('click', () => show(-1));
+    nextBtn.addEventListener('click', () => show(1));
     box.addEventListener('click', (e) => { if (e.target === box) close(); });
     img.addEventListener('dblclick', () => { scale = scale === 1 ? 2.2 : 1; img.style.transform = `scale(${scale})`; });
 
-    let startX = 0, startY = 0, moved = false;
-    stage.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; moved = false; }, { passive: true });
+    let sx = 0, sy = 0, moved = false;
+    stage.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; moved = false; }, { passive: true });
     stage.addEventListener('touchmove', () => { moved = true; }, { passive: true });
     stage.addEventListener('touchend', (e) => {
       if (!moved || scale !== 1) return;
-      const dx = e.changedTouches[0].clientX - startX;
-      const dy = e.changedTouches[0].clientY - startY;
-      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(dx > 0 ? 1 : -1);
+      const ddx = e.changedTouches[0].clientX - sx;
+      const ddy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(ddx) > 50 && Math.abs(ddx) > Math.abs(ddy)) show(ddx < 0 ? 1 : -1);
     });
     document.addEventListener('keydown', (e) => {
       if (box.hidden) return;
       if (e.key === 'Escape') close();
-      if (e.key === 'ArrowRight') show(1);
       if (e.key === 'ArrowLeft') show(-1);
+      if (e.key === 'ArrowRight') show(1);
     });
   })();
 
@@ -217,17 +335,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function refresh(){
-      const q = qty();
-      const total = q === 2 ? PRICE_2 : PRICE_1;
-      sumQty.textContent = q;
-      sumTotal.textContent = total + ' درهم';
+      const two = qty() === 2;
+      sumQty.textContent = two ? 2 : 1;
+      sumTotal.textContent = (two ? PRICE_2 : PRICE_1) + ' درهم';
 
-      const two = q === 2;
       piece2.hidden = !two;
+      piece2.setAttribute('aria-hidden', String(!two));
       piece1Title.textContent = two ? 'القطعة الأولى' : 'تفاصيل البوركيني';
-      size2Inputs.forEach(i => i.required = two);
-      color2Inputs.forEach(i => i.required = two);
-      if (!two) { size2Inputs.forEach(i => i.checked = false); color2Inputs.forEach(i => i.checked = false); }
+
+      // Two Pieces → enable + require the second section (its own size & color).
+      // One Piece  → DISABLE it so it is fully ignored by validation, form data
+      //              and order submission. Selections are preserved (not cleared)
+      //              so they return if the customer switches back to Two Pieces.
+      [...size2Inputs, ...color2Inputs].forEach(i => { i.disabled = !two; i.required = two; });
+
+      syncAll();
     }
 
     // qty radios
@@ -284,12 +406,47 @@ document.addEventListener('DOMContentLoaded', () => {
       return msg;
     }
 
+    // Persist the order to the backend (PostgreSQL via /api/orders).
+    // Fire-and-forget with keepalive so it never blocks or breaks the WhatsApp
+    // flow — if the API is unreachable the customer still completes the order.
+    function saveOrder(){
+      try {
+        const q = qty();
+        const items = [{
+          size: (document.querySelector('input[name="size1"]:checked') || {}).value || '',
+          color: (document.querySelector('input[name="color1"]:checked') || {}).value || ''
+        }];
+        if (q === 2) {
+          items.push({
+            size: (document.querySelector('input[name="size2"]:checked') || {}).value || '',
+            color: (document.querySelector('input[name="color2"]:checked') || {}).value || ''
+          });
+        }
+        const payload = {
+          fullname: document.getElementById('fullname').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          city: document.getElementById('city').value.trim(),
+          address: document.getElementById('address').value.trim(),
+          quantity: q,
+          items: items
+        };
+        fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true
+        }).catch(() => {});
+      } catch (_) { /* never block the order */ }
+    }
+
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       if (!form.checkValidity()) { form.reportValidity(); return; }
 
       const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(buildMessage())}`;
       waFallback.href = url;
+
+      saveOrder();
 
       form.hidden = true;
       success.hidden = false;
