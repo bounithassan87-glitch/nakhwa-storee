@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ShoppingBag, AlertCircle } from "lucide-react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
 import { useDebouncedValue } from "@/lib/useDebounce";
+import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { useOrders } from "@/features/orders/useOrders";
 import { OrdersToolbar } from "@/features/orders/components/OrdersToolbar";
 import { OrdersTable } from "@/features/orders/components/OrdersTable";
@@ -28,6 +29,9 @@ export default function Orders() {
   const [selected, setSelected] = useState<Order | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
+
+  const { revision, markAllSeen } = useNotifications();
 
   const dq = useDebouncedValue(q);
   const dCity = useDebouncedValue(city);
@@ -37,7 +41,7 @@ export default function Orders() {
     setPage(1);
   }, [dq, status, dCity, dateFrom, dateTo, sort, order]);
 
-  const { orders, total, totalPages, loading, error, refetch, changeStatus } = useOrders({
+  const { orders, total, totalPages, loading, refreshing, error, refetch, changeStatus } = useOrders({
     page,
     pageSize: PAGE_SIZE,
     q: dq,
@@ -48,6 +52,37 @@ export default function Orders() {
     sort,
     order,
   });
+
+  // Viewing the list clears the unseen-orders badge.
+  useEffect(() => {
+    markAllSeen();
+  }, [markAllSeen]);
+
+  // A new order was detected by the poller → refresh the current view in the
+  // background (filters, pagination and scroll position are preserved) and
+  // clear the badge since the admin is already looking at the list.
+  useEffect(() => {
+    if (revision === 0) return;
+    refetch({ silent: true });
+    markAllSeen();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revision]);
+
+  // Briefly highlight rows that just appeared after a background refresh.
+  const prevIds = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const ids = new Set(orders.map((o) => o.id));
+    if (prevIds.current) {
+      const added = [...ids].filter((id) => !prevIds.current!.has(id));
+      if (added.length) {
+        setHighlightIds(new Set(added));
+        const t = setTimeout(() => setHighlightIds(new Set()), 4000);
+        prevIds.current = ids;
+        return () => clearTimeout(t);
+      }
+    }
+    prevIds.current = ids;
+  }, [orders]);
 
   function onSort(f: SortField) {
     if (sort === f) setOrder((o) => (o === "asc" ? "desc" : "asc"));
@@ -88,8 +123,8 @@ export default function Orders() {
         setDateFrom={setDateFrom}
         dateTo={dateTo}
         setDateTo={setDateTo}
-        onRefresh={refetch}
-        refreshing={loading}
+        onRefresh={() => refetch({ silent: true })}
+        refreshing={loading || refreshing}
       />
 
       {loading ? (
@@ -103,7 +138,7 @@ export default function Orders() {
             icon={AlertCircle}
             title="حدث خطأ"
             description={error}
-            action={<Button onClick={refetch}>إعادة المحاولة</Button>}
+            action={<Button onClick={() => refetch()}>إعادة المحاولة</Button>}
           />
         </div>
       ) : orders.length === 0 ? (
@@ -116,7 +151,7 @@ export default function Orders() {
         </div>
       ) : (
         <>
-          <OrdersTable orders={orders} sort={sort} order={order} onSort={onSort} onOpen={setSelected} />
+          <OrdersTable orders={orders} sort={sort} order={order} onSort={onSort} onOpen={setSelected} highlightIds={highlightIds} />
           <Pagination page={page} totalPages={totalPages} total={total} onPage={setPage} />
         </>
       )}

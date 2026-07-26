@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { NotificationsProvider } from "@/features/notifications/NotificationsContext";
+import { ToastHost } from "@/features/notifications/ToastHost";
 import { cn } from "@/lib/cn";
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
 
   return (
+    <NotificationsProvider>
     <div className="flex h-full">
       {/* Desktop sidebar — sits on the right in RTL */}
       <div className="hidden lg:block">
@@ -40,6 +43,9 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      <ToastHost />
     </div>
+    </NotificationsProvider>
   );
 }

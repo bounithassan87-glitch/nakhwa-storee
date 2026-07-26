@@ -7,13 +7,17 @@ export function useOrders(params: OrdersParams) {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const key = JSON.stringify(params);
 
+  // `silent` keeps the current table on screen (no full-page spinner, so scroll
+  // position is preserved) — used for background auto-refresh and manual refresh.
   const load = useCallback(
-    async (signal?: AbortSignal) => {
-      setLoading(true);
+    async (signal?: AbortSignal, opts?: { silent?: boolean }) => {
+      if (opts?.silent) setRefreshing(true);
+      else setLoading(true);
       setError(null);
       try {
         const res = await fetchOrders(params, signal);
@@ -25,7 +29,8 @@ export function useOrders(params: OrdersParams) {
           setError((e as Error).message || "فشل تحميل الطلبات");
         }
       } finally {
-        setLoading(false);
+        if (opts?.silent) setRefreshing(false);
+        else setLoading(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,5 +61,10 @@ export function useOrders(params: OrdersParams) {
     [],
   );
 
-  return { orders, total, totalPages, loading, error, refetch: () => load(), changeStatus };
+  const refetch = useCallback(
+    (opts?: { silent?: boolean }) => load(undefined, opts),
+    [load],
+  );
+
+  return { orders, total, totalPages, loading, refreshing, error, refetch, changeStatus };
 }

@@ -1,6 +1,7 @@
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { cn } from "@/lib/cn";
 import { STATUS_META } from "../status";
 import { formatMoney, formatDate } from "@/lib/format";
 import { OrderActions } from "./OrderActions";
@@ -40,12 +41,14 @@ export function OrdersTable({
   order,
   onSort,
   onOpen,
+  highlightIds,
 }: {
   orders: Order[];
   sort: SortField;
   order: SortOrder;
   onSort: (f: SortField) => void;
   onOpen: (o: Order) => void;
+  highlightIds?: Set<string>;
 }) {
   return (
     <Card className="overflow-hidden">
@@ -67,7 +70,10 @@ export function OrdersTable({
               <tr
                 key={o.id}
                 onClick={() => onOpen(o)}
-                className="cursor-pointer border-b border-line/70 last:border-0 hover:bg-brand-soft/20"
+                className={cn(
+                  "cursor-pointer border-b border-line/70 last:border-0 transition-colors duration-1000 hover:bg-brand-soft/20",
+                  highlightIds?.has(o.id) && "bg-success-soft/60",
+                )}
               >
                 <td className="whitespace-nowrap px-4 py-3 font-bold text-ink">{o.orderNumber}</td>
                 <td className="px-4 py-3">

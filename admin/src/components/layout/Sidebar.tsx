@@ -1,8 +1,10 @@
 import { NavLink } from "react-router-dom";
 import { NAV_ITEMS } from "@/lib/nav";
+import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { cn } from "@/lib/cn";
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+  const { newCount } = useNotifications();
   return (
     <aside className="flex h-full w-64 flex-col bg-sidebar text-white/90">
       <div className="flex items-center gap-3 px-6 py-5">
@@ -31,7 +33,12 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             }
           >
             <Icon className="h-5 w-5" />
-            {label}
+            <span className="flex-1">{label}</span>
+            {to === "/orders" && newCount > 0 && (
+              <span className="grid min-w-5 place-items-center rounded-full bg-danger px-1.5 text-xs font-black text-white">
+                {newCount > 99 ? "99+" : newCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
