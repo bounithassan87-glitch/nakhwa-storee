@@ -14,3 +14,13 @@ export function getPrisma(connectionString: string): PrismaClient {
     : new PrismaPg({ connectionString });
   return new PrismaClient({ adapter });
 }
+
+/** Extract a Prisma known-error code (e.g. "P2002") from an unknown error.
+ *  The code lives on `err.code`, not in `err.message`. */
+export function prismaCode(err: unknown): string | undefined {
+  if (err && typeof err === "object") {
+    const code = (err as { code?: unknown }).code;
+    if (typeof code === "string") return code;
+  }
+  return undefined;
+}

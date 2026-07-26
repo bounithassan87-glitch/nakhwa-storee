@@ -47,3 +47,12 @@ export async function apiPost<T = unknown>(path: string, body?: unknown): Promis
   });
   return parse(res) as Promise<T>;
 }
+
+export async function apiDelete<T = unknown>(path: string): Promise<T> {
+  const res = await fetch(path, {
+    method: "DELETE",
+    credentials: "include",
+    headers: { accept: "application/json", "x-csrf-token": csrfToken() },
+  });
+  return parse(res) as Promise<T>;
+}

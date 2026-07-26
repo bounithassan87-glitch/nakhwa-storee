@@ -8,6 +8,7 @@ import Orders from "@/pages/Orders";
 import Customers from "@/pages/Customers";
 import CustomerProfile from "@/pages/CustomerProfile";
 import Products from "@/pages/Products";
+import ProductDetail from "@/pages/ProductDetail";
 import Analytics from "@/pages/Analytics";
 import Settings from "@/pages/Settings";
 import Profile from "@/pages/Profile";
@@ -29,6 +30,7 @@ export function App() {
               <Route path="/customers" element={<Customers />} />
               <Route path="/customers/:id" element={<CustomerProfile />} />
               <Route path="/products" element={<Products />} />
+              <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/profile" element={<Profile />} />

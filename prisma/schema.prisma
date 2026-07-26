@@ -12,21 +12,54 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")  // direct — migrations
 }
 
+enum ProductStatus {
+  ACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
 /// The product catalog. One row per sellable product (currently the burkini).
 model Product {
-  id             String      @id @default(cuid())
-  slug           String      @unique
+  id             String         @id @default(cuid())
+  slug           String         @unique
+  sku            String?        @unique
   name           String
   description    String?
-  basePrice      Int // price in centimes (MAD) — never a float
-  compareAtPrice Int?
-  currency       String      @default("MAD")
-  isActive       Boolean     @default(true)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  category       String?
+  basePrice      Int // regular price in centimes (MAD) — never a float
+  offerPrice     Int? // discounted selling price (centimes)
+  compareAtPrice Int? // "was" price for strikethrough (centimes)
+  currency       String         @default("MAD")
+  // `isActive` is kept for backward compatibility with the public order flow.
+  // `status` is the admin-managed lifecycle; ARCHIVED = soft delete.
+  isActive       Boolean        @default(true)
+  status         ProductStatus  @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   colors         Color[]
   sizes          Size[]
+  media          ProductMedia[]
   orderItems     OrderItem[]
+}
+
+/// Product media (main image, gallery, video). URL-based so it works without
+/// object storage; a binary upload backend (R2/Images) can be added later.
+model ProductMedia {
+  id        String    @id @default(cuid())
+  productId String
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type      MediaType @default(IMAGE)
+  url       String
+  position  Int       @default(0)
+  isMain    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  @@index([productId])
 }
 
 /// Available colour variants for a product (e.g. "كاكي", "نمري أسود").
@@ -35,6 +68,7 @@ model Color {
   name      String // Arabic display name shown in the selector
   swatch    String? // optional thumbnail/hex reference
   position  Int      @default(0)
+  isActive  Boolean  @default(true)
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
