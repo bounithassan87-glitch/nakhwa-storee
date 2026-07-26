@@ -1,6 +1,9 @@
 // POST /api/admin/auth/logout — clear session (CSRF-protected), audit.
 import type { Env } from "../../../_lib/env";
+import { resolveDatabaseUrl } from "../../../_lib/env";
+import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
+import { writeAudit, clientIp } from "../_lib/audit";
 import {
   parseCookies,
   verifySession,
@@ -35,5 +38,10 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, data }) => {
   res.headers.append("set-cookie", clearSessionCookie());
   res.headers.append("set-cookie", clearCsrfCookie());
   log("info", { event: "admin.logout", email, reqId });
+
+  const dbUrl = resolveDatabaseUrl(env);
+  if (dbUrl && email !== "unknown") {
+    await writeAudit(getPrisma(dbUrl), { actor: email, action: "logout", entity: "auth", ip: clientIp(request) });
+  }
   return res;
 };

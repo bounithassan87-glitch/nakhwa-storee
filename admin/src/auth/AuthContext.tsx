@@ -11,6 +11,9 @@ import { apiGet, apiPost, setUnauthorizedHandler } from "@/lib/api";
 export interface AdminUser {
   email: string;
   role: string;
+  name?: string | null;
+  avatarUrl?: string | null;
+  lastLoginAt?: string | null;
 }
 
 type Status = "loading" | "authenticated" | "unauthenticated";
@@ -20,6 +23,7 @@ interface AuthState {
   status: Status;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -75,8 +79,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus("unauthenticated");
   }, []);
 
+  const refresh = useCallback(async () => {
+    try {
+      const res = await apiGet<{ user: AdminUser }>("/api/admin/auth/session");
+      setUser(res.user);
+      setStatus("authenticated");
+    } catch {
+      /* keep current state */
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, status, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, status, login, logout, refresh }}>{children}</AuthContext.Provider>
   );
 }
 

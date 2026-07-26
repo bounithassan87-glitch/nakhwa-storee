@@ -189,3 +189,76 @@ model OrderItem {
 
   @@index([orderId])
 }
+
+// ── Settings & System Administration (Phase 2.8) ─────────────────────────
+
+enum AdminRole {
+  OWNER
+  ADMIN
+  STAFF
+}
+
+/// Admin accounts (DB-backed). The env owner is seeded here on first login, so
+/// the existing single-admin credentials keep working while enabling real
+/// multi-admin management.
+model Admin {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String
+  role         AdminRole @default(STAFF)
+  isActive     Boolean   @default(true)
+  avatarUrl    String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+/// Key-value application settings (store + system). Extensible without a schema
+/// change — new keys are just new rows.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+/// Managed list of shipping companies (populates dropdowns; distinct from the
+/// free-text Shipment.company snapshot).
+model ShippingCompany {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  phone     String?
+  website   String?
+  notes     String?
+  isActive  Boolean  @default(true)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Managed list of cities with shipping cost + delivery estimate.
+model City {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  shippingCost  Int? // centimes
+  estimatedDays Int?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+/// Append-only activity log for security & accountability.
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     String // admin email
+  action    String // e.g. login, logout, POST, PATCH, DELETE
+  entity    String? // e.g. orders, products, settings, admins, cities
+  entityId  String?
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entity])
+  @@index([actor])
+}

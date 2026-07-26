@@ -1,8 +1,14 @@
 // Authorization guard for every /api/admin/* request (except /api/admin/auth/*).
 // Unauthenticated → 401. Mutating requests without a valid CSRF token → 403.
+// After a successful mutation, an audit-log row is recorded here (one place),
+// covering product/order/shipping/settings/admin changes without touching each
+// endpoint.
 import type { Env } from "../../_lib/env";
 import { json } from "../../_lib/http";
+import { resolveDatabaseUrl } from "../../_lib/env";
+import { getPrisma } from "../../_lib/db";
 import { parseCookies, verifySession, SESSION_COOKIE, CSRF_COOKIE } from "./_lib/auth";
+import { writeAudit, entityFromPath, clientIp } from "./_lib/audit";
 
 const MUTATING = new Set(["POST", "PATCH", "PUT", "DELETE"]);
 
@@ -19,7 +25,8 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
     return json({ ok: false, error: "unauthenticated" }, 401);
   }
 
-  if (MUTATING.has(ctx.request.method)) {
+  const isMutation = MUTATING.has(ctx.request.method);
+  if (isMutation) {
     const cookieToken = cookies[CSRF_COOKIE];
     const headerToken = ctx.request.headers.get("x-csrf-token");
     if (!cookieToken || cookieToken !== headerToken) {
@@ -28,5 +35,22 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   }
 
   ctx.data.admin = { email: payload.sub, role: payload.role };
-  return ctx.next();
+
+  const response = await ctx.next();
+
+  // Record successful mutations to the audit log (best-effort, never blocking).
+  if (isMutation && response.ok) {
+    const dbUrl = resolveDatabaseUrl(ctx.env);
+    if (dbUrl) {
+      await writeAudit(getPrisma(dbUrl), {
+        actor: payload.sub,
+        action: ctx.request.method,
+        entity: entityFromPath(url.pathname),
+        details: url.pathname,
+        ip: clientIp(ctx.request),
+      });
+    }
+  }
+
+  return response;
 };
