@@ -6,16 +6,18 @@ export function Pagination({
   totalPages,
   total,
   onPage,
+  noun = "طلب",
 }: {
   page: number;
   totalPages: number;
   total: number;
   onPage: (p: number) => void;
+  noun?: string;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-3 text-sm text-muted">
       <span>
-        صفحة {page} من {totalPages} · {total} طلب
+        صفحة {page} من {totalPages} · {total} {noun}
       </span>
       <div className="flex items-center gap-2">
         <Button variant="secondary" size="sm" disabled={page <= 1} onClick={() => onPage(page - 1)}>

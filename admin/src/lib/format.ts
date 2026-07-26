@@ -14,6 +14,16 @@ export function formatDate(iso: string): string {
   }
 }
 
+/** Date only (no time) — used for first/last order dates in the CRM. */
+export function formatDateOnly(iso: string | null): string {
+  if (!iso) return "—";
+  try {
+    return new Intl.DateTimeFormat("ar-MA", { dateStyle: "medium" }).format(new Date(iso));
+  } catch {
+    return iso;
+  }
+}
+
 /** 06XXXXXXXX → 2126XXXXXXXX (for wa.me links). */
 export function toWhatsApp(phone: string): string {
   const digits = phone.replace(/\D/g, "");

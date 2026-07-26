@@ -6,6 +6,7 @@ import Login from "@/pages/Login";
 import DashboardHome from "@/pages/DashboardHome";
 import Orders from "@/pages/Orders";
 import Customers from "@/pages/Customers";
+import CustomerProfile from "@/pages/CustomerProfile";
 import Products from "@/pages/Products";
 import Analytics from "@/pages/Analytics";
 import Settings from "@/pages/Settings";
@@ -26,6 +27,7 @@ export function App() {
               <Route path="/dashboard" element={<DashboardHome />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/customers" element={<Customers />} />
+              <Route path="/customers/:id" element={<CustomerProfile />} />
               <Route path="/products" element={<Products />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
