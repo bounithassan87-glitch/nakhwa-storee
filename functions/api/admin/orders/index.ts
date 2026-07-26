@@ -9,8 +9,9 @@ import type { Env } from "../../../_lib/env";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
+import { ORDER_STATUSES } from "../_lib/orderWorkflow";
 
-const STATUSES = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
+const STATUSES = ORDER_STATUSES;
 const SORT_FIELDS = ["createdAt", "totalPrice", "status"] as const;
 
 export const onRequest: PagesFunction<Env> = async (ctx) => {
@@ -29,6 +30,7 @@ const listOrders: PagesFunction<Env> = async ({ request, env, data }) => {
   const q = (p.get("q") ?? "").trim();
   const status = p.get("status") ?? "";
   const city = (p.get("city") ?? "").trim();
+  const company = (p.get("company") ?? "").trim();
   const dateFrom = p.get("dateFrom");
   const dateTo = p.get("dateTo");
   const sort = (SORT_FIELDS as readonly string[]).includes(p.get("sort") ?? "")
@@ -49,10 +51,12 @@ const listOrders: PagesFunction<Env> = async ({ request, env, data }) => {
         { orderNumber: { contains: q, mode: "insensitive" } },
         { customer: { is: { fullName: { contains: q, mode: "insensitive" } } } },
         { customer: { is: { phone: { contains: q } } } },
+        { shipment: { is: { trackingNumber: { contains: q, mode: "insensitive" } } } },
       ],
     });
   }
   if (city) and.push({ customer: { is: { city: { contains: city, mode: "insensitive" } } } });
+  if (company) and.push({ shipment: { is: { company: { contains: company, mode: "insensitive" } } } });
   if (dateFrom || dateTo) {
     const createdAt: Prisma.DateTimeFilter = {};
     if (dateFrom) createdAt.gte = new Date(dateFrom);
@@ -67,16 +71,27 @@ const listOrders: PagesFunction<Env> = async ({ request, env, data }) => {
 
   const prisma = getPrisma(dbUrl);
   try {
-    const [total, rows] = await Promise.all([
+    const [total, rows, grouped, companyRows] = await Promise.all([
       prisma.order.count({ where }),
       prisma.order.findMany({
         where,
         orderBy: { [sort]: dir },
         skip: (page - 1) * pageSize,
         take: pageSize,
-        include: { customer: true, items: true },
+        include: { customer: true, items: true, shipment: true },
+      }),
+      // Global status snapshot for the shipping KPIs (unfiltered).
+      prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
+      // Distinct shipping companies for the filter.
+      prisma.shipment.findMany({
+        where: { company: { not: null } },
+        distinct: ["company"],
+        select: { company: true },
       }),
     ]);
+
+    const statusCounts = Object.fromEntries(STATUSES.map((s) => [s, 0])) as Record<string, number>;
+    for (const g of grouped) statusCounts[g.status] = g._count._all;
 
     const data = rows.map((o) => ({
       id: o.id,
@@ -94,11 +109,16 @@ const listOrders: PagesFunction<Env> = async ({ request, env, data }) => {
         address: o.customer.address,
       },
       items: o.items.map((i) => ({ colorName: i.colorName, sizeLabel: i.sizeLabel })),
+      shipment: o.shipment
+        ? { company: o.shipment.company, trackingNumber: o.shipment.trackingNumber, status: o.shipment.status }
+        : null,
     }));
 
     return json({
       ok: true,
       data,
+      statusCounts,
+      companies: companyRows.map((c) => c.company).filter(Boolean),
       total,
       page,
       pageSize,

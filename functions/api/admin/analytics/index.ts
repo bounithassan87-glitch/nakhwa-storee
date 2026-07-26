@@ -15,9 +15,10 @@ import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
 import { statsFromOrders, computeTag, type CustomerTag } from "../_lib/customers";
+import { ORDER_STATUSES } from "../_lib/orderWorkflow";
 
 const DAY = 86_400_000;
-const STATUSES = ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"] as const;
+const STATUSES = ORDER_STATUSES;
 
 function startOfUTCDay(d: Date): Date {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));

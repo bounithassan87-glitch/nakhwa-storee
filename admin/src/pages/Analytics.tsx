@@ -34,9 +34,14 @@ import { formatMoney, formatDateOnly } from "@/lib/format";
 const STATUS_COLOR: Record<OrderStatus, string> = {
   PENDING: "var(--color-warning)",
   CONFIRMED: "var(--color-brand)",
-  SHIPPED: "var(--color-brand-light)",
+  PREPARING: "var(--color-gold)",
+  READY_TO_SHIP: "var(--color-brand-light)",
+  SHIPPED: "var(--color-brand-dark)",
+  IN_TRANSIT: "var(--color-brand)",
   DELIVERED: "var(--color-success)",
+  RETURNED: "var(--color-danger)",
   CANCELLED: "var(--color-danger)",
+  REJECTED: "var(--color-sidebar)",
 };
 const STATUSES = Object.keys(STATUS_COLOR) as OrderStatus[];
 

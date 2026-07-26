@@ -3,7 +3,7 @@ import { Drawer } from "@/components/ui/Drawer";
 import { Badge } from "@/components/ui/Badge";
 import { Select } from "@/components/ui/Select";
 import { OrderActions } from "./OrderActions";
-import { STATUS_META, STATUS_OPTIONS } from "../status";
+import { STATUS_META, nextStatuses } from "../status";
 import { formatMoney, formatDate } from "@/lib/format";
 import type { Order, OrderStatus } from "../types";
 
@@ -68,12 +68,13 @@ export function OrderDrawer({
             <h3 className="mb-2 text-xs font-bold text-faint">تغيير الحالة</h3>
             <Select
               value={order.status}
-              disabled={statusBusy}
+              disabled={statusBusy || nextStatuses(order.status).length === 0}
               onChange={(e) => onChangeStatus(order.id, e.target.value as OrderStatus)}
             >
-              {STATUS_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
+              <option value={order.status}>{STATUS_META[order.status].label} (الحالية)</option>
+              {nextStatuses(order.status).map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_META[s].label}
                 </option>
               ))}
             </Select>

@@ -1,4 +1,14 @@
-export type OrderStatus = "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+export type OrderStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "PREPARING"
+  | "READY_TO_SHIP"
+  | "SHIPPED"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "RETURNED"
+  | "CANCELLED"
+  | "REJECTED";
 
 export interface OrderItem {
   colorName: string;

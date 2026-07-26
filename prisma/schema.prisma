@@ -100,12 +100,21 @@ model Customer {
   orders    Order[]
 }
 
+// Order fulfillment lifecycle. PENDING is the initial "new" state (kept for
+// backward compatibility with the public order flow and existing data). The
+// PREPARING/READY_TO_SHIP/IN_TRANSIT/RETURNED/REJECTED values were added for the
+// shipping workflow (Phase 2.7) — additive, so all prior code keeps working.
 enum OrderStatus {
   PENDING
   CONFIRMED
+  PREPARING
+  READY_TO_SHIP
   SHIPPED
+  IN_TRANSIT
   DELIVERED
+  RETURNED
   CANCELLED
+  REJECTED
 }
 
 /// A COD order. Financial fields are snapshots — history never mutates.
@@ -125,10 +134,44 @@ model Order {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   items         OrderItem[]
+  events        OrderEvent[]
+  shipment      Shipment?
 
   @@index([customerId])
   @@index([status])
   @@index([createdAt])
+}
+
+/// Append-only fulfillment timeline. One row per status transition (or note).
+model OrderEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    OrderStatus // order status at this point in the timeline
+  note      String? // optional internal note
+  actor     String? // admin email who made the change
+  createdAt DateTime    @default(now())
+
+  @@index([orderId])
+}
+
+/// Shipment details for an order (one-to-one). All fields optional so a shipment
+/// record is created lazily when fulfillment begins.
+model Shipment {
+  id                 String    @id @default(cuid())
+  orderId            String    @unique
+  order              Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  company            String? // shipping company name
+  trackingNumber     String?
+  shippingCost       Int? // centimes
+  codAmount          Int? // centimes collected on delivery
+  estimatedDeliveryAt DateTime?
+  deliveredAt        DateTime?
+  status             String? // carrier-reported status (free text)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([company])
 }
 
 /// One line per piece in an order. Colour/size are snapshotted as text so the

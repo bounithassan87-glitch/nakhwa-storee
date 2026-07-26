@@ -5,6 +5,7 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import Login from "@/pages/Login";
 import DashboardHome from "@/pages/DashboardHome";
 import Orders from "@/pages/Orders";
+import Shipping from "@/pages/Shipping";
 import Customers from "@/pages/Customers";
 import CustomerProfile from "@/pages/CustomerProfile";
 import Products from "@/pages/Products";
@@ -27,6 +28,7 @@ export function App() {
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardHome />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/shipping" element={<Shipping />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/customers/:id" element={<CustomerProfile />} />
               <Route path="/products" element={<Products />} />

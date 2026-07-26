@@ -1,6 +1,7 @@
 import {
   LayoutDashboard,
   ShoppingBag,
+  Truck,
   Users,
   Package,
   BarChart3,
@@ -19,6 +20,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { to: "/dashboard", label: "لوحة القيادة", icon: LayoutDashboard },
   { to: "/orders", label: "الطلبات", icon: ShoppingBag },
+  { to: "/shipping", label: "الشحن والتتبع", icon: Truck },
   { to: "/customers", label: "الزبناء", icon: Users },
   { to: "/products", label: "المنتجات", icon: Package },
   { to: "/analytics", label: "الإحصائيات", icon: BarChart3 },
