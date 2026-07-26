@@ -9,5 +9,12 @@ export default defineConfig({
   resolve: {
     alias: { "@": path.resolve(__dirname, "src") },
   },
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    // Mirror production (admin served same-origin as the API): proxy /api to the
+    // local Pages Functions dev server so the browser makes same-origin calls.
+    proxy: {
+      "/api": { target: "http://localhost:8788", changeOrigin: true },
+    },
+  },
 });

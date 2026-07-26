@@ -25,10 +25,10 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
 
       <div className="ms-auto flex items-center gap-3">
         <div className="hidden text-start sm:block">
-          <p className="text-sm font-bold text-ink">{user?.name}</p>
-          <p className="text-xs text-muted">{user?.email}</p>
+          <p className="text-sm font-bold text-ink">{user?.email}</p>
+          <p className="text-xs text-muted">{user?.role === "owner" ? "المالك" : user?.role}</p>
         </div>
-        <Avatar name={user?.name ?? "؟"} />
+        <Avatar name={user?.email ?? "؟"} />
         <button
           onClick={logout}
           className="grid h-10 w-10 place-items-center rounded-xl text-muted hover:bg-danger-soft hover:text-danger"

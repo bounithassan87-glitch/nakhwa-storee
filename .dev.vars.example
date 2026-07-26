@@ -1,4 +1,10 @@
 # Copy to .dev.vars and fill in. Local secrets for `wrangler pages dev`.
-# In production these come from Cloudflare (Hyperdrive binding or a Pages secret),
-# NOT from this file.
+# In production these come from Cloudflare Pages secrets, NOT this file.
 DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5434/nakhwa?schema=public"
+
+# Admin auth (Phase 2.2)
+# AUTH_SECRET: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`
+# ADMIN_PASSWORD_HASH: `node scripts/hash-admin-password.mjs "<password>"`
+AUTH_SECRET="replace-with-a-long-random-secret"
+ADMIN_EMAIL="owner@nakhwa.local"
+ADMIN_PASSWORD_HASH="pbkdf2$100000$<salt>$<hash>"

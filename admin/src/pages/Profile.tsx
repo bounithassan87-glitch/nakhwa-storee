@@ -16,10 +16,10 @@ export default function Profile() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="flex flex-col items-center gap-3 p-6 text-center">
-          <Avatar name={user?.name ?? "؟"} size={72} />
+          <Avatar name={user?.email ?? "؟"} size={72} />
           <div>
-            <p className="font-black text-ink">{user?.name}</p>
-            <p className="text-sm text-muted">{user?.email}</p>
+            <p className="font-black text-ink">{user?.email}</p>
+            <p className="text-sm text-muted">{user?.role === "owner" ? "المالك" : user?.role}</p>
           </div>
           <Badge tone="brand">{user?.role === "owner" ? "المالك" : user?.role}</Badge>
           <Button variant="danger" size="sm" className="mt-2 w-full" onClick={logout}>
@@ -30,8 +30,8 @@ export default function Profile() {
         <Card className="p-5 lg:col-span-2">
           <h3 className="mb-4 font-bold text-ink">تعديل البيانات</h3>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="الاسم" defaultValue={user?.name} disabled />
             <Input label="البريد الإلكتروني" defaultValue={user?.email} disabled />
+            <Input label="الدور" defaultValue={user?.role === "owner" ? "المالك" : user?.role} disabled />
             <Input label="كلمة المرور الجديدة" type="password" placeholder="••••••••" disabled />
             <Input label="تأكيد كلمة المرور" type="password" placeholder="••••••••" disabled />
           </div>

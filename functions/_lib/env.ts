@@ -8,6 +8,10 @@ export interface Env {
   HYPERDRIVE?: { connectionString: string };
   // Non-secret runtime marker ("development" | "production").
   ENVIRONMENT?: string;
+  // Admin authentication (Phase 2.2) — secrets, never committed.
+  AUTH_SECRET?: string;
+  ADMIN_EMAIL?: string;
+  ADMIN_PASSWORD_HASH?: string;
 }
 
 /** Resolve the DB connection string, preferring Hyperdrive in production. */

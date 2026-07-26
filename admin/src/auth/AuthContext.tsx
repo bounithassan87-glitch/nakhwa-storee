@@ -2,58 +2,81 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
+import { apiGet, apiPost, setUnauthorizedHandler } from "@/lib/api";
 
 export interface AdminUser {
-  name: string;
   email: string;
   role: string;
 }
 
+type Status = "loading" | "authenticated" | "unauthenticated";
+
 interface AuthState {
   user: AdminUser | null;
-  isAuthenticated: boolean;
+  status: Status;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
-const STORAGE_KEY = "nakhwa_admin_auth";
 const AuthContext = createContext<AuthState | null>(null);
 
-function readStored(): AdminUser | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as AdminUser) : null;
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AdminUser | null>(readStored);
+  const [user, setUser] = useState<AdminUser | null>(null);
+  const [status, setStatus] = useState<Status>("loading");
 
-  // MOCK auth — no network, no validation yet. Deliberately isolated so the
-  // internals can later be swapped for a real call (e.g. POST /api/admin/login)
-  // without changing any page or component.
-  const login = useCallback(async (email: string, _password: string) => {
-    const mockUser: AdminUser = { name: "المدير", email, role: "owner" };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser));
-    setUser(mockUser);
+  // Check the real server session on load.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await apiGet<{ user: AdminUser }>("/api/admin/auth/session");
+        if (alive) {
+          setUser(res.user);
+          setStatus("authenticated");
+        }
+      } catch {
+        if (alive) {
+          setUser(null);
+          setStatus("unauthenticated");
+        }
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+  // Any 401 from the API (e.g. expired session) → drop to unauthenticated.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setUser(null);
+      setStatus("unauthenticated");
+    });
+    return () => setUnauthorizedHandler(null);
+  }, []);
+
+  const login = useCallback(async (email: string, password: string) => {
+    const res = await apiPost<{ user: AdminUser }>("/api/admin/auth/login", { email, password });
+    setUser(res.user);
+    setStatus("authenticated");
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await apiPost("/api/admin/auth/logout");
+    } catch {
+      /* clear locally regardless */
+    }
     setUser(null);
+    setStatus("unauthenticated");
   }, []);
 
   return (
-    <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, login, logout }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, status, login, logout }}>{children}</AuthContext.Provider>
   );
 }
 
