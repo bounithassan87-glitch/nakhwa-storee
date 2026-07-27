@@ -26,6 +26,8 @@ export function useAnalytics(range: RangeKey, from: string, to: string) {
         setLoading(false);
       }
     },
+    // `range`/`from`/`to` are primitives, but `key` is their stable composite;
+    // listing them separately risks divergent refetches. Load-bearing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [key],
   );

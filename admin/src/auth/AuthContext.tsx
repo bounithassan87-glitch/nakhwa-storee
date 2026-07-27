@@ -94,6 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// The provider and its consumer hook intentionally live together (canonical
+// React context pattern). Splitting them would touch every consumer file for a
+// Fast-Refresh-only benefit.
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext);

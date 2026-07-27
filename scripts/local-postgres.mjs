@@ -52,7 +52,9 @@ async function main() {
 
   const shutdown = async () => {
     console.log("\n[local-postgres] stopping…");
-    try { await pg.stop(); } catch {}
+    // Best-effort: the process is exiting anyway, and a failed stop (already
+    // stopped / port released) must not prevent a clean exit.
+    try { await pg.stop(); } catch { /* ignore */ }
     process.exit(0);
   };
   process.on("SIGINT", shutdown);

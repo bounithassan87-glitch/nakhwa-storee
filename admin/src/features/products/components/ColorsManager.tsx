@@ -3,6 +3,7 @@ import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { addColor, editColor, deleteColor, reorderColors } from "../api";
+import { errorMsg } from "../errors";
 import type { ProductColor } from "../types";
 
 export function ColorsManager({
@@ -121,16 +122,4 @@ export function ColorsManager({
       </div>
     </Card>
   );
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export function errorMsg(code: string): string {
-  switch (code) {
-    case "duplicate_color":
-      return "هذا اللون موجود مسبقاً.";
-    case "duplicate_size":
-      return "هذا المقاس موجود مسبقاً.";
-    default:
-      return "تعذّرت العملية.";
-  }
 }

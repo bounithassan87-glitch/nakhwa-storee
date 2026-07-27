@@ -86,7 +86,8 @@ const list: PagesFunction<Env> = async ({ request, env, data }) => {
       byCampaign.set(r.campaignId!, arr);
     }
 
-    let rows = campaigns.map((c) => {
+    // Sorted in place and sliced below — never reassigned.
+    const rows = campaigns.map((c) => {
       const attributed = byCampaign.get(c.id) ?? [];
       const metrics = computeMetrics(c, attributed);
       return {

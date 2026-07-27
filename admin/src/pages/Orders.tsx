@@ -65,6 +65,9 @@ export default function Orders() {
     if (revision === 0) return;
     refetch({ silent: true });
     markAllSeen();
+    // React only to the poller's new-order signal. `refetch` changes identity
+    // whenever filters/pagination change, so listing it would double-fetch on
+    // every filter edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revision]);
 

@@ -3,7 +3,7 @@ import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { addSize, editSize, deleteSize, reorderSizes } from "../api";
-import { errorMsg } from "./ColorsManager";
+import { errorMsg } from "../errors";
 import type { ProductSize } from "../types";
 
 export function SizesManager({

@@ -41,6 +41,9 @@ export function useCampaigns(params: CampaignsParams) {
         setLoading(false);
       }
     },
+    // `params` is a new object literal every render; `key` is its stable
+    // serialization. Listing `params` would rebuild `load` on each render and
+    // retrigger the effect below → infinite refetch loop. Load-bearing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [key],
   );

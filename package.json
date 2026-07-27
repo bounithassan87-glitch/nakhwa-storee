@@ -12,6 +12,8 @@
     "db:seed": "node prisma/seed.mjs",
     "db:studio": "prisma studio",
     "verify:db": "node scripts/verify-db.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "dev": "wrangler pages dev --port 8788",
     "build:admin": "npm --prefix admin run build && node scripts/copy-admin-dist.mjs",
     "build:site": "node scripts/set-site-url.mjs",
@@ -28,7 +30,12 @@
   },
   "devDependencies": {
     "embedded-postgres": "^18.4.0-beta.17",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "globals": "^15.15.0",
     "prisma": "^6.3.1",
+    "typescript-eslint": "^8.65.0",
     "wrangler": "^4.114.0"
   },
   "allowScripts": {
