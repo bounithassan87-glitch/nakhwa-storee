@@ -12,7 +12,11 @@
     "db:seed": "node prisma/seed.mjs",
     "db:studio": "prisma studio",
     "verify:db": "node scripts/verify-db.mjs",
-    "dev": "wrangler pages dev --port 8788"
+    "dev": "wrangler pages dev --port 8788",
+    "build:admin": "npm --prefix admin run build && node scripts/copy-admin-dist.mjs",
+    "build:site": "node scripts/set-site-url.mjs",
+    "build": "npm run build:admin && npm run build:site",
+    "deploy": "wrangler pages deploy dist --project-name nakhwa-store --branch main"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

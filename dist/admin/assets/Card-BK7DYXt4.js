@@ -1,0 +1,1 @@
+import{j as a,f as e}from"./index-D1bbcv3J.js";function d({className:r,...s}){return a.jsx("div",{className:e("rounded-2xl border border-line bg-surface shadow-[0_6px_18px_rgba(60,50,25,.06)]",r),...s})}export{d as C};

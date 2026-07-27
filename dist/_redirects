@@ -1,0 +1,6 @@
+# Cloudflare Pages redirects.
+#
+# The admin SPA deep-link fallback is handled by a Pages Function
+# (functions/admin/[[catchall]].ts) using the ASSETS binding, because a
+# `_redirects` splat like `/admin/* /admin/index.html 200` is rejected by
+# Cloudflare's loop-detector for a subpath SPA. Add site-level redirects here.

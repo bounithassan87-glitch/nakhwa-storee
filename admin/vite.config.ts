@@ -3,9 +3,14 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react(), tailwindcss()],
-  base: "./", // relative assets → can be hosted under /admin later
+  base: "./", // relative assets → hosted under /admin in production
+  define: {
+    // Router basename: site root in dev (`serve`), /admin in the production
+    // build (`build`). Committed here so it survives a clean checkout.
+    __ADMIN_BASENAME__: JSON.stringify(command === "build" ? "/admin" : "/"),
+  },
   resolve: {
     alias: { "@": path.resolve(__dirname, "src") },
   },
@@ -17,4 +22,4 @@ export default defineConfig({
       "/api": { target: "http://localhost:8788", changeOrigin: true },
     },
   },
-});
+}));

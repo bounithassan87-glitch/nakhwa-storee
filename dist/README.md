@@ -40,7 +40,7 @@ Or drag-and-drop this folder in the Vercel dashboard → "Add New Project" → d
 Upload the contents of this folder to the web root.
 
 ## Before going live
-- Replace `REPLACE-WITH-YOUR-DOMAIN` in `robots.txt` and `sitemap.xml`.
+- Replace `nakhwa-store.pages.dev` in `robots.txt` and `sitemap.xml`.
 - (Optional) set absolute `og:image` / `twitter:image` URLs in `index.html`.
 
 ## Notes
