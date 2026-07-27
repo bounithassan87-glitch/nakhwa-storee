@@ -11,6 +11,7 @@ import CustomerProfile from "@/pages/CustomerProfile";
 import Products from "@/pages/Products";
 import ProductDetail from "@/pages/ProductDetail";
 import Analytics from "@/pages/Analytics";
+import Marketing from "@/pages/Marketing";
 import Settings from "@/pages/Settings";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
@@ -34,6 +35,7 @@ export function App() {
               <Route path="/products" element={<Products />} />
               <Route path="/products/:id" element={<ProductDetail />} />
               <Route path="/analytics" element={<Analytics />} />
+              <Route path="/marketing" element={<Marketing />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/profile" element={<Profile />} />
             </Route>

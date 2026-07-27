@@ -13,6 +13,7 @@ export const PERMISSIONS = [
   "manage_products",
   "manage_orders",
   "manage_shipping",
+  "manage_marketing",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -29,6 +30,7 @@ const ROLE_MATRIX: Record<Role, Permission[] | "*"> = {
     "manage_products",
     "manage_orders",
     "manage_shipping",
+    "manage_marketing",
   ],
   staff: ["manage_orders", "manage_shipping"],
 };

@@ -136,10 +136,15 @@ model Order {
   items         OrderItem[]
   events        OrderEvent[]
   shipment      Shipment?
+  // Marketing attribution (Phase 2.9) — nullable; the public checkout never sets
+  // it. onDelete: SetNull keeps order history if a campaign is deleted.
+  campaignId    String?
+  campaign      Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
 
   @@index([customerId])
   @@index([status])
   @@index([createdAt])
+  @@index([campaignId])
 }
 
 /// Append-only fulfillment timeline. One row per status transition (or note).
@@ -261,4 +266,63 @@ model AuditLog {
   @@index([createdAt])
   @@index([entity])
   @@index([actor])
+}
+
+// ── Marketing & Campaigns (Phase 2.9) ────────────────────────────────────
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum CampaignPlatform {
+  FACEBOOK
+  INSTAGRAM
+  TIKTOK
+  GOOGLE
+  SNAPCHAT
+  MANUAL
+}
+
+/// A marketing campaign. Only raw ad inputs are stored; all performance figures
+/// (ROAS/CPA/CPC/CPM/CTR/…) and attributed revenue are derived at read time.
+model Campaign {
+  id          String           @id @default(cuid())
+  name        String
+  platform    CampaignPlatform @default(MANUAL)
+  objective   String?
+  status      CampaignStatus   @default(DRAFT)
+  budget      Int              @default(0) // centimes
+  spent       Int              @default(0) // centimes (ad-platform input)
+  clicks      Int              @default(0)
+  impressions Int              @default(0)
+  conversions Int              @default(0)
+  notes       String?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  orders      Order[]
+  events      CampaignEvent[]
+
+  @@index([status])
+  @@index([platform])
+}
+
+/// Append-only campaign timeline (created / activated / paused / budget_changed /
+/// completed / cancelled / note / updated).
+model CampaignEvent {
+  id         String   @id @default(cuid())
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  type       String
+  note       String?
+  actor      String? // admin email
+  createdAt  DateTime @default(now())
+
+  @@index([campaignId])
 }

@@ -5,6 +5,7 @@ import {
   Users,
   Package,
   BarChart3,
+  Megaphone,
   Settings,
   UserCircle,
   type LucideIcon,
@@ -24,6 +25,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: "/customers", label: "الزبناء", icon: Users },
   { to: "/products", label: "المنتجات", icon: Package },
   { to: "/analytics", label: "الإحصائيات", icon: BarChart3 },
+  { to: "/marketing", label: "التسويق والحملات", icon: Megaphone },
   { to: "/settings", label: "الإعدادات", icon: Settings },
   { to: "/profile", label: "الملف الشخصي", icon: UserCircle },
 ];

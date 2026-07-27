@@ -34,6 +34,8 @@ interface NotificationsValue {
   markAllSeen: () => void;
   /** Force an immediate poll (e.g. after a manual refresh). */
   refreshNow: () => void;
+  /** Push a toast into the shared notification host (reused by other modules). */
+  notify: (title: string, body?: string) => void;
   toasts: ToastItem[];
   dismissToast: (id: number) => void;
 }
@@ -156,6 +158,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         setSoundEnabled,
         markAllSeen,
         refreshNow,
+        notify: pushToast,
         toasts,
         dismissToast,
       }}
