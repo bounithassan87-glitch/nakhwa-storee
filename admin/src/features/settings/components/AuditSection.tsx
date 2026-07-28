@@ -38,7 +38,7 @@ export function AuditSection({ notify }: { notify: (m: string) => void }) {
 
   useEffect(() => {
     const ac = new AbortController();
-    (async () => {
+    void (async () => {
       try {
         const res = await getAudit(
           { page, pageSize: PAGE_SIZE, actor: dActor, action: "", entity: dEntity, dateFrom, dateTo: "" },

@@ -64,7 +64,7 @@ export default function Settings() {
   }
 
   useEffect(() => {
-    (async () => {
+    void (async () => {
       try {
         setSettings((await getSettings()).data);
       } catch {

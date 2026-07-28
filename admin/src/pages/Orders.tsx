@@ -63,7 +63,7 @@ export default function Orders() {
   // clear the badge since the admin is already looking at the list.
   useEffect(() => {
     if (revision === 0) return;
-    refetch({ silent: true });
+    void refetch({ silent: true });
     markAllSeen();
     // React only to the poller's new-order signal. `refetch` changes identity
     // whenever filters/pagination change, so listing it would double-fetch on

@@ -18,9 +18,11 @@
 //    resolver, so no resolver plugin (and no native postinstall binary) is
 //    pulled into the supply chain.
 //
-// 4. Type-aware linting (`recommendedTypeChecked`) is deliberately deferred:
-//    `functions/` currently has no tsconfig, so the rules could not be applied
-//    uniformly. Tracked as the next hardening milestone.
+// 4. Type-aware linting (`recommendedTypeChecked`) is ENABLED for both packages
+//    against their real tsconfigs. This is what catches unhandled promise
+//    rejections, unsafe `any` propagation and dead assertions — the classes of
+//    defect a syntax-only pass cannot see. Plain-JS tooling scripts stay on the
+//    non-type-aware config (there is no tsconfig covering them).
 import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -61,11 +63,15 @@ export default tseslint.config(
   // ── Admin SPA (React 19, browser) ───────────────────────────────────────
   {
     files: ["admin/src/**/*.{ts,tsx}"],
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.browser,
-      parserOptions: { ecmaFeatures: { jsx: true } },
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+        project: "./admin/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     plugins: {
       "react-hooks": reactHooks,
@@ -82,17 +88,33 @@ export default tseslint.config(
       "react-refresh/only-export-components": ["error", { allowConstantExport: true }],
       // The admin UI must never ship debug output to a customer-facing console.
       "no-console": "error",
+      // React's event-handler contract explicitly ignores a handler's return
+      // value, so `onClick={async () => …}` is idiomatic and cannot be
+      // expressed otherwise. Every such handler in this codebase guards itself
+      // with try/catch/finally (audited), so it cannot leak a rejection. The
+      // remaining void-return checks — arguments, returns, variables,
+      // properties, inherited methods — stay ON, as do checksConditionals and
+      // checksSpreads. This narrows the rule to the framework contract rather
+      // than disabling it.
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        { checksVoidReturn: { attributes: false } },
+      ],
     },
   },
 
   // ── Cloudflare Pages Functions (Workers runtime) ────────────────────────
   {
     files: ["functions/**/*.ts"],
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
     languageOptions: {
       ecmaVersion: 2022,
       // Workers expose a service-worker-like global scope plus fetch/Web Crypto.
       globals: { ...globals.serviceworker, ...globals.browser },
+      parserOptions: {
+        project: "./functions/tsconfig.json",
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: {
       ...sharedRules,

@@ -44,7 +44,7 @@ export function SizesManager({
     const j = index + dir;
     if (j < 0 || j >= next.length) return;
     [next[index], next[j]] = [next[j], next[index]];
-    run(() => reorderSizes(productId, next.map((s) => s.id)), "");
+    void run(() => reorderSizes(productId, next.map((s) => s.id)), "");
   }
 
   return (
@@ -60,7 +60,7 @@ export function SizesManager({
               disabled={busy}
               onBlur={(e) => {
                 const v = e.target.value.trim();
-                if (v && v !== s.label) run(() => editSize(productId, s.id, { label: v }), "تم تعديل المقاس");
+                if (v && v !== s.label) void run(() => editSize(productId, s.id, { label: v }), "تم تعديل المقاس");
               }}
               className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none"
               aria-label="المقاس"

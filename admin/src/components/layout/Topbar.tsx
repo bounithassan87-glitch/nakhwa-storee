@@ -42,7 +42,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         <button
           onClick={() => {
             markAllSeen();
-            navigate("/orders");
+            void navigate("/orders");
           }}
           className="relative grid h-10 w-10 place-items-center rounded-xl text-muted hover:bg-brand-soft"
           aria-label={newCount > 0 ? `${newCount} طلبات جديدة` : "التنبيهات"}

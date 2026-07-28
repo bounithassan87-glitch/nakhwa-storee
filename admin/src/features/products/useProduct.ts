@@ -31,7 +31,7 @@ export function useProduct(id: string | undefined) {
 
   useEffect(() => {
     const ac = new AbortController();
-    load(ac.signal);
+    void load(ac.signal);
     return () => ac.abort();
   }, [load]);
 

@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check the real server session on load.
   useEffect(() => {
     let alive = true;
-    (async () => {
+    void (async () => {
       try {
         const res = await apiGet<{ user: AdminUser }>("/api/admin/auth/session");
         if (alive) {

@@ -17,7 +17,7 @@ export function useAnalytics(range: RangeKey, from: string, to: string) {
         const res = await fetchAnalytics(range, from, to, signal);
         const { ok, ...rest } = res;
         void ok;
-        setData(rest as Analytics);
+        setData(rest);
       } catch (e) {
         if ((e as Error).name !== "AbortError") {
           setError((e as Error).message || "فشل تحميل الإحصائيات");
@@ -34,7 +34,7 @@ export function useAnalytics(range: RangeKey, from: string, to: string) {
 
   useEffect(() => {
     const ac = new AbortController();
-    load(ac.signal);
+    void load(ac.signal);
     return () => ac.abort();
   }, [load]);
 

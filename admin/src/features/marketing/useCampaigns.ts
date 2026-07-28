@@ -50,7 +50,7 @@ export function useCampaigns(params: CampaignsParams) {
 
   useEffect(() => {
     const ac = new AbortController();
-    load(ac.signal);
+    void load(ac.signal);
     return () => ac.abort();
   }, [load]);
 

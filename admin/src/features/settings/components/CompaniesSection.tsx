@@ -19,7 +19,7 @@ export function CompaniesSection({ canManage, notify }: { canManage: boolean; no
     }
   }
   useEffect(() => {
-    load();
+    void load();
     // Mount-only fetch. `load` is redeclared each render, so listing it would
     // refetch on every render; subsequent refreshes go through `run()`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,7 +64,7 @@ export function CompaniesSection({ canManage, notify }: { canManage: boolean; no
               disabled={!canManage || busy}
               onBlur={(e) => {
                 const v = e.target.value.trim();
-                if (v && v !== c.name) run(() => editCompany(c.id, { name: v }), "تم التعديل");
+                if (v && v !== c.name) void run(() => editCompany(c.id, { name: v }), "تم التعديل");
               }}
               className="min-w-0 flex-1 bg-transparent text-sm font-bold text-ink outline-none"
               aria-label="اسم الشركة"

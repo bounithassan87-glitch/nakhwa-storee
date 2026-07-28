@@ -80,20 +80,37 @@ export async function signSession(
   return `${data}.${sig}`;
 }
 
+/** Runtime shape check for a decoded session payload (see `verifySession`). */
+function isSessionPayload(v: unknown): v is SessionPayload {
+  if (typeof v !== "object" || v === null) return false;
+  const p = v as Record<string, unknown>;
+  return (
+    typeof p.sub === "string" &&
+    typeof p.role === "string" &&
+    typeof p.iat === "number" &&
+    typeof p.exp === "number"
+  );
+}
+
 export async function verifySession(token: string, secret: string): Promise<SessionPayload | null> {
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   const data = `${parts[0]}.${parts[1]}`;
   const expected = await hmac(data, secret);
   if (!timingSafeEqual(expected, b64urlToBytes(parts[2]))) return null;
-  let payload: SessionPayload;
+  // `JSON.parse` returns `any`; assigning it straight to `SessionPayload` would
+  // let a malformed-but-correctly-signed token through with `sub`/`role`
+  // undefined, which the middleware then hands to `roleCan()`. Parse as unknown
+  // and validate the shape before trusting it.
+  let raw: unknown;
   try {
-    payload = JSON.parse(new TextDecoder().decode(b64urlToBytes(parts[1])));
+    raw = JSON.parse(new TextDecoder().decode(b64urlToBytes(parts[1])));
   } catch {
     return null;
   }
-  if (typeof payload.exp !== "number" || payload.exp < Math.floor(Date.now() / 1000)) return null;
-  return payload;
+  if (!isSessionPayload(raw)) return null;
+  if (raw.exp < Math.floor(Date.now() / 1000)) return null;
+  return raw;
 }
 
 export function randomToken(bytes = 24): string {

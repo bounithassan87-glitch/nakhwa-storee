@@ -19,7 +19,7 @@ function Thumb({ url, alt }: { url: string | null; alt: string }) {
       alt={alt}
       className="h-11 w-11 shrink-0 rounded-lg border border-line object-cover"
       onError={(e) => {
-        (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+        e.currentTarget.style.visibility = "hidden";
       }}
     />
   );

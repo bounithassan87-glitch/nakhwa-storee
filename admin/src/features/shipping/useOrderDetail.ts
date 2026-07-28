@@ -30,7 +30,7 @@ export function useOrderDetail(id: string | null) {
       return;
     }
     const ac = new AbortController();
-    load(ac.signal);
+    void load(ac.signal);
     return () => ac.abort();
   }, [id, load]);
 

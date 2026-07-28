@@ -25,7 +25,7 @@ export function AdminsSection({ notify }: { notify: (m: string) => void }) {
     }
   }
   useEffect(() => {
-    load();
+    void load();
     // Mount-only fetch. `load` is redeclared each render, so listing it would
     // refetch on every render; subsequent refreshes go through `run()`.
     // eslint-disable-next-line react-hooks/exhaustive-deps

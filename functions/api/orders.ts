@@ -75,7 +75,7 @@ const handleCreateOrder: AppFunction = async ({ request, env, data }) => {
       return json({ ok: false, error: "product_unavailable" }, 503);
     }
 
-    const total = PRICE_BY_QTY[order.quantity as 1 | 2];
+    const total = PRICE_BY_QTY[order.quantity];
 
     const customer = await prisma.customer.upsert({
       where: { phone: order.phone },

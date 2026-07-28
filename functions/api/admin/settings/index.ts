@@ -28,6 +28,26 @@ const ALLOWED_KEYS = new Set([
   "default_timezone",
 ]);
 
+/**
+ * Coerce an incoming setting value to the string this table stores.
+ *
+ * Every allowed key is a scalar text setting. `String(v)` on an object yields
+ * the literal `"[object Object]"`, silently persisting corrupt data, so objects
+ * and arrays are JSON-encoded instead. All legitimate inputs (string / number /
+ * boolean / null / undefined) produce byte-identical output to the previous
+ * `String(v ?? "")`.
+ */
+function settingToString(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "string") return v;
+  if (typeof v === "number" || typeof v === "boolean" || typeof v === "bigint") return String(v);
+  try {
+    return JSON.stringify(v) ?? "";
+  } catch {
+    return "";
+  }
+}
+
 export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "GET") return getSettings(ctx);
   if (ctx.request.method === "PATCH") return patchSettings(ctx);
@@ -66,7 +86,7 @@ const patchSettings: AppFunction = async ({ request, env, data }) => {
 
   const entries = Object.entries(raw as Record<string, unknown>)
     .filter(([k]) => ALLOWED_KEYS.has(k))
-    .map(([k, v]) => [k, String(v ?? "").slice(0, 2000)] as [string, string]);
+    .map(([k, v]) => [k, settingToString(v).slice(0, 2000)] as [string, string]);
 
   const prisma = getPrisma(dbUrl);
   try {

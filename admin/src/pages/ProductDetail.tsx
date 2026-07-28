@@ -130,7 +130,7 @@ export default function ProductDetail() {
         offerPrice: toCentimes(form.offerPrice),
         compareAtPrice: toCentimes(form.compareAtPrice),
       });
-      refetch();
+      void refetch();
       notify("تم حفظ التغييرات");
     } catch (e) {
       const m = (e as Error).message;
@@ -144,7 +144,7 @@ export default function ProductDetail() {
     if (!product) return;
     try {
       await updateProduct(product.id, { status });
-      refetch();
+      void refetch();
       notify("تم تغيير الحالة");
     } catch {
       notify("تعذّر تغيير الحالة.");
@@ -155,7 +155,7 @@ export default function ProductDetail() {
     if (!product) return;
     try {
       await archiveProduct(product.id);
-      refetch();
+      void refetch();
       notify("تمت أرشفة المنتج (حذف ناعم)");
     } catch {
       notify("تعذّرت الأرشفة.");

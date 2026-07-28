@@ -31,7 +31,7 @@ export const onRequest: AppFunction = async ({ request, env, data }) => {
 
   let body: { email?: string; password?: string };
   try {
-    body = (await request.json()) as typeof body;
+    body = await request.json();
   } catch {
     return json({ ok: false, error: "invalid_json" }, 400);
   }

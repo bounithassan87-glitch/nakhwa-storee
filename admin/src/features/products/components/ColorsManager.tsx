@@ -46,7 +46,7 @@ export function ColorsManager({
     const j = index + dir;
     if (j < 0 || j >= next.length) return;
     [next[index], next[j]] = [next[j], next[index]];
-    run(() => reorderColors(productId, next.map((c) => c.id)), "");
+    void run(() => reorderColors(productId, next.map((c) => c.id)), "");
   }
 
   return (
@@ -66,7 +66,7 @@ export function ColorsManager({
               disabled={busy}
               onBlur={(e) => {
                 const v = e.target.value.trim();
-                if (v && v !== c.name) run(() => editColor(productId, c.id, { name: v }), "تم تعديل اللون");
+                if (v && v !== c.name) void run(() => editColor(productId, c.id, { name: v }), "تم تعديل اللون");
               }}
               className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none"
               aria-label="اسم اللون"

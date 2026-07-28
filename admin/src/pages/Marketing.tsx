@@ -8,6 +8,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { Drawer } from "@/components/ui/Drawer";
 import { useDebouncedValue } from "@/lib/useDebounce";
 import { useAuth } from "@/auth/AuthContext";
+import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { roleCan } from "@/features/settings/permissions";
 import { useCampaigns } from "@/features/marketing/useCampaigns";
 import { CampaignKPIs } from "@/features/marketing/components/CampaignKPIs";
@@ -23,6 +24,7 @@ const PAGE_SIZE = 10;
 
 export default function Marketing() {
   const { user } = useAuth();
+  const { notify } = useNotifications();
   const canManage = roleCan(user?.role, "manage_marketing");
 
   const [q, setQ] = useState("");
@@ -53,9 +55,21 @@ export default function Marketing() {
   }
 
   async function onCreate(input: CampaignInput) {
-    await createCampaign(input);
-    setCreateOpen(false);
-    refetch();
+    // CampaignForm.submit wraps this in try/finally without a catch, so an
+    // unhandled failure here would surface as an unhandled promise rejection
+    // with no user feedback. Report it through the shared notification host,
+    // matching how CampaignDrawer reports update failures.
+    try {
+      await createCampaign(input);
+      setCreateOpen(false);
+      void refetch();
+    } catch (e) {
+      const m = (e as Error).message;
+      notify(
+        "تعذّر إنشاء الحملة",
+        m === "forbidden" ? "ليست لديك صلاحية." : m === "validation_error" ? "تحقّقي من الحقول." : undefined,
+      );
+    }
   }
 
   return (

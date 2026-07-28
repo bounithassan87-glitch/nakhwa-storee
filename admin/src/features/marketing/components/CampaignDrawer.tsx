@@ -68,7 +68,9 @@ export function CampaignDrawer({
       setCampaign(res.data);
       onChanged();
       const newStatus = statusNotice ?? res.data.status;
-      if (newStatus !== prevStatus && STATUS_NOTICE[newStatus]) notify(STATUS_NOTICE[newStatus]!, res.data.name);
+      // Bind once so the truthiness check narrows it — no non-null assertion.
+      const notice = STATUS_NOTICE[newStatus];
+      if (newStatus !== prevStatus && notice) notify(notice, res.data.name);
       if (res.data.spent > res.data.budget && res.data.budget > 0) notify("تجاوز الميزانية", res.data.name);
       flash("تم الحفظ");
     } catch (e) {

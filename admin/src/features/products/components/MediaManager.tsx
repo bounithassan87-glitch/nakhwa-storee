@@ -46,7 +46,7 @@ export function MediaManager({
     const j = index + dir;
     if (j < 0 || j >= next.length) return;
     [next[index], next[j]] = [next[j], next[index]];
-    run(() => reorderMedia(productId, next.map((m) => m.id)), "");
+    void run(() => reorderMedia(productId, next.map((m) => m.id)), "");
   }
 
   return (
@@ -66,7 +66,7 @@ export function MediaManager({
                   alt=""
                   className="h-full w-full object-cover"
                   onError={(e) => {
-                    const el = e.currentTarget as HTMLImageElement;
+                    const el = e.currentTarget;
                     el.style.display = "none";
                     el.parentElement?.querySelector(".fallback")?.classList.remove("hidden");
                   }}

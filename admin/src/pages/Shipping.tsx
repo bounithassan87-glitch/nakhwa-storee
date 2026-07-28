@@ -58,7 +58,7 @@ export default function Shipping() {
   // Any fulfillment change → refresh the list + KPIs and re-poll notifications.
   // Analytics reads live, so it reflects the change on its next load.
   function onChanged() {
-    refetch();
+    void refetch();
     refreshNow();
   }
 

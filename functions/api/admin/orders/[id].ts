@@ -91,7 +91,7 @@ const transition: AppFunction = async ({ request, env, params, data }) => {
   if (!parsed.success) {
     return json({ ok: false, error: "validation_error", details: parsed.error.flatten() }, 422);
   }
-  const target = parsed.data.status as OrderStatus;
+  const target: OrderStatus = parsed.data.status;
 
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

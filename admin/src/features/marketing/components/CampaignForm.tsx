@@ -21,9 +21,9 @@ export function CampaignForm({
 }) {
   const [f, setF] = useState({
     name: initial?.name ?? "",
-    platform: (initial?.platform ?? "MANUAL") as CampaignPlatform,
+    platform: initial?.platform ?? "MANUAL",
     objective: initial?.objective ?? "",
-    status: (initial?.status ?? "DRAFT") as CampaignStatus,
+    status: initial?.status ?? "DRAFT",
     budget: toDh(initial?.budget),
     spent: toDh(initial?.spent),
     clicks: initial?.clicks != null ? String(initial.clicks) : "",

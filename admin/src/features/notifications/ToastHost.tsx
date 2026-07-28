@@ -18,7 +18,7 @@ export function ToastHost() {
           role="status"
           onClick={() => {
             markAllSeen();
-            navigate("/orders");
+            void navigate("/orders");
             dismissToast(t.id);
           }}
           className="pointer-events-auto flex w-full max-w-sm cursor-pointer items-start gap-3 rounded-2xl border border-line bg-surface p-3.5 shadow-[0_12px_40px_rgba(60,50,25,.18)] transition hover:border-brand"

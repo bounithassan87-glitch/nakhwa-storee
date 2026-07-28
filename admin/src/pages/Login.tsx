@@ -35,7 +35,7 @@ export default function Login() {
     setBusy(true);
     try {
       await login(email, password);
-      navigate(location.state?.from?.pathname ?? "/dashboard", { replace: true });
+      void navigate(location.state?.from?.pathname ?? "/dashboard", { replace: true });
     } catch (err) {
       setError(messageFor((err as Error).message));
     } finally {
