@@ -2,7 +2,7 @@
 // Runs as a Cloudflare Pages Function (Workers runtime). Cross-cutting concerns
 // (logging, request id, security headers, error boundary) live in _middleware.ts.
 import { z } from "zod";
-import type { Env } from "../_lib/env";
+import type { AppFunction } from "../_lib/context";
 import { resolveDatabaseUrl } from "../_lib/env";
 import { getPrisma } from "../_lib/db";
 import { json, log } from "../_lib/http";
@@ -37,15 +37,15 @@ function orderNumber(): string {
 }
 
 // Only POST is allowed; anything else returns a clean 405.
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "POST" });
   }
   return handleCreateOrder(ctx);
 };
 
-const handleCreateOrder: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const handleCreateOrder: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
 
   let raw: unknown;
   try {

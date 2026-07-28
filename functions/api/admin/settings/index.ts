@@ -1,7 +1,7 @@
 // GET   /api/admin/settings — all store + system settings as an object.
 // PATCH /api/admin/settings — upsert allowed keys (requires manage_settings).
 // Auth + CSRF enforced by the admin _middleware.
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -28,14 +28,14 @@ const ALLOWED_KEYS = new Set([
   "default_timezone",
 ]);
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "GET") return getSettings(ctx);
   if (ctx.request.method === "PATCH") return patchSettings(ctx);
   return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET, PATCH" });
 };
 
-const getSettings: PagesFunction<Env> = async ({ env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const getSettings: AppFunction = async ({ env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   try {
@@ -48,9 +48,9 @@ const getSettings: PagesFunction<Env> = async ({ env, data }) => {
   }
 };
 
-const patchSettings: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const role = (data as { admin?: { role?: string } }).admin?.role;
+const patchSettings: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
+  const role = data.admin?.role;
   if (!roleCan(role, "manage_settings")) return json({ ok: false, error: "forbidden" }, 403);
 
   const dbUrl = resolveDatabaseUrl(env);

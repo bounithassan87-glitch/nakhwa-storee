@@ -1,7 +1,7 @@
 // PUT /api/admin/orders/:id/shipment — create/update the shipment record for an
 // order (company, tracking, costs, dates, carrier status). Auth + CSRF enforced.
 import { z } from "zod";
-import type { Env } from "../../../../_lib/env";
+import type { AppFunction } from "../../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../../_lib/env";
 import { getPrisma } from "../../../../_lib/db";
 import { json, log } from "../../../../_lib/http";
@@ -23,7 +23,7 @@ const bodySchema = z.object({
   status: z.string().trim().max(80).nullable().optional(),
 });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "PUT" && ctx.request.method !== "PATCH") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "PUT, PATCH" });
   }
@@ -33,8 +33,8 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
 const toDate = (v: string | null | undefined): Date | null | undefined =>
   v === undefined ? undefined : v === null || v === "" ? null : new Date(v);
 
-const upsertShipment: PagesFunction<Env> = async ({ request, env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const upsertShipment: AppFunction = async ({ request, env, params, data }) => {
+  const reqId = data.reqId;
   const orderId = String(params.id ?? "");
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

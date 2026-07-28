@@ -1,0 +1,42 @@
+{
+  // Type-check configuration for the Cloudflare Pages Functions backend.
+  //
+  // Until now this directory had NO tsconfig: wrangler bundles it with esbuild,
+  // which strips types without checking them. Every type annotation here was
+  // effectively unverified. This config makes `tsc --noEmit` a real gate.
+  //
+  // It is check-only (`noEmit`) — wrangler remains the sole bundler, so adding
+  // this cannot change build output or runtime behaviour.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true,
+
+    // The Workers runtime globals (Request/Response/crypto/PagesFunction/...).
+    // `lib` deliberately excludes "DOM": the Workers runtime is not a browser,
+    // and pulling in DOM would mask genuinely missing globals.
+    "types": ["@cloudflare/workers-types"],
+
+    // shared/catalog.js is plain JS shared with the landing page and Node
+    // scripts; allow it to be imported and inferred, but do not type-check it
+    // here (it is not owned by the backend).
+    "allowJs": true,
+    "checkJs": false,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts", "../shared/**/*.js"],
+  "exclude": ["node_modules"]
+}

@@ -1,10 +1,10 @@
 // Runs for every /api/* request: request logging, a request id, security
 // headers, and a global error boundary so no unhandled error leaks a stack
 // trace or an HTML error page to the client.
-import type { Env } from "../_lib/env";
+import type { AppFunction } from "../_lib/context";
 import { json, log } from "../_lib/http";
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   const start = Date.now();
   const reqId = crypto.randomUUID();
   const url = new URL(ctx.request.url);

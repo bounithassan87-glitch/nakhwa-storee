@@ -5,7 +5,7 @@
 // real admin authentication/authorization before being deployed. See
 // admin/ORDERS-MODULE.md §Security. It is currently used only in local dev.
 import type { Prisma } from "@prisma/client";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -14,15 +14,15 @@ import { ORDER_STATUSES } from "../_lib/orderWorkflow";
 const STATUSES = ORDER_STATUSES;
 const SORT_FIELDS = ["createdAt", "totalPrice", "status"] as const;
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "GET") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET" });
   }
   return listOrders(ctx);
 };
 
-const listOrders: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const listOrders: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
 

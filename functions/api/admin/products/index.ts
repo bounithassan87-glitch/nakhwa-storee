@@ -2,7 +2,7 @@
 // pagination and derived order stats. Read-only. Auth-guarded by the admin
 // _middleware. Products are few, so stats are computed in-endpoint.
 import type { Prisma } from "@prisma/client";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -11,15 +11,15 @@ import { statsFromItems } from "../_lib/productStats";
 const STATUSES = ["ACTIVE", "DRAFT", "ARCHIVED"] as const;
 const SORT_FIELDS = ["createdAt", "name", "basePrice", "ordersCount", "revenue", "status"] as const;
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "GET") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET" });
   }
   return listProducts(ctx);
 };
 
-const listProducts: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const listProducts: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
 

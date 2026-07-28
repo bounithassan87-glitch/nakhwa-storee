@@ -2,7 +2,7 @@
 // issue a session + CSRF cookie. On first ever login the env owner is seeded
 // into the Admin table, so the original single-admin credentials keep working
 // while enabling real multi-admin management.
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -12,11 +12,11 @@ import { hit, reset } from "../_lib/ratelimit";
 
 const SESSION_TTL = 60 * 60 * 8; // 8 hours
 
-export const onRequest: PagesFunction<Env> = async ({ request, env, data }) => {
+export const onRequest: AppFunction = async ({ request, env, data }) => {
   if (request.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "POST" });
   }
-  const reqId = (data as { reqId?: string }).reqId;
+  const reqId = data.reqId;
   const ip = clientIp(request) ?? "local";
 
   const rl = hit(ip);

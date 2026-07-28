@@ -1,7 +1,7 @@
 // POST /api/admin/campaigns/:id/events — add an internal note to the timeline
 // (requires manage_marketing). Auth + CSRF + audit via the admin _middleware.
 import { z } from "zod";
-import type { Env } from "../../../../_lib/env";
+import type { AppFunction } from "../../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../../_lib/env";
 import { getPrisma } from "../../../../_lib/db";
 import { json, log } from "../../../../_lib/http";
@@ -9,16 +9,16 @@ import { roleCan } from "../../_lib/permissions";
 
 const bodySchema = z.object({ note: z.string().trim().min(1).max(500) });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "POST" });
   }
   return addNote(ctx);
 };
 
-const addNote: PagesFunction<Env> = async ({ request, env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const admin = (data as { admin?: { email?: string; role?: string } }).admin;
+const addNote: AppFunction = async ({ request, env, params, data }) => {
+  const reqId = data.reqId;
+  const admin = data.admin;
   if (!roleCan(admin?.role, "manage_marketing")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

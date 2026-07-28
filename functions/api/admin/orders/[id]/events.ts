@@ -1,23 +1,23 @@
 // POST /api/admin/orders/:id/events — add an internal note to the timeline
 // (records the current status). Auth + CSRF enforced.
 import { z } from "zod";
-import type { Env } from "../../../../_lib/env";
+import type { AppFunction } from "../../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../../_lib/env";
 import { getPrisma } from "../../../../_lib/db";
 import { json, log } from "../../../../_lib/http";
 
 const bodySchema = z.object({ note: z.string().trim().min(1).max(500) });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "POST" });
   }
   return addNote(ctx);
 };
 
-const addNote: PagesFunction<Env> = async ({ request, env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const actor = (data as { admin?: { email?: string } }).admin?.email ?? null;
+const addNote: AppFunction = async ({ request, env, params, data }) => {
+  const reqId = data.reqId;
+  const actor = data.admin?.email ?? null;
   const orderId = String(params.id ?? "");
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

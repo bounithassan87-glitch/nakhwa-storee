@@ -1,7 +1,7 @@
 // POST /api/admin/admins/:id/password — set an administrator's password
 // (requires manage_admins). Auth + CSRF enforced.
 import { z } from "zod";
-import type { Env } from "../../../../_lib/env";
+import type { AppFunction } from "../../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../../_lib/db";
 import { json, log } from "../../../../_lib/http";
@@ -10,16 +10,16 @@ import { hashPassword } from "../../_lib/auth";
 
 const bodySchema = z.object({ password: z.string().min(8).max(200) });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "POST" });
   }
   return setPassword(ctx);
 };
 
-const setPassword: PagesFunction<Env> = async ({ request, env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const role = (data as { admin?: { role?: string } }).admin?.role;
+const setPassword: AppFunction = async ({ request, env, params, data }) => {
+  const reqId = data.reqId;
+  const role = data.admin?.role;
   if (!roleCan(role, "manage_admins")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

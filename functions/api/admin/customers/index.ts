@@ -2,7 +2,7 @@
 // Read-only (no schema change). Stats/tags are computed from order history.
 // Auth-guarded by functions/api/admin/_middleware.ts.
 import type { Prisma } from "@prisma/client";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -11,15 +11,15 @@ import { statsFromOrders, computeTag, type CustomerTag } from "../_lib/customers
 const SORT_FIELDS = ["lastOrder", "totalRevenue", "totalOrders", "name", "createdAt"] as const;
 const TAGS = ["NEW", "RETURNING", "VIP", "HIGH_RISK"] as const;
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "GET") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET" });
   }
   return listCustomers(ctx);
 };
 
-const listCustomers: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const listCustomers: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
 

@@ -3,7 +3,7 @@
 // After a successful mutation, an audit-log row is recorded here (one place),
 // covering product/order/shipping/settings/admin changes without touching each
 // endpoint.
-import type { Env } from "../../_lib/env";
+import type { AppFunction } from "../../_lib/context";
 import { json } from "../../_lib/http";
 import { resolveDatabaseUrl } from "../../_lib/env";
 import { getPrisma } from "../../_lib/db";
@@ -12,7 +12,7 @@ import { writeAudit, entityFromPath, clientIp } from "./_lib/audit";
 
 const MUTATING = new Set(["POST", "PATCH", "PUT", "DELETE"]);
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   const url = new URL(ctx.request.url);
 
   // The auth endpoints manage their own access (login is public, etc.).

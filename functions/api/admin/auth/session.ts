@@ -1,12 +1,12 @@
 // GET /api/admin/auth/session — return the current admin for a valid cookie,
 // enriched with the DB profile (name, avatar, last login).
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json } from "../../../_lib/http";
 import { parseCookies, verifySession, SESSION_COOKIE } from "../_lib/auth";
 
-export const onRequest: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequest: AppFunction = async ({ request, env }) => {
   if (request.method !== "GET") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET" });
   }

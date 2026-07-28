@@ -10,7 +10,7 @@
 //     SELECTED range.
 // "Revenue" everywhere excludes CANCELLED orders (booked, non-cancelled value).
 // Day boundaries are UTC (see Future extension points in the docs).
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -51,15 +51,15 @@ function resolveRange(key: string, fromStr: string | null, toStr: string | null)
   }
 }
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "GET") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET" });
   }
   return analytics(ctx);
 };
 
-const analytics: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const analytics: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
 

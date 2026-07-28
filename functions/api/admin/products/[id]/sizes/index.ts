@@ -2,7 +2,7 @@
 // PATCH /api/admin/products/:id/sizes  — reorder sizes { ids: [...] }.
 // Auth + CSRF enforced by the admin _middleware.
 import { z } from "zod";
-import type { Env } from "../../../../_lib/env";
+import type { AppFunction } from "../../../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../../../_lib/db";
 import { json, log } from "../../../../../_lib/http";
@@ -10,14 +10,14 @@ import { json, log } from "../../../../../_lib/http";
 const addSchema = z.object({ label: z.string().trim().min(1).max(30) });
 const reorderSchema = z.object({ ids: z.array(z.string()).min(1) });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "POST") return addSize(ctx);
   if (ctx.request.method === "PATCH") return reorderSizes(ctx);
   return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "POST, PATCH" });
 };
 
-const addSize: PagesFunction<Env> = async ({ params, request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const addSize: AppFunction = async ({ params, request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   const productId = String(params.id ?? "");
@@ -51,8 +51,8 @@ const addSize: PagesFunction<Env> = async ({ params, request, env, data }) => {
   }
 };
 
-const reorderSizes: PagesFunction<Env> = async ({ params, request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const reorderSizes: AppFunction = async ({ params, request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   const productId = String(params.id ?? "");

@@ -1,7 +1,7 @@
 // POST /api/admin/profile/password — change the signed-in admin's own password
 // (verifies the current password). Auth + CSRF enforced.
 import { z } from "zod";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -12,16 +12,16 @@ const bodySchema = z.object({
   newPassword: z.string().min(8).max(200),
 });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "POST") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "POST" });
   }
   return changePassword(ctx);
 };
 
-const changePassword: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const email = (data as { admin?: { email?: string } }).admin?.email;
+const changePassword: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
+  const email = data.admin?.email;
   if (!email) return json({ ok: false, error: "unauthenticated" }, 401);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

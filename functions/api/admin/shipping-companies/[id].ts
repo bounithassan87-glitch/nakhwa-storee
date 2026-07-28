@@ -2,7 +2,7 @@
 // DELETE /api/admin/shipping-companies/:id — delete.
 // Requires manage_shipping_settings. Auth + CSRF enforced.
 import { z } from "zod";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -16,15 +16,15 @@ const patchSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "PATCH") return edit(ctx);
   if (ctx.request.method === "DELETE") return remove(ctx);
   return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "PATCH, DELETE" });
 };
 
-const edit: PagesFunction<Env> = async ({ request, env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const role = (data as { admin?: { role?: string } }).admin?.role;
+const edit: AppFunction = async ({ request, env, params, data }) => {
+  const reqId = data.reqId;
+  const role = data.admin?.role;
   if (!roleCan(role, "manage_shipping_settings")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
@@ -51,9 +51,9 @@ const edit: PagesFunction<Env> = async ({ request, env, params, data }) => {
   }
 };
 
-const remove: PagesFunction<Env> = async ({ env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const role = (data as { admin?: { role?: string } }).admin?.role;
+const remove: AppFunction = async ({ env, params, data }) => {
+  const reqId = data.reqId;
+  const role = data.admin?.role;
   if (!roleCan(role, "manage_shipping_settings")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

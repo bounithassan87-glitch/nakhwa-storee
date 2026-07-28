@@ -3,7 +3,7 @@
 //   referenced by orders, which snapshot colour as text).
 // Auth + CSRF enforced by the admin _middleware.
 import { z } from "zod";
-import type { Env } from "../../../../_lib/env";
+import type { AppFunction } from "../../../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../../../_lib/db";
 import { json, log } from "../../../../../_lib/http";
@@ -15,14 +15,14 @@ const patchSchema = z.object({
   position: z.number().int().min(0).optional(),
 });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "PATCH") return editColor(ctx);
   if (ctx.request.method === "DELETE") return deleteColor(ctx);
   return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "PATCH, DELETE" });
 };
 
-const editColor: PagesFunction<Env> = async ({ params, request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const editColor: AppFunction = async ({ params, request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   const productId = String(params.id ?? "");
@@ -50,8 +50,8 @@ const editColor: PagesFunction<Env> = async ({ params, request, env, data }) => 
   }
 };
 
-const deleteColor: PagesFunction<Env> = async ({ params, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const deleteColor: AppFunction = async ({ params, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   const productId = String(params.id ?? "");

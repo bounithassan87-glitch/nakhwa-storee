@@ -4,7 +4,7 @@
 // Auth + CSRF + audit via the admin _middleware.
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -34,14 +34,14 @@ const createSchema = z.object({
 const toDate = (v: string | null | undefined) => (v ? new Date(v) : null);
 const dayKey = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString().slice(0, 10);
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "GET") return list(ctx);
   if (ctx.request.method === "POST") return create(ctx);
   return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET, POST" });
 };
 
-const list: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const list: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
 
@@ -81,9 +81,16 @@ const list: PagesFunction<Env> = async ({ request, env, data }) => {
       : [];
     const byCampaign = new Map<string, typeof orderRows>();
     for (const r of orderRows) {
-      const arr = byCampaign.get(r.campaignId!) ?? [];
+      // `campaignId` is non-null by construction (the query filters on
+      // `campaignId: { in: ids }`), but Prisma types it from the nullable
+      // column. Narrowing instead of asserting keeps this fail-closed: a null
+      // key could never match the `byCampaign.get(c.id)` lookup below anyway,
+      // so the outcome is unchanged.
+      const campaignId = r.campaignId;
+      if (campaignId === null) continue;
+      const arr = byCampaign.get(campaignId) ?? [];
       arr.push(r);
-      byCampaign.set(r.campaignId!, arr);
+      byCampaign.set(campaignId, arr);
     }
 
     // Sorted in place and sliced below — never reassigned.
@@ -212,9 +219,9 @@ const list: PagesFunction<Env> = async ({ request, env, data }) => {
   }
 };
 
-const create: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const admin = (data as { admin?: { email?: string; role?: string } }).admin;
+const create: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
+  const admin = data.admin;
   if (!roleCan(admin?.role, "manage_marketing")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

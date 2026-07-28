@@ -5,7 +5,7 @@
 // DELETE /api/admin/campaigns/:id — delete (orders keep history via SetNull).
 // Auth + CSRF + audit via the admin _middleware.
 import { z } from "zod";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -41,7 +41,7 @@ const STATUS_EVENT: Record<string, string> = {
 
 const toDate = (v: string | null | undefined) => (v === undefined ? undefined : v ? new Date(v) : null);
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "GET") return detail(ctx);
   if (ctx.request.method === "PATCH") return update(ctx);
   if (ctx.request.method === "DELETE") return remove(ctx);
@@ -100,8 +100,8 @@ function serialize(c: {
   };
 }
 
-const detail: PagesFunction<Env> = async ({ env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const detail: AppFunction = async ({ env, params, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   try {
@@ -114,9 +114,9 @@ const detail: PagesFunction<Env> = async ({ env, params, data }) => {
   }
 };
 
-const update: PagesFunction<Env> = async ({ request, env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const admin = (data as { admin?: { email?: string; role?: string } }).admin;
+const update: AppFunction = async ({ request, env, params, data }) => {
+  const reqId = data.reqId;
+  const admin = data.admin;
   if (!roleCan(admin?.role, "manage_marketing")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
@@ -161,9 +161,9 @@ const update: PagesFunction<Env> = async ({ request, env, params, data }) => {
   }
 };
 
-const remove: PagesFunction<Env> = async ({ env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const admin = (data as { admin?: { role?: string } }).admin;
+const remove: AppFunction = async ({ env, params, data }) => {
+  const reqId = data.reqId;
+  const admin = data.admin;
   if (!roleCan(admin?.role, "manage_marketing")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

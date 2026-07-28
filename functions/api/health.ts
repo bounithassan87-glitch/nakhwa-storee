@@ -1,11 +1,11 @@
 // GET /api/health — lightweight readiness probe (checks DB connectivity).
-import type { Env } from "../_lib/env";
+import type { AppFunction } from "../_lib/context";
 import { resolveDatabaseUrl } from "../_lib/env";
 import { json, log } from "../_lib/http";
 import { getPrisma } from "../_lib/db";
 
-export const onRequestGet: PagesFunction<Env> = async ({ env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+export const onRequestGet: AppFunction = async ({ env, data }) => {
+  const reqId = data.reqId;
   const result = {
     ok: true,
     service: "nakhwa-store-api",

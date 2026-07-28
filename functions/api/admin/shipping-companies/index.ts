@@ -1,7 +1,7 @@
 // GET  /api/admin/shipping-companies — list (any admin).
 // POST /api/admin/shipping-companies — add (requires manage_shipping_settings).
 import { z } from "zod";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -14,14 +14,14 @@ const addSchema = z.object({
   notes: z.string().trim().max(500).nullable().optional(),
 });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "GET") return list(ctx);
   if (ctx.request.method === "POST") return add(ctx);
   return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET, POST" });
 };
 
-const list: PagesFunction<Env> = async ({ env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const list: AppFunction = async ({ env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   try {
@@ -33,9 +33,9 @@ const list: PagesFunction<Env> = async ({ env, data }) => {
   }
 };
 
-const add: PagesFunction<Env> = async ({ request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const role = (data as { admin?: { role?: string } }).admin?.role;
+const add: AppFunction = async ({ request, env, data }) => {
+  const reqId = data.reqId;
+  const role = data.admin?.role;
   if (!roleCan(role, "manage_shipping_settings")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

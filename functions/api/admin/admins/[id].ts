@@ -1,7 +1,7 @@
 // PATCH /api/admin/admins/:id — edit name / role / isActive (requires
 // manage_admins). Guards against demoting or disabling the last active owner.
 import { z } from "zod";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -24,16 +24,16 @@ const publicFields = {
   createdAt: true,
 } as const;
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method !== "PATCH") {
     return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "PATCH" });
   }
   return edit(ctx);
 };
 
-const edit: PagesFunction<Env> = async ({ request, env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const role = (data as { admin?: { role?: string } }).admin?.role;
+const edit: AppFunction = async ({ request, env, params, data }) => {
+  const reqId = data.reqId;
+  const role = data.admin?.role;
   if (!roleCan(role, "manage_admins")) return json({ ok: false, error: "forbidden" }, 403);
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);

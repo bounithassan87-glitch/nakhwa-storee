@@ -3,7 +3,7 @@
 //   Writes an OrderEvent to the timeline; sets shipment.deliveredAt on DELIVERED.
 // Auth + CSRF enforced by the admin _middleware.
 import { z } from "zod";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -14,7 +14,7 @@ const bodySchema = z.object({
   note: z.string().trim().max(500).optional(),
 });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "GET") return getOrder(ctx);
   if (ctx.request.method === "PATCH") return transition(ctx);
   return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET, PATCH" });
@@ -59,8 +59,8 @@ async function loadDetail(prisma: ReturnType<typeof getPrisma>, id: string) {
   };
 }
 
-const getOrder: PagesFunction<Env> = async ({ env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const getOrder: AppFunction = async ({ env, params, data }) => {
+  const reqId = data.reqId;
   const id = String(params.id ?? "");
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
@@ -75,9 +75,9 @@ const getOrder: PagesFunction<Env> = async ({ env, params, data }) => {
   }
 };
 
-const transition: PagesFunction<Env> = async ({ request, env, params, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
-  const actor = (data as { admin?: { email?: string } }).admin?.email ?? null;
+const transition: AppFunction = async ({ request, env, params, data }) => {
+  const reqId = data.reqId;
+  const actor = data.admin?.email ?? null;
   const id = String(params.id ?? "");
   if (!id) return json({ ok: false, error: "missing_id" }, 400);
 

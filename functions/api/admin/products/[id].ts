@@ -4,7 +4,7 @@
 // DELETE /api/admin/products/:id — soft delete (status = ARCHIVED). Never hard.
 // Auth-guarded by the admin _middleware (PATCH/DELETE also require CSRF).
 import { z } from "zod";
-import type { Env } from "../../../_lib/env";
+import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
@@ -22,7 +22,7 @@ const patchSchema = z.object({
   status: z.enum(["ACTIVE", "DRAFT", "ARCHIVED"]).optional(),
 });
 
-export const onRequest: PagesFunction<Env> = async (ctx) => {
+export const onRequest: AppFunction = async (ctx) => {
   switch (ctx.request.method) {
     case "GET":
       return getProduct(ctx);
@@ -76,8 +76,8 @@ function serialize(full: NonNullable<Awaited<ReturnType<typeof loadFull>>>) {
   };
 }
 
-const getProduct: PagesFunction<Env> = async ({ params, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const getProduct: AppFunction = async ({ params, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   const id = String(params.id ?? "");
@@ -92,8 +92,8 @@ const getProduct: PagesFunction<Env> = async ({ params, env, data }) => {
   }
 };
 
-const updateProduct: PagesFunction<Env> = async ({ params, request, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const updateProduct: AppFunction = async ({ params, request, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   const id = String(params.id ?? "");
@@ -129,8 +129,8 @@ const updateProduct: PagesFunction<Env> = async ({ params, request, env, data })
   }
 };
 
-const archiveProduct: PagesFunction<Env> = async ({ params, env, data }) => {
-  const reqId = (data as { reqId?: string }).reqId;
+const archiveProduct: AppFunction = async ({ params, env, data }) => {
+  const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
   const id = String(params.id ?? "");
