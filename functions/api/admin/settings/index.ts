@@ -26,7 +26,24 @@ const ALLOWED_KEYS = new Set([
   "default_country",
   "default_language",
   "default_timezone",
+  // Catalog — JSON array of product ids flagged "featured" in the admin.
+  // `Product` has no `featured` column; this key is the storage for that flag
+  // so the feature ships without a schema change or migration. `settingToString`
+  // already JSON-encodes arrays, and the 2000-char cap below bounds the list —
+  // the client enforces a matching limit before saving (see
+  // admin/src/features/products/featured.ts).
+  "featured_product_ids",
 ]);
+
+/**
+ * Keys that are catalog data rather than store configuration.
+ *
+ * They live in this table only because `Product` has no column for them, so
+ * they are authorized as products (`manage_products`), not as settings
+ * (`manage_settings`) — writing one is editing the catalog. Anything not listed
+ * here keeps requiring `manage_settings`.
+ */
+const CATALOG_KEYS = new Set(["featured_product_ids"]);
 
 /**
  * Coerce an incoming setting value to the string this table stores.
@@ -71,7 +88,13 @@ const getSettings: AppFunction = async ({ env, data }) => {
 const patchSettings: AppFunction = async ({ request, env, data }) => {
   const reqId = data.reqId;
   const role = data.admin?.role;
-  if (!roleCan(role, "manage_settings")) return json({ ok: false, error: "forbidden" }, 403);
+  const canSettings = roleCan(role, "manage_settings");
+  const canCatalog = roleCan(role, "manage_products");
+  // Baseline gate, kept ahead of any work: an admin holding neither permission
+  // has no business on this endpoint, and without this a body containing no
+  // recognised keys would fall through the per-key checks below and return the
+  // full settings map to anyone authenticated.
+  if (!canSettings && !canCatalog) return json({ ok: false, error: "forbidden" }, 403);
 
   const dbUrl = resolveDatabaseUrl(env);
   if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
@@ -87,6 +110,15 @@ const patchSettings: AppFunction = async ({ request, env, data }) => {
   const entries = Object.entries(raw as Record<string, unknown>)
     .filter(([k]) => ALLOWED_KEYS.has(k))
     .map(([k, v]) => [k, settingToString(v).slice(0, 2000)] as [string, string]);
+
+  // Per-key authorization — a write is refused unless the caller holds the
+  // permission matching every key it touches.
+  if (entries.some(([k]) => !CATALOG_KEYS.has(k)) && !canSettings) {
+    return json({ ok: false, error: "forbidden" }, 403);
+  }
+  if (entries.some(([k]) => CATALOG_KEYS.has(k)) && !canCatalog) {
+    return json({ ok: false, error: "forbidden" }, 403);
+  }
 
   const prisma = getPrisma(dbUrl);
   try {

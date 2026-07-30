@@ -75,6 +75,13 @@ export interface ProductDetail {
 export type ProductSortField = "createdAt" | "name" | "basePrice" | "ordersCount" | "revenue" | "status";
 export type SortOrder = "asc" | "desc";
 
+/**
+ * Featured filter state. Empty string = no filter, matching the `status` and
+ * `category` filters. Applied client-side: the featured set lives in the
+ * settings table, not in the products query (see `./featured.ts`).
+ */
+export type FeaturedFilter = "" | "featured" | "not_featured";
+
 export interface ProductsParams {
   page: number;
   pageSize: number;
