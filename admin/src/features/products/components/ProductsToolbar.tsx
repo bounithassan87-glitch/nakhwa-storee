@@ -25,6 +25,7 @@ export function ProductsToolbar({
   onRefresh,
   refreshing,
   canCreate,
+  onCreate,
 }: {
   filters: ProductsFilters;
   /** Patch one or more filter fields; the page owns the merged state. */
@@ -34,6 +35,7 @@ export function ProductsToolbar({
   onRefresh: () => void;
   refreshing: boolean;
   canCreate: boolean;
+  onCreate: () => void;
 }) {
   const active = hasActiveFilters(filters);
 
@@ -132,18 +134,11 @@ export function ProductsToolbar({
             <span className="hidden sm:inline">تحديث</span>
           </Button>
 
-          {/* Creating a product needs POST /api/admin/products, which the API
-              does not expose yet (GET / PATCH / DELETE only). The control is
-              shown disabled rather than hidden so the gap is visible instead of
-              silently missing. */}
           <Button
             size="sm"
-            disabled
-            title={
-              canCreate
-                ? "إضافة منتج غير متاحة بعد — تتطلب واجهة إنشاء منتج في الخادم"
-                : "لا تملك صلاحية إدارة المنتجات"
-            }
+            onClick={onCreate}
+            disabled={!canCreate}
+            title={canCreate ? "إنشاء منتج جديد" : "لا تملك صلاحية إدارة المنتجات"}
           >
             <Plus className="h-4 w-4" /> إضافة منتج
           </Button>

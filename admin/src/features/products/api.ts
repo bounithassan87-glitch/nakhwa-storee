@@ -39,7 +39,42 @@ const base = (id: string) => `/api/admin/products/${encodeURIComponent(id)}`;
 export const updateProduct = (id: string, patch: ProductUpdate) =>
   apiPatch<{ ok: true; data: ProductDetail }>(base(id), patch);
 
+/** Fields accepted when creating a product. Prices are integer centimes. */
+export interface ProductCreate {
+  name: string;
+  slug?: string;
+  sku?: string | null;
+  category?: string | null;
+  description?: string | null;
+  basePrice: number;
+  offerPrice?: number | null;
+  compareAtPrice?: number | null;
+  status?: ProductStatus;
+}
+
+/** A newly created or duplicated product — enough to navigate to it. */
+export interface ProductCreated {
+  id: string;
+  slug: string;
+  name: string;
+  status: ProductStatus;
+}
+
+export const createProduct = (body: ProductCreate) =>
+  apiPost<{ ok: true; data: ProductCreated }>("/api/admin/products", body);
+
+export const duplicateProduct = (id: string) =>
+  apiPost<{ ok: true; data: ProductCreated }>(`${base(id)}/duplicate`);
+
+/** Soft delete: sets status to ARCHIVED and hides the product from the store. */
 export const archiveProduct = (id: string) => apiDelete<{ ok: true }>(base(id));
+
+/**
+ * Hard delete. The server refuses with `product_has_orders` (409) when any
+ * order references the product, so order history can never be destroyed.
+ */
+export const deleteProduct = (id: string) =>
+  apiDelete<{ ok: true }>(`${base(id)}?permanent=true`);
 
 // Colors
 export const addColor = (id: string, body: { name: string; swatch?: string | null }) =>

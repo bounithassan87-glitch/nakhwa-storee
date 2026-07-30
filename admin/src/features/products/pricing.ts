@@ -24,3 +24,24 @@ export function discountPercent(p: ProductListItem): number | null {
   if (was == null || was <= now) return null;
   return Math.round((1 - now / was) * 100);
 }
+
+/**
+ * Dirhams as typed into a form → the integer centimes the API stores.
+ *
+ * Returns `null` for blank or unparseable input so an optional price field can
+ * be left empty. Rounding happens here, at the single point where a decimal
+ * becomes an integer, so no fractional centime ever reaches the database.
+ */
+export function toCentimes(input: string): number | null {
+  const trimmed = input.trim();
+  if (trimmed === "") return null;
+  const value = Number(trimmed.replace(",", "."));
+  if (!Number.isFinite(value) || value < 0) return null;
+  return Math.round(value * 100);
+}
+
+/** Integer centimes → the dirham string a form field shows. */
+export function fromCentimes(centimes: number | null | undefined): string {
+  if (centimes == null) return "";
+  return String(centimes / 100);
+}

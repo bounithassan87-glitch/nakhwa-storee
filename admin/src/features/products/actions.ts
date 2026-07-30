@@ -2,7 +2,7 @@
  * Builds the row action menu. Shared by the desktop table and the mobile cards
  * so both offer exactly the same operations in the same order.
  */
-import { Pencil, Copy, Eye, Archive } from "lucide-react";
+import { Pencil, Copy, Eye, Archive, Trash2 } from "lucide-react";
 import type { ActionItem } from "@/components/ui/ActionMenu";
 import type { ProductListItem } from "./types";
 
@@ -17,20 +17,30 @@ export function publicProductUrl(): string {
   return `${window.location.origin}/`;
 }
 
+const NO_PERMISSION = "لا تملك صلاحية إدارة المنتجات";
+
 export function buildProductActions({
   product,
   canManage,
   onEdit,
   onPreview,
+  onDuplicate,
   onArchive,
+  onDelete,
 }: {
   product: ProductListItem;
   canManage: boolean;
   onEdit: () => void;
   onPreview: () => void;
+  onDuplicate: () => void;
   onArchive: () => void;
+  onDelete: () => void;
 }): ActionItem[] {
   const archived = product.status === "ARCHIVED";
+  // A product any order references can only be archived — the server refuses a
+  // hard delete to protect order history. Surfacing it here means the admin
+  // sees why before clicking rather than after.
+  const ordered = product.ordersCount > 0;
 
   return [
     {
@@ -46,25 +56,28 @@ export function buildProductActions({
     {
       label: "نسخ",
       icon: Copy,
-      onSelect: () => {
-        /* unreachable while disabled — see `title` */
-      },
-      disabled: true,
-      // Duplicating needs a create endpoint; the products API is read + update
-      // only (GET / PATCH / DELETE). Enabled once POST /api/admin/products lands.
-      title: "النسخ غير متاح بعد — يتطلب واجهة إنشاء منتج",
+      onSelect: onDuplicate,
+      disabled: !canManage,
+      title: canManage ? "إنشاء نسخة كمسودة" : NO_PERMISSION,
     },
     {
       label: archived ? "مؤرشف بالفعل" : "أرشفة",
       icon: Archive,
       onSelect: onArchive,
-      tone: "danger",
       disabled: !canManage || archived,
+      title: !canManage ? NO_PERMISSION : archived ? "هذا المنتج مؤرشف بالفعل" : undefined,
+    },
+    {
+      label: "حذف نهائي",
+      icon: Trash2,
+      onSelect: onDelete,
+      tone: "danger",
+      disabled: !canManage || ordered,
       title: !canManage
-        ? "لا تملك صلاحية إدارة المنتجات"
-        : archived
-          ? "هذا المنتج مؤرشف بالفعل"
-          : undefined,
+        ? NO_PERMISSION
+        : ordered
+          ? `مرتبط بـ ${product.ordersCount} طلب — الأرشفة فقط`
+          : "حذف لا رجعة فيه",
     },
   ];
 }

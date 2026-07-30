@@ -21,7 +21,9 @@ export function ProductsTable({
   onOpen,
   onToggleFeatured,
   onPreview,
+  onDuplicate,
   onArchive,
+  onDelete,
 }: {
   products: ProductListItem[];
   featured: Set<string>;
@@ -31,7 +33,9 @@ export function ProductsTable({
   onOpen: (p: ProductListItem) => void;
   onToggleFeatured: (id: string) => void;
   onPreview: (p: ProductListItem) => void;
+  onDuplicate: (p: ProductListItem) => void;
   onArchive: (p: ProductListItem) => void;
+  onDelete: (p: ProductListItem) => void;
 }) {
   return (
     <Card className="hidden overflow-hidden lg:block">
@@ -122,7 +126,9 @@ export function ProductsTable({
                       canManage: canManageProducts,
                       onEdit: () => onOpen(p),
                       onPreview: () => onPreview(p),
+                      onDuplicate: () => onDuplicate(p),
                       onArchive: () => onArchive(p),
+                      onDelete: () => onDelete(p),
                     })}
                   />
                 </td>

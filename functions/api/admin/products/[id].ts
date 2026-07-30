@@ -1,8 +1,14 @@
-// GET   /api/admin/products/:id  — full product (info, pricing, colors, sizes,
-//                                   media) + derived statistics.
-// PATCH /api/admin/products/:id  — update basic info / pricing / status.
-// DELETE /api/admin/products/:id — soft delete (status = ARCHIVED). Never hard.
-// Auth-guarded by the admin _middleware (PATCH/DELETE also require CSRF).
+// GET    /api/admin/products/:id — full product (info, pricing, colors, sizes,
+//                                  media) + derived statistics.
+// PATCH  /api/admin/products/:id — update basic info / pricing / status.
+// DELETE /api/admin/products/:id — archive (status = ARCHIVED); the default and
+//                                  the safe choice, since order history keeps
+//                                  pointing at the product.
+// DELETE /api/admin/products/:id?permanent=true — hard delete. Only possible
+//                                  for a product no order has ever referenced;
+//                                  see `removeProduct`.
+// Auth-guarded by the admin _middleware (PATCH/DELETE also require CSRF) and by
+// products/_middleware.ts for `manage_products`.
 import { z } from "zod";
 import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
@@ -29,7 +35,7 @@ export const onRequest: AppFunction = async (ctx) => {
     case "PATCH":
       return updateProduct(ctx);
     case "DELETE":
-      return archiveProduct(ctx);
+      return removeProduct(ctx);
     default:
       return json({ ok: false, error: "method_not_allowed" }, 405, { allow: "GET, PATCH, DELETE" });
   }
@@ -129,6 +135,20 @@ const updateProduct: AppFunction = async ({ params, request, env, data }) => {
   }
 };
 
+/**
+ * DELETE handler for both dispositions.
+ *
+ * Archiving is the default because it is always safe. A hard delete is offered
+ * only for a product no order has ever referenced: `OrderItem.product` is a
+ * required relation with no `onDelete` rule, so Postgres restricts the delete,
+ * and forcing it would mean destroying order history. Colours, sizes and media
+ * do cascade, so removing a never-ordered product leaves nothing behind.
+ */
+const removeProduct: AppFunction = async (ctx) => {
+  const permanent = new URL(ctx.request.url).searchParams.get("permanent") === "true";
+  return permanent ? hardDeleteProduct(ctx) : archiveProduct(ctx);
+};
+
 const archiveProduct: AppFunction = async ({ params, env, data }) => {
   const reqId = data.reqId;
   const dbUrl = resolveDatabaseUrl(env);
@@ -136,12 +156,39 @@ const archiveProduct: AppFunction = async ({ params, env, data }) => {
   const id = String(params.id ?? "");
   const prisma = getPrisma(dbUrl);
   try {
-    // Soft delete only — archive + deactivate for the public flow.
+    // Soft delete — archive + deactivate for the public flow.
     await prisma.product.update({ where: { id }, data: { status: "ARCHIVED", isActive: false } });
     return json({ ok: true, data: { id, status: "ARCHIVED" } });
   } catch (err) {
     if (prismaCode(err) === "P2025") return json({ ok: false, error: "not_found" }, 404);
     log("error", { reqId, msg: "product_archive_failed", error: err instanceof Error ? err.message : String(err) });
+    return json({ ok: false, error: "server_error" }, 500);
+  }
+};
+
+const hardDeleteProduct: AppFunction = async ({ params, env, data }) => {
+  const reqId = data.reqId;
+  const dbUrl = resolveDatabaseUrl(env);
+  if (!dbUrl) return json({ ok: false, error: "database_not_configured" }, 503);
+  const id = String(params.id ?? "");
+  const prisma = getPrisma(dbUrl);
+  try {
+    // Checked up front so the caller gets an explanation and a count rather than
+    // a bare constraint violation. The catch below still handles the race where
+    // an order lands between this count and the delete.
+    const ordered = await prisma.orderItem.count({ where: { productId: id } });
+    if (ordered > 0) {
+      return json({ ok: false, error: "product_has_orders", ordersCount: ordered }, 409);
+    }
+
+    await prisma.product.delete({ where: { id } });
+    log("info", { reqId, msg: "product_deleted", productId: id });
+    return json({ ok: true, data: { id, deleted: true } });
+  } catch (err) {
+    const code = prismaCode(err);
+    if (code === "P2025") return json({ ok: false, error: "not_found" }, 404);
+    if (code === "P2003") return json({ ok: false, error: "product_has_orders" }, 409);
+    log("error", { reqId, msg: "product_delete_failed", error: err instanceof Error ? err.message : String(err) });
     return json({ ok: false, error: "server_error" }, 500);
   }
 };

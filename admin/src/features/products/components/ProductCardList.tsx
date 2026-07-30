@@ -19,7 +19,9 @@ export function ProductCardList({
   onOpen,
   onToggleFeatured,
   onPreview,
+  onDuplicate,
   onArchive,
+  onDelete,
 }: {
   products: ProductListItem[];
   featured: Set<string>;
@@ -29,7 +31,9 @@ export function ProductCardList({
   onOpen: (p: ProductListItem) => void;
   onToggleFeatured: (id: string) => void;
   onPreview: (p: ProductListItem) => void;
+  onDuplicate: (p: ProductListItem) => void;
   onArchive: (p: ProductListItem) => void;
+  onDelete: (p: ProductListItem) => void;
 }) {
   return (
     <ul className="grid gap-3 lg:hidden">
@@ -68,7 +72,9 @@ export function ProductCardList({
                     canManage: canManageProducts,
                     onEdit: () => onOpen(p),
                     onPreview: () => onPreview(p),
+                    onDuplicate: () => onDuplicate(p),
                     onArchive: () => onArchive(p),
+                    onDelete: () => onDelete(p),
                   })}
                 />
               </div>
