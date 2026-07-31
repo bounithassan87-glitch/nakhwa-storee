@@ -746,15 +746,17 @@ ul{ margin:0; padding:0; list-style:none; }
 .order-success h3{ font-size:1.2rem; margin-bottom:.4rem; }
 .order-success p{ color:var(--ink-soft); margin-bottom:1.2rem; }
 /* The order reference the customer can quote when contacting us. */
-.order-number{
-  display:inline-block;
+.order-ref{
   margin:0 auto 1.2rem;
-  padding:.5rem 1.1rem;
-  border-radius:999px;
+  padding:.9rem 1.1rem;
+  border-radius:var(--radius-md);
   background:var(--primary-soft);
-  color:var(--primary-dark);
-  font-weight:900; letter-spacing:.5px;
-  direction:ltr;
+  display:flex; flex-direction:column; align-items:center; gap:.25rem;
+}
+.order-ref-label{ font-size:.8rem; font-weight:700; color:var(--ink-soft); }
+.order-ref-value{
+  font-size:1.15rem; font-weight:900; letter-spacing:.6px;
+  color:var(--primary-dark); direction:ltr;
 }
 /* Secondary, deliberately quieter than the checkout button: contacting us is
    optional now that the order is already recorded. */

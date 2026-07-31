@@ -18,11 +18,15 @@
 /assets/video/*
   Cache-Control: public, max-age=31536000, immutable
 
+# These two are served from unhashed URLs, so they must never be immutable:
+# a returning browser would keep running last year's checkout. The ?v= token
+# in index.html busts the cache on release; this header is the safety net if
+# someone forgets to bump it.
 /style.css
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /script.js
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=0, must-revalidate
 
 /index.html
   Cache-Control: public, max-age=0, must-revalidate

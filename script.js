@@ -310,7 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = document.getElementById('order-submit');
     const submitLabel = document.getElementById('order-submit-label');
     const errorBox = document.getElementById('order-error');
-    const orderNumberEl = document.getElementById('order-number');
+    const orderRef = document.getElementById('order-number');
+    const orderRefValue = document.getElementById('order-number-value');
     const piece2 = document.getElementById('piece-2');
     const piece1Title = document.getElementById('piece-1-title');
     const sumQty = document.getElementById('sum-qty');
@@ -499,9 +500,13 @@ document.addEventListener('DOMContentLoaded', () => {
       setBusy(false);
 
       if (result.orderNumber) {
-        orderNumberEl.textContent = result.orderNumber;
-        orderNumberEl.hidden = false;
+        orderRefValue.textContent = result.orderNumber;
+        orderRef.hidden = false;
       }
+
+      // Only sets the link's target. Nothing here navigates: no window.open,
+      // no location assignment, no programmatic click. The customer decides
+      // whether to contact us, and the order is already recorded either way.
       waContact.href =
         `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(buildMessage(result.orderNumber))}`;
 
