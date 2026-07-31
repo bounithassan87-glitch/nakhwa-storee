@@ -68,7 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     vid.addEventListener('loadeddata', () => card.classList.add('loaded'));
     vid.addEventListener('canplay', () => card.classList.add('loaded'));
-    vid.addEventListener('playing', () => card.classList.add('playing','loaded'));
+    vid.addEventListener('playing', () => {
+      card.classList.add('playing', 'loaded');
+      // The element autoplays muted, and CSS hides the big play button once
+      // `.playing` is set — without this the sound toggle would stay hidden and
+      // there would be no way left to turn audio on.
+      soundBtn.hidden = false;
+      updateSoundBtn();
+    });
     vid.addEventListener('pause', () => card.classList.remove('playing'));
 
     function updateSoundBtn(){
@@ -87,21 +94,15 @@ document.addEventListener('DOMContentLoaded', () => {
       vid.play().catch(() => {});
     }
 
-    // Try to autoplay WITH sound; if the browser blocks it, fall back to
-    // muted autoplay and surface a clear "play with sound" button + controls.
+    // Resume muted playback when the card scrolls back into view.
+    //
+    // The element carries `autoplay muted`, so the first play needs no help.
+    // This used to attempt unmuted playback first and fall back on rejection,
+    // which no browser permits without a gesture — every load paid for a failed
+    // play() and a visible stall before landing on muted anyway. Sound is now
+    // unlocked only by the play or sound button, both of which are real taps.
     function tryAutoplay(){
-      vid.muted = false;
-      const p = vid.play();
-      if (p && typeof p.then === 'function') {
-        p.then(() => { soundOn = true; card.classList.remove('needs-tap'); soundBtn.hidden = false; updateSoundBtn(); })
-         .catch(() => {
-           // Blocked with sound -> play muted so it's visibly running, prompt for tap
-           vid.muted = true;
-           card.classList.add('needs-tap');
-           vid.setAttribute('controls', '');
-           vid.play().catch(() => {});
-         });
-      }
+      vid.play().catch(() => {});
     }
 
     // Big play button = one tap to start WITH music

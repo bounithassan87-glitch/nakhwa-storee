@@ -26,12 +26,12 @@ message (product, quantity, per-piece size/color, total) and sends it to
 ├── style.css
 ├── script.js
 ├── DSC*.jpg / png.png    # source product photos + logo
-├── video-web.mp4         # optimized product video (1080p, with audio)
-├── video-poster.jpg
+├── 2026.mp4              # hero video, web rendition (1080x1920, with audio)
+├── 2026-poster.jpg       # poster frame taken from 2026.mp4
 └── dist/                 # production build (minified + optimized) — deploy this
     ├── index.html · style.css · script.js
     ├── assets/img/ (WebP + JPG + thumbnails + favicons)
-    ├── assets/video/video-web.mp4
+    ├── assets/video/2026.mp4
     ├── robots.txt · sitemap.xml · site.webmanifest · 404.html
     └── vercel.json · netlify.toml · _headers · _redirects
 ```
@@ -55,9 +55,28 @@ Before going live, replace `REPLACE-WITH-YOUR-DOMAIN` in `dist/robots.txt` and
 
 ## Note
 
-The original 4K master video `0722.mp4` (~149 MB) is **git-ignored** because it
-exceeds GitHub's 100 MB file limit. The committed `video-web.mp4` (~41 MB, 1080p,
-with audio) is what the site uses.
+4K masters are **git-ignored** — they exceed GitHub's 100 MB file limit:
+`2026-master.mp4` (155 MB, 2160×3840) for the current hero video and
+`0722.mp4` (149 MB) for the previous one. What the site serves is the
+committed web rendition `2026.mp4` (16.7 MB, 1080×1920, 3.1 Mbps, with audio).
+
+Regenerate it from a master with:
+
+```bash
+ffmpeg -i 2026-master.mp4 -vf "scale=1080:1920:flags=lanczos" \
+  -c:v libx264 -profile:v high -level 4.0 -preset slower -crf 30 \
+  -pix_fmt yuv420p -g 60 -maxrate 3000k -bufsize 6000k \
+  -c:a aac -b:a 96k -ac 2 -movflags +faststart 2026.mp4
+```
+
+`-movflags +faststart` is required: without it the MP4 index sits at the end of
+the file and the browser must download the whole thing before the first frame.
+The poster comes from the same source — `ffmpeg -ss 1.5 -i 2026-master.mp4
+-frames:v 1 -vf "scale=1080:1920" -q:v 4 2026-poster.jpg`.
+
+Give a replacement a **new filename**: `/assets/video/*` and `/assets/img/*` are
+served `immutable`, so reusing a name would keep the old file on every device
+that has already visited.
 
 ---
 

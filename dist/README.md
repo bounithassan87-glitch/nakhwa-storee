@@ -20,7 +20,7 @@ dist/
 ├── vercel.json           # Vercel config
 └── assets/
     ├── img/              # optimized JPG + WebP + thumbnails + favicons
-    └── video/            # video-web.mp4 (1080p, with audio)
+    └── video/            # 2026.mp4 (1080x1920, with audio)
 ```
 
 ## Deploy

@@ -1,7 +1,10 @@
 # === Large media (exceeds GitHub's 100 MB file limit) ===
-# Original 4K master video (~149 MB). The optimized web version
-# (video-web.mp4, ~41 MB, with audio) IS committed and used by the site.
+# 4K masters. The optimized web renditions ARE committed and are what the
+# site serves — see README for how they are produced.
+#   0722.mp4        → old hero master (149 MB)
+#   2026-master.mp4 → current hero master (155 MB, 2160x3840) → 2026.mp4
 0722.mp4
+2026-master.mp4
 
 # Build archives / artifacts
 dist.zip

@@ -32,7 +32,7 @@ risk-accepted by the release owner.
 | B6 | P1 | **Login rate-limit is in-memory per Worker isolate** (not shared across edge PoPs) — weak against distributed brute force. | **[operator]** Add a **Cloudflare WAF Rate-Limiting rule** on `/api/admin/auth/login` (and optionally move to KV/Durable Object later). |
 | B7 | P2 | The Function→Neon path **cannot be verified locally** (wrangler local mode can't reach Neon). | Verify only **post-deploy** via `/api/health` (see §4). |
 | B8 | P2 | Doc drift: `admin/SECURITY.md` says "no user table"; `functions/api/admin/orders/index.ts` has a stale `⚠️ AUTH … local dev only` comment. Harmless (auth is enforced by middleware). | Tidy in a docs pass (no runtime impact). |
-| B9 | P2 | Large committed media (`video-web.mp4` ≈ 22 MB). `0722.mp4` (149 MB) and `dist.zip` are correctly gitignored. | Acceptable; consider CDN/compression later. |
+| B9 | P2 | Large committed media (`2026.mp4` ≈ 17 MB). 4K masters (`2026-master.mp4`, `0722.mp4`) and `dist.zip` are correctly gitignored. | Acceptable; consider CDN/compression later. |
 
 ---
 
@@ -229,7 +229,7 @@ WhatsApp business operator. Keep this list current out-of-band.
 - **Code/config**: the Git repo (tagged milestones `v1.0`→`v1.9`) is the source of
   truth; `dist/` is committed. Secrets are **not** in Git — keep a sealed copy of
   the production secret values in the team password manager.
-- **Media**: originals (`0722.mp4`, images) live outside Git; keep a separate
+- **Media**: originals (`2026-master.mp4`, `0722.mp4`, images) live outside Git; keep a separate
   archived copy.
 
 ---
