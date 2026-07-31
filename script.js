@@ -304,7 +304,13 @@ document.addEventListener('DOMContentLoaded', () => {
   (function orderForm(){
     const form = document.getElementById('order-form');
     const success = document.getElementById('order-success');
-    const waFallback = document.getElementById('wa-fallback');
+    // WhatsApp is no longer part of checkout — this is an optional contact link
+    // shown only after the order has been written to the database.
+    const waContact = document.getElementById('wa-fallback');
+    const submitBtn = document.getElementById('order-submit');
+    const submitLabel = document.getElementById('order-submit-label');
+    const errorBox = document.getElementById('order-error');
+    const orderNumberEl = document.getElementById('order-number');
     const piece2 = document.getElementById('piece-2');
     const piece1Title = document.getElementById('piece-1-title');
     const sumQty = document.getElementById('sum-qty');
@@ -369,7 +375,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    function buildMessage(){
+    /**
+     * Message body for the optional WhatsApp contact link shown after checkout.
+     * It is no longer how an order is placed — the order already exists in the
+     * database by the time this runs — so it leads with the order number the
+     * customer can quote.
+     */
+    function buildMessage(orderNumber){
       const q = qty();
       const total = q === 2 ? PRICE_2 : PRICE_1;
       const name = document.getElementById('fullname').value.trim();
@@ -379,7 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const size1 = (document.querySelector('input[name="size1"]:checked') || {}).value || '';
       const color1 = (document.querySelector('input[name="color1"]:checked') || {}).value || '';
 
-      let msg = '🛍️ *طلب جديد — بوركيني Cache Terazo*\n';
+      let msg = '🛍️ *استفسار حول طلب — بوركيني Cache Terazo*\n';
+      if (orderNumber) msg += `🧾 رقم الطلب: ${orderNumber}\n`;
       msg += '━━━━━━━━━━━━━━\n';
       msg += `👤 الاسم: ${name}\n`;
       msg += `📞 الهاتف: ${phone}\n`;
@@ -406,53 +419,95 @@ document.addEventListener('DOMContentLoaded', () => {
       return msg;
     }
 
-    // Persist the order to the backend (PostgreSQL via /api/orders).
-    // Fire-and-forget with keepalive so it never blocks or breaks the WhatsApp
-    // flow — if the API is unreachable the customer still completes the order.
-    function saveOrder(){
-      try {
-        const q = qty();
-        const items = [{
-          size: (document.querySelector('input[name="size1"]:checked') || {}).value || '',
-          color: (document.querySelector('input[name="color1"]:checked') || {}).value || ''
-        }];
-        if (q === 2) {
-          items.push({
-            size: (document.querySelector('input[name="size2"]:checked') || {}).value || '',
-            color: (document.querySelector('input[name="color2"]:checked') || {}).value || ''
-          });
-        }
-        const payload = {
-          fullname: document.getElementById('fullname').value.trim(),
-          phone: document.getElementById('phone').value.trim(),
-          city: document.getElementById('city').value.trim(),
-          address: document.getElementById('address').value.trim(),
-          quantity: q,
-          items: items
-        };
-        fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload),
-          keepalive: true
-        }).catch(() => {});
-      } catch (_) { /* never block the order */ }
+    /** The request body POST /api/orders expects. */
+    function collectOrder(){
+      const q = qty();
+      const items = [{
+        size: (document.querySelector('input[name="size1"]:checked') || {}).value || '',
+        color: (document.querySelector('input[name="color1"]:checked') || {}).value || ''
+      }];
+      if (q === 2) {
+        items.push({
+          size: (document.querySelector('input[name="size2"]:checked') || {}).value || '',
+          color: (document.querySelector('input[name="color2"]:checked') || {}).value || ''
+        });
+      }
+      return {
+        fullname: document.getElementById('fullname').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        city: document.getElementById('city').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        quantity: q,
+        items: items
+      };
     }
 
-    form.addEventListener('submit', (e) => {
+    /** `error` codes the API returns, mapped to what the customer should read. */
+    const ERROR_TEXT = {
+      validation_error: 'تحقّقي من المعلومات المدخلة وعاودي المحاولة.',
+      invalid_json: 'وقع خطأ في إرسال البيانات. عاودي المحاولة.',
+      product_unavailable: 'المنتج غير متوفر حالياً. جرّبي بعد قليل.',
+      database_not_configured: 'الخدمة غير متاحة مؤقتاً. عاودي المحاولة بعد قليل.',
+      server_error: 'وقع خطأ من جهتنا. عاودي المحاولة بعد قليل.'
+    };
+
+    function setBusy(busy){
+      submitBtn.disabled = busy;
+      submitBtn.setAttribute('aria-busy', busy ? 'true' : 'false');
+      submitLabel.textContent = busy ? 'جاري إرسال الطلب…' : 'تأكيد الطلب';
+    }
+
+    /**
+     * Checkout.
+     *
+     * The order is written to the database first and the confirmation is shown
+     * only after the API says it succeeded. The previous flow fired the request
+     * and moved on regardless, so a failed write still showed "order placed" —
+     * the customer believed they had ordered and nothing reached the admin.
+     * A failure now keeps the form on screen with its values intact so the
+     * customer can simply press the button again.
+     */
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!form.checkValidity()) { form.reportValidity(); return; }
 
-      const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(buildMessage())}`;
-      waFallback.href = url;
+      errorBox.hidden = true;
+      setBusy(true);
 
-      saveOrder();
+      let result = null;
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(collectOrder())
+        });
+        const body = await res.json().catch(() => null);
+        if (!res.ok || !body || body.ok !== true) {
+          throw new Error(body && typeof body.error === 'string' ? body.error : '');
+        }
+        result = body;
+      } catch (err) {
+        setBusy(false);
+        errorBox.textContent =
+          ERROR_TEXT[err && err.message] ||
+          'تعذّر إرسال الطلب. تحقّقي من اتصالك بالإنترنت وعاودي المحاولة.';
+        errorBox.hidden = false;
+        errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      setBusy(false);
+
+      if (result.orderNumber) {
+        orderNumberEl.textContent = result.orderNumber;
+        orderNumberEl.hidden = false;
+      }
+      waContact.href =
+        `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(buildMessage(result.orderNumber))}`;
 
       form.hidden = true;
       success.hidden = false;
       success.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-      window.open(url, '_blank');
     });
 
     refresh();

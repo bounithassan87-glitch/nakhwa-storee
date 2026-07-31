@@ -715,13 +715,24 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .summary-total strong{ color:var(--primary-dark); font-size:1.3rem; font-weight:900; }
 
+/* Checkout submits to the API, so this is the primary brand action — it no
+   longer wears WhatsApp green, which promised a hand-off that no longer
+   happens. Colours come from .btn-primary. */
 .btn-submit{
   margin-top:.2rem; font-size:1.1rem; padding:1.1rem;
-  background:linear-gradient(135deg,#2ecc71,var(--wa) 55%,#1eae53);
-  box-shadow:0 10px 24px rgba(37,211,102,.35);
 }
-.btn-submit:hover{ box-shadow:0 12px 30px rgba(37,211,102,.45); }
+.btn-submit[aria-busy="true"]{ opacity:.7; cursor:progress; }
+.btn-submit:disabled{ pointer-events:none; }
 .form-note{ text-align:center; font-size:.8rem; color:var(--ink-soft); margin-top:.1rem; }
+.form-error{
+  margin-top:.7rem;
+  padding:.85rem 1rem;
+  border:1px solid rgba(155,38,23,.28);
+  border-radius:var(--radius-md);
+  background:rgba(155,38,23,.07);
+  color:#8E2317;
+  font-size:.9rem; font-weight:700; line-height:1.7; text-align:center;
+}
 
 .order-success{
   max-width:480px; margin:0 auto;
@@ -734,6 +745,28 @@ ul{ margin:0; padding:0; list-style:none; }
 .success-icon{ font-size:2.6rem; display:block; margin-bottom:.6rem; }
 .order-success h3{ font-size:1.2rem; margin-bottom:.4rem; }
 .order-success p{ color:var(--ink-soft); margin-bottom:1.2rem; }
+/* The order reference the customer can quote when contacting us. */
+.order-number{
+  display:inline-block;
+  margin:0 auto 1.2rem;
+  padding:.5rem 1.1rem;
+  border-radius:999px;
+  background:var(--primary-soft);
+  color:var(--primary-dark);
+  font-weight:900; letter-spacing:.5px;
+  direction:ltr;
+}
+/* Secondary, deliberately quieter than the checkout button: contacting us is
+   optional now that the order is already recorded. */
+.btn-contact{
+  background:transparent;
+  color:var(--primary-dark);
+  border:1.5px solid var(--line);
+  box-shadow:none;
+  font-size:.95rem;
+  padding:.85rem 1.4rem;
+}
+.btn-contact:hover{ background:var(--primary-soft); }
 
 /* ===== Sticky CTA ===== */
 .sticky-cta{
