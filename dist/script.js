@@ -16,4 +16,4 @@ const WA_NUMBER="212624273714",PRICE_1=299,PRICE_2=549;document.addEventListener
 `),msg+=`━━━━━━━━━━━━━━
 `,msg+="💰 المجموع: "+total+` درهم
 `,msg+=`🚚 التوصيل: مجاني
-`,msg+="💵 الدفع عند الاستلام",n.href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg),e.hidden=!0,t.hidden=!1,t.scrollIntoView({behavior:"smooth",block:"center"})}),m()}()});
+`,msg+="💵 الدفع عند الاستلام",n.href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg),e.hidden=!0,t.hidden=!1,t.scrollIntoView({behavior:"smooth",block:"center"})}),m()}(),(function(){const track=document.getElementById("ymal-track");track&&track.querySelectorAll(".ymal-link[data-color]").forEach(link=>{link.addEventListener("click",()=>{const color=link.getAttribute("data-color"),radio=document.querySelector('input[name="color1"][value="'+color+'"]');radio&&(radio.checked=!0,radio.dispatchEvent(new Event("change",{bubbles:!0})))})})})()});

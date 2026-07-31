@@ -519,4 +519,24 @@ document.addEventListener('DOMContentLoaded', () => {
     refresh();
   })();
 
+  /* ---------- "You May Also Like" strip ---------- */
+  (function alsoLike(){
+    const track = document.getElementById('ymal-track');
+    if (!track) return;
+
+    // Each card names a real colourway. Tapping one checks that colour in the
+    // order form before the anchor scrolls there, so the strip is a shortcut
+    // into checkout rather than four links to the same place. Same mechanism
+    // the hero thumbnails already use.
+    track.querySelectorAll('.ymal-link[data-color]').forEach(link => {
+      link.addEventListener('click', () => {
+        const color = link.getAttribute('data-color');
+        const radio = document.querySelector(`input[name="color1"][value="${color}"]`);
+        if (!radio) return;
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+  })();
+
 });
