@@ -72,8 +72,10 @@ export function AdminsSection({ notify }: { notify: (m: string) => void }) {
         <ShieldCheck className="h-4 w-4 text-brand" /> المديرون ({rows.length})
       </h3>
 
+      {/* `table-stack` collapses the rows to labelled lines below `lg` — see
+          admin/src/styles/index.css. */}
       <div className="mb-4 overflow-x-auto">
-        <table className="w-full text-right text-sm">
+        <table className="table-stack w-full text-right text-sm">
           <thead>
             <tr className="border-b border-line text-muted">
               <th className="px-3 py-2 font-bold">البريد</th>
@@ -87,9 +89,9 @@ export function AdminsSection({ notify }: { notify: (m: string) => void }) {
           <tbody>
             {rows.map((a) => (
               <tr key={a.id} className="border-b border-line/70 last:border-0">
-                <td className="px-3 py-2 font-medium text-ink" dir="ltr">{a.email}</td>
-                <td className="px-3 py-2">{a.name || "—"}</td>
-                <td className="px-3 py-2">
+                <td data-label="البريد" className="px-3 py-2 font-medium text-ink" dir="ltr">{a.email}</td>
+                <td data-label="الاسم" className="px-3 py-2">{a.name || "—"}</td>
+                <td data-label="الدور" className="px-3 py-2">
                   <select
                     value={a.role}
                     disabled={busy}
@@ -102,8 +104,8 @@ export function AdminsSection({ notify }: { notify: (m: string) => void }) {
                     ))}
                   </select>
                 </td>
-                <td className="px-3 py-2 text-xs text-muted">{a.lastLoginAt ? formatDate(a.lastLoginAt) : "—"}</td>
-                <td className="px-3 py-2">
+                <td data-label="آخر دخول" className="px-3 py-2 text-xs text-muted">{a.lastLoginAt ? formatDate(a.lastLoginAt) : "—"}</td>
+                <td data-label="الحالة" className="px-3 py-2">
                   <button
                     onClick={() => run(() => editAdmin(a.id, { isActive: !a.isActive }), "")}
                     disabled={busy}

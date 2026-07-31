@@ -15,6 +15,7 @@ import { CampaignKPIs } from "@/features/marketing/components/CampaignKPIs";
 import { CampaignCharts } from "@/features/marketing/components/CampaignCharts";
 import { CampaignsToolbar } from "@/features/marketing/components/CampaignsToolbar";
 import { CampaignsTable } from "@/features/marketing/components/CampaignsTable";
+import { CampaignsCardList } from "@/features/marketing/components/CampaignsCardList";
 import { CampaignDrawer } from "@/features/marketing/components/CampaignDrawer";
 import { CampaignForm } from "@/features/marketing/components/CampaignForm";
 import { createCampaign } from "@/features/marketing/api";
@@ -110,6 +111,7 @@ export default function Marketing() {
           ) : (
             <>
               <CampaignsTable campaigns={campaigns} sort={sort} order={order} onSort={onSort} onOpen={(c) => setSelectedId(c.id)} />
+              <CampaignsCardList campaigns={campaigns} onOpen={(c) => setSelectedId(c.id)} />
               <Pagination page={page} totalPages={totalPages} total={total} onPage={setPage} noun="حملة" />
             </>
           )}

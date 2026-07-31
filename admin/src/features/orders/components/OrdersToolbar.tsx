@@ -59,14 +59,25 @@ export function OrdersToolbar(p: ToolbarProps) {
       />
 
       <div className="flex gap-2">
+        {/* `min-w-0` is load-bearing: a flex item defaults to `min-width: auto`,
+            and a date input's intrinsic width (~147px) is wider than this grid
+            cell — without it the input refuses to shrink and pushes the refresh
+            button out of the viewport. */}
         <input
           type="date"
           value={p.dateTo}
           onChange={(e) => p.setDateTo(e.target.value)}
-          className={`${field} flex-1`}
+          className={`${field} min-w-0 flex-1`}
           aria-label="إلى تاريخ"
         />
-        <Button variant="secondary" onClick={p.onRefresh} disabled={p.refreshing} aria-label="تحديث" title="تحديث">
+        <Button
+          variant="secondary"
+          onClick={p.onRefresh}
+          disabled={p.refreshing}
+          aria-label="تحديث"
+          title="تحديث"
+          className="shrink-0"
+        >
           <RefreshCw className={`h-4 w-4${p.refreshing ? " animate-spin" : ""}`} />
         </Button>
       </div>

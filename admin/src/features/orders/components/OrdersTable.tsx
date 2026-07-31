@@ -51,7 +51,9 @@ export function OrdersTable({
   highlightIds?: Set<string>;
 }) {
   return (
-    <Card className="overflow-hidden">
+    // Hidden below `lg`, where `OrdersCardList` takes over — seven columns are
+    // unreadable on a phone.
+    <Card className="hidden overflow-hidden lg:block">
       <div className="overflow-x-auto">
         <table className="w-full text-right text-sm">
           <thead>

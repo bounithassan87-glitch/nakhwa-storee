@@ -69,6 +69,59 @@
   }
 }
 
+/*
+  Stacked tables below `lg`.
+
+  The full-page lists (orders, customers, products, shipping, campaigns) swap to
+  a card layout at this breakpoint. The two compact tables embedded in Settings
+  — admins and the audit log — carry per-row controls, so re-rendering them as
+  cards would mean duplicating that logic. They collapse to stacked rows
+  instead: each cell becomes a label/value line, the label coming from the
+  cell's own `data-label`.
+*/
+@media (max-width: 1023px) {
+  .table-stack,
+  .table-stack tbody,
+  .table-stack tr,
+  .table-stack td {
+    display: block;
+    width: 100%;
+  }
+
+  .table-stack thead {
+    display: none;
+  }
+
+  .table-stack tr {
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .table-stack td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.35rem 0;
+    text-align: start;
+  }
+
+  .table-stack td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    color: var(--color-faint);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  /* An action-only cell has no header to echo. */
+  .table-stack td:not([data-label])::before {
+    content: none;
+  }
+}
+
 /* Respect the OS "reduce motion" setting — entrance animations are decorative,
    so they collapse to an instant state change rather than being re-timed. */
 @media (prefers-reduced-motion: reduce) {

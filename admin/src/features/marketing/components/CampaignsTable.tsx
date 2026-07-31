@@ -34,7 +34,9 @@ export function CampaignsTable({
   onOpen: (c: CampaignListItem) => void;
 }) {
   return (
-    <Card className="overflow-hidden">
+    // Hidden below `lg`, where `CampaignsCardList` takes over — nine columns do
+    // not fit a phone.
+    <Card className="hidden overflow-hidden lg:block">
       <div className="max-h-[70vh] overflow-auto">
         <table className="w-full text-right text-sm">
           <thead className="sticky top-0 z-10">

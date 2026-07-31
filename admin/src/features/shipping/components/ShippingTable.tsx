@@ -12,7 +12,8 @@ export function ShippingTable({
   onOpen: (o: ShippingOrder) => void;
 }) {
   return (
-    <Card className="overflow-hidden">
+    // Hidden below `lg`, where `ShippingCardList` takes over.
+    <Card className="hidden overflow-hidden lg:block">
       <div className="overflow-x-auto">
         <table className="w-full text-right text-sm">
           <thead>

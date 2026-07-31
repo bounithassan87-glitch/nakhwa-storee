@@ -10,6 +10,7 @@ import { useDebouncedValue } from "@/lib/useDebounce";
 import { useCustomers } from "@/features/customers/useCustomers";
 import { CustomersToolbar } from "@/features/customers/components/CustomersToolbar";
 import { CustomersTable } from "@/features/customers/components/CustomersTable";
+import { CustomersCardList } from "@/features/customers/components/CustomersCardList";
 import type { CustomerSortField } from "@/features/customers/types";
 
 const PAGE_SIZE = 10;
@@ -81,6 +82,7 @@ export default function Customers() {
       ) : (
         <>
           <CustomersTable customers={customers} onOpen={(c) => navigate(`/customers/${c.id}`)} />
+          <CustomersCardList customers={customers} onOpen={(c) => navigate(`/customers/${c.id}`)} />
           <Pagination page={page} totalPages={totalPages} total={total} onPage={setPage} noun="زبون" />
         </>
       )}

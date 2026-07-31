@@ -11,6 +11,7 @@ import { useShipping } from "@/features/shipping/useShipping";
 import { ShippingKPIs } from "@/features/shipping/components/ShippingKPIs";
 import { ShippingToolbar } from "@/features/shipping/components/ShippingToolbar";
 import { ShippingTable } from "@/features/shipping/components/ShippingTable";
+import { ShippingCardList } from "@/features/shipping/components/ShippingCardList";
 import { ShippingDrawer } from "@/features/shipping/components/ShippingDrawer";
 import type { ShippingSortField } from "@/features/shipping/types";
 
@@ -104,6 +105,7 @@ export default function Shipping() {
       ) : (
         <>
           <ShippingTable orders={orders} onOpen={(o) => setSelectedId(o.id)} />
+          <ShippingCardList orders={orders} onOpen={(o) => setSelectedId(o.id)} />
           <Pagination page={page} totalPages={totalPages} total={total} onPage={setPage} />
         </>
       )}

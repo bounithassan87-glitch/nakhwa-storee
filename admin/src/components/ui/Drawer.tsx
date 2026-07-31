@@ -22,14 +22,24 @@ export function Drawer({
   }, [open, onClose]);
 
   return (
-    <div className={cn("fixed inset-0 z-50", open ? "" : "pointer-events-none")} aria-hidden={!open}>
+    <div
+      className={cn("fixed inset-0 z-50 overflow-hidden", open ? "" : "pointer-events-none")}
+      aria-hidden={!open}
+    >
       <div
         className={cn("absolute inset-0 bg-black/40 transition-opacity", open ? "opacity-100" : "opacity-0")}
         onClick={onClose}
       />
+      {/*
+        Anchored `start-0` — the right edge under `dir="rtl"` — to match the
+        physical direction of `translate-x-full`. At `end-0` (the left edge in
+        RTL) the closed panel translated rightwards into view: harmless while
+        `w-full` capped it at the viewport width, but from 448px up it left a
+        320px slab of the drawer painted over the page.
+      */}
       <div
         className={cn(
-          "absolute inset-y-0 end-0 flex w-full max-w-md flex-col bg-surface shadow-2xl transition-transform duration-300",
+          "absolute inset-y-0 start-0 flex w-full max-w-md flex-col bg-surface shadow-2xl transition-transform duration-300",
           open ? "translate-x-0" : "translate-x-full",
         )}
         role="dialog"

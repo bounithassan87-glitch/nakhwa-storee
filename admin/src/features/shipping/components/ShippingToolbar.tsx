@@ -58,8 +58,9 @@ export function ShippingToolbar(p: ShippingToolbarProps) {
       <input value={p.city} onChange={(e) => p.setCity(e.target.value)} placeholder="المدينة" className={field} />
 
       <div className="flex gap-2">
-        <input type="date" value={p.dateFrom} onChange={(e) => p.setDateFrom(e.target.value)} className={`${field} flex-1`} aria-label="من تاريخ" />
-        <Button variant="secondary" onClick={p.onRefresh} disabled={p.refreshing} aria-label="تحديث" title="تحديث">
+        {/* `min-w-0` is load-bearing — see the same pairing in OrdersToolbar. */}
+        <input type="date" value={p.dateFrom} onChange={(e) => p.setDateFrom(e.target.value)} className={`${field} min-w-0 flex-1`} aria-label="من تاريخ" />
+        <Button variant="secondary" onClick={p.onRefresh} disabled={p.refreshing} aria-label="تحديث" title="تحديث" className="shrink-0">
           <RefreshCw className={`h-4 w-4${p.refreshing ? " animate-spin" : ""}`} />
         </Button>
       </div>

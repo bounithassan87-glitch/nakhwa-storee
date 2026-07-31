@@ -10,6 +10,7 @@ import { useNotifications } from "@/features/notifications/NotificationsContext"
 import { useOrders } from "@/features/orders/useOrders";
 import { OrdersToolbar } from "@/features/orders/components/OrdersToolbar";
 import { OrdersTable } from "@/features/orders/components/OrdersTable";
+import { OrdersCardList } from "@/features/orders/components/OrdersCardList";
 import { OrderDrawer } from "@/features/orders/components/OrderDrawer";
 import { STATUS_META } from "@/features/orders/status";
 import type { Order, OrderStatus, SortField, SortOrder } from "@/features/orders/types";
@@ -155,6 +156,7 @@ export default function Orders() {
       ) : (
         <>
           <OrdersTable orders={orders} sort={sort} order={order} onSort={onSort} onOpen={setSelected} highlightIds={highlightIds} />
+          <OrdersCardList orders={orders} onOpen={setSelected} highlightIds={highlightIds} />
           <Pagination page={page} totalPages={totalPages} total={total} onPage={setPage} />
         </>
       )}

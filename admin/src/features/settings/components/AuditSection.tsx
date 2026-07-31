@@ -72,7 +72,9 @@ export function AuditSection({ notify }: { notify: (m: string) => void }) {
         <p className="py-8 text-center text-sm text-faint">لا توجد سجلات مطابقة.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-right text-sm">
+          {/* `table-stack` collapses the rows to labelled lines below `lg` —
+              see admin/src/styles/index.css. */}
+          <table className="table-stack w-full text-right text-sm">
             <thead>
               <tr className="border-b border-line text-muted">
                 <th className="px-3 py-2 font-bold">التاريخ</th>
@@ -86,12 +88,12 @@ export function AuditSection({ notify }: { notify: (m: string) => void }) {
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id} className="border-b border-line/70 last:border-0">
-                  <td className="whitespace-nowrap px-3 py-2 text-xs text-muted">{formatDate(r.createdAt)}</td>
-                  <td className="px-3 py-2" dir="ltr">{r.actor}</td>
-                  <td className="px-3 py-2"><Badge tone={actionTone(r.action)}>{r.action}</Badge></td>
-                  <td className="px-3 py-2 text-muted">{r.entity ?? "—"}</td>
-                  <td className="px-3 py-2 text-xs text-muted" dir="ltr">{r.details ?? "—"}</td>
-                  <td className="px-3 py-2 text-xs text-faint" dir="ltr">{r.ip ?? "—"}</td>
+                  <td data-label="التاريخ" className="whitespace-nowrap px-3 py-2 text-xs text-muted">{formatDate(r.createdAt)}</td>
+                  <td data-label="المستخدم" className="px-3 py-2" dir="ltr">{r.actor}</td>
+                  <td data-label="الإجراء" className="px-3 py-2"><Badge tone={actionTone(r.action)}>{r.action}</Badge></td>
+                  <td data-label="النوع" className="px-3 py-2 text-muted">{r.entity ?? "—"}</td>
+                  <td data-label="التفاصيل" className="px-3 py-2 text-xs text-muted" dir="ltr">{r.details ?? "—"}</td>
+                  <td data-label="IP" className="px-3 py-2 text-xs text-faint" dir="ltr">{r.ip ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
