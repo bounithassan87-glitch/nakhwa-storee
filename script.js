@@ -4,6 +4,33 @@ const WA_NUMBER = '212624273714';
 const PRICE_1 = 299;
 const PRICE_2 = 549;
 
+/**
+ * Fire a Meta Pixel event.
+ *
+ * Guarded on both sides. `fbq` is absent whenever the script did not load — an
+ * ad blocker, a content blocker on iOS Safari, a network that cannot reach
+ * Facebook — and calling it bare would throw a ReferenceError. Inside the
+ * checkout handler that would abort the submit and cost a real order, so the
+ * rule here is absolute: analytics observes the sale, it never participates in
+ * it. A blocked pixel must look exactly like a working one to the customer.
+ */
+function trackPixel(event, params) {
+  try {
+    if (typeof window.fbq !== 'function') return;
+    window.fbq('track', event, params);
+  } catch (_) {
+    /* never let a tracking failure surface to the customer */
+  }
+}
+
+/** Fire an event at most once per page view. */
+const pixelFired = {};
+function trackPixelOnce(event, params) {
+  if (pixelFired[event]) return;
+  pixelFired[event] = true;
+  trackPixel(event, params);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ---------- Hero Color Showcase ---------- */
@@ -471,6 +498,21 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // Fired before validation: pressing the order button *is* the intent,
+      // whether or not every field happens to be filled in correctly yet.
+      //
+      // Once per page view. The form is `novalidate`, so this handler runs on
+      // every attempt — including a rejected one the customer then corrects,
+      // and including Enter rather than a click. Ungated, a customer who
+      // mistypes their phone would report two checkouts for one checkout.
+      trackPixelOnce('InitiateCheckout', {
+        value: qty() === 2 ? PRICE_2 : PRICE_1,
+        currency: 'MAD',
+        contents: [{ id: 'cache-terazo', quantity: qty() }],
+        content_type: 'product',
+      });
+
       if (!form.checkValidity()) { form.reportValidity(); return; }
 
       errorBox.hidden = true;
@@ -499,6 +541,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       setBusy(false);
+
+      // Only past this point: the API returned ok and the order is in the
+      // database. Firing on submit instead would count every failed write and
+      // every abandoned attempt as a lead, and the ad optimisation would be
+      // trained on orders that do not exist.
+      trackPixelOnce('Lead', {
+        value: result.total != null ? result.total / 100 : qty() === 2 ? PRICE_2 : PRICE_1,
+        currency: result.currency || 'MAD',
+        content_name: 'Cache Terazo',
+        order_id: result.orderNumber,
+      });
 
       if (result.orderNumber) {
         orderRefValue.textContent = result.orderNumber;
