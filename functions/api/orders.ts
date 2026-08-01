@@ -18,6 +18,8 @@ import { COLORS, SIZES, PRICE_BY_QTY, CURRENCY, PRODUCT } from "../../shared/cat
 
 /** Setting row holding what FCM answered for the most recent order. */
 const PUSH_LAST_RESULT_KEY = "push_last_result";
+/** Setting row holding what Meta answered for the most recent Lead. */
+const CAPI_LAST_RESULT_KEY = "capi_last_result";
 
 /**
  * Cross-origin access for storefronts hosted elsewhere.
@@ -418,6 +420,7 @@ async function notifyDevices(
  * that has no pixel of its own.
  */
 async function reportLead(
+  prisma: PrismaClient,
   ctx: DeferredContext,
   reqId: string | undefined,
   o: PersistInput,
@@ -425,7 +428,7 @@ async function reportLead(
 ): Promise<void> {
   try {
     const meta = o.meta ?? {};
-    await sendCapiEvent(
+    const result = await sendCapiEvent(
       ctx.metaToken,
       {
         eventName: "Lead",
@@ -452,6 +455,20 @@ async function reportLead(
       reqId,
       ctx.metaTestCode,
     );
+
+    // Same reason the push result is recorded: this runs after the customer has
+    // their confirmation, so its outcome reaches nothing but a log line, and a
+    // Conversions API that quietly stopped authenticating would look identical
+    // to one that is working until someone noticed the ad spend.
+    await recordSetting(prisma, CAPI_LAST_RESULT_KEY, {
+      at: new Date().toISOString(),
+      event: "Lead",
+      ok: result.ok,
+      status: result.status ?? null,
+      skipped: result.skipped ?? null,
+      deduplicatedWithBrowser: Boolean(meta.eventId),
+      detail: result.detail ? result.detail.slice(0, 300) : null,
+    });
   } catch (err) {
     // sendCapiEvent already swallows its own failures; this is the last guard,
     // because nothing in this function may ever reject into waitUntil.
@@ -477,19 +494,29 @@ async function recordPushResult(
   devices: number,
   result: { sent: number; invalid: string[]; skipped?: string; errors?: { status: number; detail: string }[] },
 ): Promise<void> {
+  await recordSetting(prisma, PUSH_LAST_RESULT_KEY, {
+    at: new Date().toISOString(),
+    devices,
+    sent: result.sent,
+    pruned: result.invalid.length,
+    skipped: result.skipped ?? null,
+    errors: (result.errors ?? []).slice(0, 3),
+  });
+}
+
+/** Write one diagnostic row. Never throws — bookkeeping does not get to break
+ *  an order that is already committed. */
+async function recordSetting(
+  prisma: PrismaClient,
+  key: string,
+  payload: Record<string, unknown>,
+): Promise<void> {
   try {
-    const value = JSON.stringify({
-      at: new Date().toISOString(),
-      devices,
-      sent: result.sent,
-      pruned: result.invalid.length,
-      skipped: result.skipped ?? null,
-      errors: (result.errors ?? []).slice(0, 3),
-    }).slice(0, 2000);
+    const value = JSON.stringify(payload).slice(0, 2000);
     await prisma.setting.upsert({
-      where: { key: PUSH_LAST_RESULT_KEY },
+      where: { key },
       update: { value },
-      create: { key: PUSH_LAST_RESULT_KEY, value },
+      create: { key, value },
     });
   } catch {
     /* diagnostics must never break the order path */
@@ -543,7 +570,7 @@ async function persist(
   // committed to the database.
   if (push) {
     push.waitUntil(notifyDevices(prisma, push, reqId, o, created.id));
-    push.waitUntil(reportLead(push, reqId, o, created.orderNumber));
+    push.waitUntil(reportLead(prisma, push, reqId, o, created.orderNumber));
   }
 
   return reply(
