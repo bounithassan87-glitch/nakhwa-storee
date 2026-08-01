@@ -101,6 +101,10 @@ const listOrders: AppFunction = async ({ request, env, data }) => {
       currency: o.currency,
       status: o.status,
       paymentMethod: o.paymentMethod,
+      // Which storefront the order came from — "landing" for the original
+      // Nakhwa page, otherwise the product slug or whatever label that page
+      // sent. Shown as the "المصدر" column.
+      source: o.source,
       createdAt: o.createdAt,
       customer: {
         fullName: o.customer.fullName,

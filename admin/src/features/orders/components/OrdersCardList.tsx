@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/Badge";
 import { DataCardList } from "@/components/ui/DataCardList";
 import { formatMoney, formatDate } from "@/lib/format";
 import { STATUS_META } from "../status";
+import { sourceLabel } from "../source";
 import { OrderActions } from "./OrderActions";
 import type { Order } from "../types";
 
@@ -48,6 +49,10 @@ export function OrdersCardList({
       )}
       getFields={(o) => [
         { label: "المدينة", value: <span className="text-muted">{o.customer.city}</span> },
+        {
+          label: "المصدر",
+          value: <Badge tone={sourceLabel(o.source).tone}>{sourceLabel(o.source).label}</Badge>,
+        },
         { label: "المجموع", value: <span className="font-bold text-ink">{formatMoney(o.totalPrice)}</span> },
         { label: "التاريخ", value: <span className="text-muted">{formatDate(o.createdAt)}</span> },
       ]}

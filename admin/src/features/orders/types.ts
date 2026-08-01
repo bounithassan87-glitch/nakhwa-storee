@@ -30,6 +30,8 @@ export interface Order {
   currency: string;
   status: OrderStatus;
   paymentMethod: string;
+  /** Storefront the order arrived from — see `sourceLabel()`. */
+  source: string;
   createdAt: string;
   customer: OrderCustomer;
   items: OrderItem[];

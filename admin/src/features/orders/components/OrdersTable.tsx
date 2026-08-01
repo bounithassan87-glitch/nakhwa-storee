@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { cn } from "@/lib/cn";
 import { STATUS_META } from "../status";
+import { sourceLabel } from "../source";
 import { formatMoney, formatDate } from "@/lib/format";
 import { OrderActions } from "./OrderActions";
 import type { Order, SortField, SortOrder } from "../types";
@@ -61,6 +62,7 @@ export function OrdersTable({
               <th className="whitespace-nowrap px-4 py-3 font-bold">رقم الطلب</th>
               <th className="whitespace-nowrap px-4 py-3 font-bold">الزبون</th>
               <th className="whitespace-nowrap px-4 py-3 font-bold">المدينة</th>
+              <th className="whitespace-nowrap px-4 py-3 font-bold">المصدر</th>
               <SortHead label="المجموع" field="totalPrice" sort={sort} order={order} onSort={onSort} />
               <SortHead label="الحالة" field="status" sort={sort} order={order} onSort={onSort} />
               <SortHead label="التاريخ" field="createdAt" sort={sort} order={order} onSort={onSort} />
@@ -83,6 +85,9 @@ export function OrdersTable({
                   <div className="text-xs text-muted" dir="ltr">{o.customer.phone}</div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3">{o.customer.city}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  <Badge tone={sourceLabel(o.source).tone}>{sourceLabel(o.source).label}</Badge>
+                </td>
                 <td className="whitespace-nowrap px-4 py-3 font-bold text-ink">{formatMoney(o.totalPrice)}</td>
                 <td className="px-4 py-3">
                   <Badge tone={STATUS_META[o.status].tone}>{STATUS_META[o.status].label}</Badge>
