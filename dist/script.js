@@ -17,3 +17,50 @@ const WA_NUMBER="212624273714",PRICE_1=299,PRICE_2=549;function trackPixelOnce(e
 `,msg+="💰 المجموع: "+total+` درهم
 `,msg+=`🚚 التوصيل: مجاني
 `,msg+="💵 الدفع عند الاستلام",n.href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(msg),e.hidden=!0,t.hidden=!1,t.scrollIntoView({behavior:"smooth",block:"center"})}),m()}(),(function(){const track=document.getElementById("ymal-track");track&&track.querySelectorAll(".ymal-link[data-color]").forEach(link=>{link.addEventListener("click",()=>{const color=link.getAttribute("data-color"),radio=document.querySelector('input[name="color1"][value="'+color+'"]');radio&&(radio.checked=!0,radio.dispatchEvent(new Event("change",{bubbles:!0})))})})})()});
+/* ---------- Hero: swipe and arrows ----------
+   Steps through the colour swatches that already exist rather than moving the
+   image itself: a swipe or an arrow click simply activates the next thumb, so
+   the image swap, the active state and the sync into the order form all run
+   through exactly the same path a tap does. No new state, and nothing here
+   knows anything about orders. */
+(function heroNav(){
+  const frame = document.querySelector('.showcase-frame');
+  const strip = document.getElementById('hero-color-thumbs');
+  if (!frame || !strip) return;
+
+  const thumbs = () => Array.from(strip.querySelectorAll('.thumb'));
+  function step(dir){
+    const all = thumbs();
+    if (all.length < 2) return;
+    const i = all.findIndex(t => t.classList.contains('is-active'));
+    const next = all[((i < 0 ? 0 : i) + dir + all.length) % all.length];
+    if (next) next.click();
+  }
+
+  // Arrows. Created here so no markup changes; hidden on touch widths by CSS.
+  for (const [cls, dir, label, path] of [
+    ['hero-nav-prev', -1, 'اللون السابق', 'M15 18l-6-6 6-6'],
+    ['hero-nav-next',  1, 'اللون التالي', 'M9 6l6 6-6 6'],
+  ]) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'hero-nav ' + cls;
+    b.setAttribute('aria-label', label);
+    b.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="' + path + '"/></svg>';
+    b.addEventListener('click', (e) => { e.preventDefault(); step(dir); });
+    frame.appendChild(b);
+  }
+
+  // Swipe. Horizontal only, so vertical scrolling is never captured.
+  let x0 = null, y0 = null;
+  frame.addEventListener('pointerdown', (e) => { x0 = e.clientX; y0 = e.clientY; });
+  frame.addEventListener('pointerup', (e) => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+    // RTL: a leftward swipe advances, matching the strip's reading direction.
+    step(dx < 0 ? 1 : -1);
+  });
+  frame.addEventListener('pointercancel', () => { x0 = null; });
+})();
