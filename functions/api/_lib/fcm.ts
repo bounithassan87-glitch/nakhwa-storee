@@ -114,6 +114,49 @@ async function getAccessToken(sa: ServiceAccount): Promise<string> {
 }
 
 /**
+ * Report where push configuration stands, without revealing any of it.
+ *
+ * Push failing is silent by design — an order must never be held up by it —
+ * which leaves no way to tell a missing secret from a malformed one from a
+ * rejected key. This answers that question and returns only booleans, the
+ * public project id, and an error code.
+ */
+export async function checkPushConfig(serviceAccountJson: string | undefined): Promise<{
+  configured: boolean;
+  parsed: boolean;
+  projectId: string | null;
+  clientEmailDomain: string | null;
+  oauth: "ok" | "failed" | "skipped";
+  oauthError?: string;
+}> {
+  const configured = typeof serviceAccountJson === "string" && serviceAccountJson.length > 0;
+  const sa = parseServiceAccount(serviceAccountJson);
+  if (!sa) {
+    return { configured, parsed: false, projectId: null, clientEmailDomain: null, oauth: "skipped" };
+  }
+  try {
+    cachedToken = null; // force a real exchange rather than reporting on a cached one
+    await getAccessToken(sa);
+    return {
+      configured: true,
+      parsed: true,
+      projectId: sa.project_id,
+      clientEmailDomain: sa.client_email.split("@")[1] ?? null,
+      oauth: "ok",
+    };
+  } catch (err) {
+    return {
+      configured: true,
+      parsed: true,
+      projectId: sa.project_id,
+      clientEmailDomain: sa.client_email.split("@")[1] ?? null,
+      oauth: "failed",
+      oauthError: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+/**
  * Deliver one notification to many devices.
  *
  * v1 sends per token, so this fans out and tolerates individual failures: one
