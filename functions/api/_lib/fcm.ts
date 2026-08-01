@@ -26,6 +26,24 @@ export interface PushPayload {
   icon: string;
 }
 
+/** Origin the dashboard is served from. Push targets must be absolute — a push
+ *  service has no page to resolve a relative path against. */
+const ORIGIN = "https://nakhwa-store.pages.dev";
+
+/** Where a notification click lands. The dashboard lives under /admin, so this
+ *  is the orders page itself rather than a bare /orders, which has no route. */
+export const DASHBOARD_ORDERS_URL = `${ORIGIN}/admin/orders`;
+
+/**
+ * Icon shown on the notification.
+ *
+ * These live under /assets/img, not /admin/assets — the admin bundle ships no
+ * icons of its own, and Pages answers an unknown /admin/* path with the SPA
+ * fallback, so a wrong path here returns HTML with a 200 and the notification
+ * silently renders with no icon rather than failing loudly.
+ */
+export const PUSH_ICON_URL = `${ORIGIN}/assets/img/icon-192.png`;
+
 export interface SendResult {
   sent: number;
   /** Tokens FCM rejected as dead — the caller should delete these rows. */

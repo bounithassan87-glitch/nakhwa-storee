@@ -54,7 +54,9 @@ function notifyBrowser(order: LatestOrder, onOpen: () => void): void {
         .filter(Boolean)
         .join("\n"),
       tag: order.id,
-      icon: "/admin/assets/icon-192.png",
+      // The store's icon, under /assets/img. The admin bundle ships none, and
+      // an unknown /admin/* path resolves to the SPA fallback HTML.
+      icon: "/assets/img/icon-192.png",
     });
     n.onclick = () => {
       window.focus();

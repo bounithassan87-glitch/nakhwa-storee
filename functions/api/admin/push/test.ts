@@ -12,7 +12,7 @@ import type { AppFunction } from "../../../_lib/context";
 import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
-import { sendPush } from "../../_lib/fcm";
+import { sendPush, DASHBOARD_ORDERS_URL, PUSH_ICON_URL } from "../../_lib/fcm";
 
 const bodySchema = z.object({ token: z.string().trim().min(10).max(4096).optional() }).optional();
 
@@ -45,8 +45,8 @@ export const onRequest: AppFunction = async (ctx) => {
     {
       title: "🛒 طلب جديد",
       body: ["المنتج: اختبار", "الزبون: اختبار", "المدينة: اختبار", "المبلغ: 0 DH"].join("\n"),
-      link: "https://nakhwa-store.pages.dev/admin/orders",
-      icon: "https://nakhwa-store.pages.dev/admin/assets/icon-192.png",
+      link: DASHBOARD_ORDERS_URL,
+      icon: PUSH_ICON_URL,
       tag: `test-${Date.now()}`,
     },
     reqId,

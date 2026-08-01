@@ -43,8 +43,8 @@ messaging.onBackgroundMessage((payload) => {
     requireInteraction: true,
     dir: "rtl",
     lang: "ar",
-    icon: "/admin/assets/icon-192.png",
-    badge: "/admin/assets/icon-192.png",
+    icon: "/assets/img/icon-192.png",
+    badge: "/assets/img/icon-192.png",
     data: { link: d.link || "/admin/orders" },
   });
 });

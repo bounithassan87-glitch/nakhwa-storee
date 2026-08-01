@@ -10,7 +10,11 @@
          the icon and name its notifications are shown under. -->
     <link rel="manifest" href="/admin/manifest.webmanifest" />
     <meta name="theme-color" content="#5E552F" />
-    <link rel="apple-touch-icon" href="/admin/assets/icon-192.png" />
+    <!-- Icons are the store's, under /assets/img — the admin bundle ships none
+         of its own, and an unknown /admin/* path returns the SPA fallback HTML
+         with a 200, so a wrong path here fails silently. -->
+    <link rel="apple-touch-icon" href="/assets/img/icon-180.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/icon-32.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
