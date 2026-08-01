@@ -6,38 +6,60 @@
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://connect.facebook.net; connect-src 'self' https://fcmregistrations.googleapis.com https://firebaseinstallations.googleapis.com https://fcm.googleapis.com https://www.googleapis.com https://www.facebook.com https://connect.facebook.net; media-src 'self'
   Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Resource-Policy: same-origin
   Cross-Origin-Embedder-Policy: credentialless
+
+# Cross-Origin-Resource-Policy is declared per path, not under /*.
+#
+# Pages MERGES every matching rule rather than letting a more specific one win,
+# so declaring it globally and again on one file emits the header twice. A
+# browser cannot parse "same-origin, cross-origin" as a policy and falls back to
+# allowing the load — which happens to be what the tracker needs, and is not
+# something to depend on. One declaration per path keeps the value unambiguous.
+#
+# CORP only governs subresource loads, so the paths that matter are the ones
+# below; it does nothing on an HTML document response.
+
+# No Cache-Control here: /admin/assets/* also matches this rule, and the two
+# would merge into two Cache-Control headers rather than the specific one
+# winning. Caching for the dashboard is set on the assets rule alone.
+/admin/*
+  Cross-Origin-Resource-Policy: same-origin
 
 /admin/assets/*
   Cache-Control: public, max-age=31536000, immutable
 
+/api/*
+  Cross-Origin-Resource-Policy: same-origin
+
 /assets/img/*
+  Cross-Origin-Resource-Policy: same-origin
   Cache-Control: public, max-age=31536000, immutable
 
 /assets/video/*
+  Cross-Origin-Resource-Policy: same-origin
   Cache-Control: public, max-age=31536000, immutable
 
-# These two are served from unhashed URLs, so they must never be immutable:
-# a returning browser would keep running last year's checkout. The ?v= token
-# in index.html busts the cache on release; this header is the safety net if
-# someone forgets to bump it.
+# Served from unhashed URLs, so they must never be immutable: a returning
+# browser would keep running last year's checkout. The ?v= token in index.html
+# busts the cache on release; this header is the safety net if someone forgets
+# to bump it.
 /style.css
+  Cross-Origin-Resource-Policy: same-origin
   Cache-Control: public, max-age=0, must-revalidate
 
 /script.js
+  Cross-Origin-Resource-Policy: same-origin
   Cache-Control: public, max-age=0, must-revalidate
 
-# Shared tracker, designed to be included by storefronts on other domains.
-# A <script src> is a no-cors request, so the site-wide
-# `Cross-Origin-Resource-Policy: same-origin` would block every one of them —
-# this is the one file that has to opt out of it. Nothing here is secret: it
-# holds the public pixel id and reads only first-party cookies. The access
-# token stays on the server and is never sent to any browser.
+# Shared tracker, included by storefronts on other domains. A <script src> is a
+# no-cors request, so this is the one file that must declare itself embeddable
+# cross-origin. Nothing in it is secret: it holds the public pixel id and reads
+# only first-party cookies. The access token stays on the server and is never
+# sent to any browser.
 /nk-track.js
-  Cache-Control: public, max-age=0, must-revalidate
   Cross-Origin-Resource-Policy: cross-origin
   Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=0, must-revalidate
 
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
