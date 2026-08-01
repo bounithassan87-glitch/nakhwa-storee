@@ -698,19 +698,33 @@ ul{ margin:0; padding:0; list-style:none; }
 
 /* color photos (real product thumbnails) */
 .color-photos{
-  display:flex; gap:.85rem 8px; flex-wrap:wrap;
-  align-items:flex-start;
+  display:flex; gap:1.15rem 1rem; flex-wrap:wrap;
+  align-items:flex-start; justify-content:center;
 }
-/* Solid tones first, prints after. Ordered here rather than by moving the
-   markup, so the radios keep their original DOM order and everything that
-   reads them — the checkout, the slider sync — sees exactly what it did. */
+/* Solid tones, then a labelled break, then the prints. All three are ordered
+   here rather than by moving markup, so every radio keeps its original DOM
+   order and everything that reads them — the checkout, the slider colour sync,
+   the second-piece enable/disable — sees exactly what it did before. */
 .color-photo[data-kind="solid"]{ order:1; }
-.color-photo[data-kind="pattern"]{ order:2; }
+.print-label{ order:2; }
+.color-photo[data-kind="pattern"]{ order:3; }
+
+/* A full-width flex item, so it forces the prints onto their own line and
+   reads as a section heading without being one. */
+.print-label{
+  flex:0 0 100%;
+  display:flex; align-items:center; gap:.7rem;
+  margin:.15rem 0 0;
+  font-size:.74rem; font-weight:800; letter-spacing:.12em;
+  color:var(--ink-faint); text-transform:uppercase;
+}
+.print-label::before,
+.print-label::after{ content:""; flex:1; height:1px; background:var(--line); }
 
 .color-photo{
   position:relative; cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; gap:.42rem;
-  width:56px;
+  display:flex; flex-direction:column; align-items:center; gap:.5rem;
+  width:64px;
 }
 .color-photo input{ position:absolute; opacity:0; inset:0; }
 .color-photo .cp-img{
@@ -726,12 +740,12 @@ ul{ margin:0; padding:0; list-style:none; }
    at 58px reads as a brown smudge; a filled disc reads instantly, which is the
    whole point of a swatch. */
 .color-photo[data-kind="solid"] .cp-img{
-  width:54px; height:54px;
+  width:64px; height:64px;
   border-radius:50%;
   padding:0;
   background:var(--sw);
-  border-color:rgba(0,0,0,.10);
-  box-shadow:0 3px 10px rgba(60,50,25,.20), inset 0 -7px 14px rgba(0,0,0,.12);
+  border:3px solid #fff;
+  box-shadow:0 4px 14px rgba(60,50,25,.22), inset 0 -8px 16px rgba(0,0,0,.12);
 }
 .color-photo[data-kind="solid"] .cp-img img{ display:none; }
 
@@ -740,19 +754,23 @@ ul{ margin:0; padding:0; list-style:none; }
 .color-photo[data-color="عنابي"]{ --sw:#6B1F2E; }
 .color-photo[data-color="أبيض"]{ --sw:#F7F4EC; }
 /* White needs a real edge or it disappears into the card behind it. */
-.color-photo[data-color="أبيض"] .cp-img{ border-color:rgba(0,0,0,.18); }
+.color-photo[data-color="أبيض"] .cp-img{ box-shadow:0 0 0 1px rgba(0,0,0,.16), 0 4px 14px rgba(60,50,25,.18); }
 
 /* A print cannot be one colour, so these stay photographs — as small cards,
    cropped square so they line up with the discs instead of forming a ragged
    second row. */
+.color-photo[data-kind="pattern"]{ width:92px; }
 .color-photo[data-kind="pattern"] .cp-img{
-  border-radius:15px;
-  padding:2px;
+  border-radius:18px;
+  padding:3px;
+  background:var(--surface);
+  box-shadow:0 4px 14px rgba(60,50,25,.16);
 }
 .color-photo[data-kind="pattern"] .cp-img img{
-  width:48px; height:48px;
-  object-fit:cover; border-radius:12px; display:block;
+  width:80px; height:88px;
+  object-fit:cover; border-radius:15px; display:block;
 }
+.color-photo[data-kind="pattern"]:hover .cp-img{ transform:translateY(-2px); }
 .color-photo em{
   font-size:.7rem; color:var(--ink-soft); font-style:normal; font-weight:700;
   line-height:1.35; text-align:center;
