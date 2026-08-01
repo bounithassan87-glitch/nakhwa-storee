@@ -671,17 +671,21 @@ ul{ margin:0; padding:0; list-style:none; }
 
 /* size pills */
 .size-group{ display:flex; gap:.55rem; flex-wrap:wrap; }
-.size-pill{ position:relative; flex:1 1 auto; min-width:60px; cursor:pointer; }
+.size-pill{ position:relative; flex:1 1 0; min-width:0; cursor:pointer; }
 .size-pill input{ position:absolute; opacity:0; inset:0; }
 .size-pill span{
   display:flex; align-items:center; justify-content:center;
-  height:50px;
+  height:58px;
   border:2px solid var(--line);
-  border-radius:14px;
-  font-weight:800; font-size:1.05rem; color:var(--ink);
-  background:var(--bg);
-  transition:all .18s ease;
+  border-radius:16px;
+  font-weight:800; font-size:1.12rem; color:var(--ink);
+  background:var(--surface);
+  transition:transform .2s cubic-bezier(.22,.61,.36,1),
+             border-color .2s ease, background .2s ease,
+             color .2s ease, box-shadow .2s ease;
 }
+.size-pill:hover span{ border-color:var(--primary-light); transform:translateY(-1px); }
+.size-pill:active span{ transform:scale(.96); }
 .size-pill input:checked + span,
 .size-pill.is-checked span{
   border-color:var(--primary-dark);
@@ -693,10 +697,20 @@ ul{ margin:0; padding:0; list-style:none; }
 .size-pill input:focus-visible + span{ box-shadow:0 0 0 3px rgba(124,112,67,.3); }
 
 /* color photos (real product thumbnails) */
-.color-photos{ display:flex; gap:.6rem; flex-wrap:wrap; }
+.color-photos{
+  display:flex; gap:.85rem 8px; flex-wrap:wrap;
+  align-items:flex-start;
+}
+/* Solid tones first, prints after. Ordered here rather than by moving the
+   markup, so the radios keep their original DOM order and everything that
+   reads them — the checkout, the slider sync — sees exactly what it did. */
+.color-photo[data-kind="solid"]{ order:1; }
+.color-photo[data-kind="pattern"]{ order:2; }
+
 .color-photo{
   position:relative; cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+  display:flex; flex-direction:column; align-items:center; gap:.42rem;
+  width:56px;
 }
 .color-photo input{ position:absolute; opacity:0; inset:0; }
 .color-photo .cp-img{
@@ -704,13 +718,45 @@ ul{ margin:0; padding:0; list-style:none; }
   border:2px solid var(--line);
   border-radius:12px;
   padding:2px; background:var(--surface);
-  transition:all .18s ease;
+  transition:transform .22s cubic-bezier(.22,.61,.36,1),
+             border-color .22s ease, box-shadow .22s ease;
 }
-.color-photo .cp-img img{
-  width:58px; height:76px;
-  object-fit:cover; border-radius:9px; display:block;
+
+/* A solid colour is shown as the colour itself. A photograph of khaki fabric
+   at 58px reads as a brown smudge; a filled disc reads instantly, which is the
+   whole point of a swatch. */
+.color-photo[data-kind="solid"] .cp-img{
+  width:54px; height:54px;
+  border-radius:50%;
+  padding:0;
+  background:var(--sw);
+  border-color:rgba(0,0,0,.10);
+  box-shadow:0 3px 10px rgba(60,50,25,.20), inset 0 -7px 14px rgba(0,0,0,.12);
 }
-.color-photo em{ font-size:.72rem; color:var(--ink-soft); font-style:normal; font-weight:700; }
+.color-photo[data-kind="solid"] .cp-img img{ display:none; }
+
+.color-photo[data-color="كاكي"]{ --sw:#8A7F52; }
+.color-photo[data-color="أسود"]{ --sw:#1C1B18; }
+.color-photo[data-color="عنابي"]{ --sw:#6B1F2E; }
+.color-photo[data-color="أبيض"]{ --sw:#F7F4EC; }
+/* White needs a real edge or it disappears into the card behind it. */
+.color-photo[data-color="أبيض"] .cp-img{ border-color:rgba(0,0,0,.18); }
+
+/* A print cannot be one colour, so these stay photographs — as small cards,
+   cropped square so they line up with the discs instead of forming a ragged
+   second row. */
+.color-photo[data-kind="pattern"] .cp-img{
+  border-radius:15px;
+  padding:2px;
+}
+.color-photo[data-kind="pattern"] .cp-img img{
+  width:48px; height:48px;
+  object-fit:cover; border-radius:12px; display:block;
+}
+.color-photo em{
+  font-size:.7rem; color:var(--ink-soft); font-style:normal; font-weight:700;
+  line-height:1.35; text-align:center;
+}
 .color-photo .cp-check{
   position:absolute; top:5px; right:5px;
   width:20px; height:20px; border-radius:50%;
@@ -721,10 +767,18 @@ ul{ margin:0; padding:0; list-style:none; }
 }
 .color-photo input:checked + .cp-img,
 .color-photo.is-checked .cp-img{
-  border-color:var(--primary-dark);
-  transform:translateY(-2px);
-  box-shadow:0 0 0 3px rgba(124,112,67,.3), 0 8px 16px rgba(60,50,25,.2);
+  border-color:var(--gold);
+  transform:translateY(-3px) scale(1.06);
+  box-shadow:0 0 0 3px rgba(184,145,47,.32), 0 10px 20px rgba(60,50,25,.24);
 }
+/* Keep the inner shading on a selected disc; the shared rule above would
+   otherwise replace it and the swatch would flatten out. */
+.color-photo[data-kind="solid"] input:checked + .cp-img,
+.color-photo[data-kind="solid"].is-checked .cp-img{
+  box-shadow:0 0 0 3px rgba(184,145,47,.32), 0 10px 20px rgba(60,50,25,.24),
+             inset 0 -7px 14px rgba(0,0,0,.12);
+}
+.color-photo:active .cp-img{ transform:scale(.94); }
 .color-photo input:checked ~ em,
 .color-photo.is-checked em{ color:var(--primary-dark); }
 .color-photo input:checked ~ .cp-check,
