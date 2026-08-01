@@ -118,16 +118,15 @@ ul{ margin:0; padding:0; list-style:none; }
 
 /* Mobile stacking: image -> headline -> offer -> CTA, so the product is the
    first thing seen and the order form is reachable in one short scroll.
-   The colour swatches are flattened out of .hero-showcase and placed after the
-   CTA: they are worth keeping — the product has eight colours — but ahead of
-   the button they pushed it off the first screen, which is the whole problem
-   this change exists to fix. */
+   The colour swatches sit directly under the photo, where a shopper looks for
+   them: choosing one swaps the main image, so the control and the thing it
+   changes are next to each other. */
 .hero-content{ display:contents; }
 .hero-showcase{ display:contents; }
 .showcase-frame{ order:1; justify-self:center; }
-.hero-top{ order:2; text-align:center; }
-.hero-bottom{ order:3; }
-.color-thumbs{ order:4; }
+.color-thumbs{ order:2; }
+.hero-top{ order:3; text-align:center; }
+.hero-bottom{ order:4; }
 
 .badge{
   display:inline-block;
@@ -230,8 +229,8 @@ ul{ margin:0; padding:0; list-style:none; }
   box-shadow:0 34px 70px rgba(60,50,25,.30), 0 6px 16px rgba(60,50,25,.12),
              0 1px 0 rgba(255,255,255,.7) inset;
   border:1px solid rgba(255,255,255,.65);
-  transition:opacity .42s cubic-bezier(.22,.61,.36,1),
-             transform .42s cubic-bezier(.22,.61,.36,1);
+  transition:opacity .25s cubic-bezier(.22,.61,.36,1),
+             transform .25s cubic-bezier(.22,.61,.36,1);
 }
 /* The swap the script already triggers, given a little more travel so the new
    colour arrives rather than simply appearing. */
@@ -282,10 +281,12 @@ ul{ margin:0; padding:0; list-style:none; }
 @keyframes floaty{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
 
 /* color thumbnails */
+/* No justify-content:center: seven discs overflow this row, and centring an
+   overflowing scroll container puts the first ones out of reach. */
 .color-thumbs{
-  display:flex; gap:.5rem; flex-wrap:nowrap;
+  display:flex; gap:.7rem; flex-wrap:nowrap;
   overflow-x:auto; overscroll-behavior-x:contain;
-  scrollbar-width:none; padding:2px 2px 4px;
+  scrollbar-width:none; padding:6px 4px 4px;
   max-width:100%; scroll-snap-type:x proximity;
 }
 .color-thumbs::-webkit-scrollbar{ display:none; }
@@ -330,12 +331,17 @@ ul{ margin:0; padding:0; list-style:none; }
     radial-gradient(ellipse 22% 18% at 88% 82%, var(--spot) 55%, transparent 58%);
 }
 .thumb em{ display:none; font-size:.6rem; font-style:normal; color:var(--ink-soft); font-weight:700; padding-bottom:1px; white-space:nowrap; }
+/* Sits on the rim of the disc rather than inside it, so it never covers the
+   colour the customer is judging. */
 .thumb-check{
-  position:absolute; top:5px; right:5px;
-  width:18px; height:18px; border-radius:50%;
-  background:var(--primary-dark); color:#fff;
-  font-size:.7rem; display:none; align-items:center; justify-content:center;
-  box-shadow:0 2px 6px rgba(0,0,0,.3);
+  position:absolute; top:-3px; inset-inline-end:-3px;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--gold); color:#fff;
+  font-size:.7rem; font-weight:900; line-height:1;
+  display:none; align-items:center; justify-content:center;
+  border:2px solid #fff;
+  box-shadow:0 2px 6px rgba(60,50,25,.35);
+  z-index:3;
 }
 .thumb:active{ transform:scale(.96); }
 .thumb.is-active{
