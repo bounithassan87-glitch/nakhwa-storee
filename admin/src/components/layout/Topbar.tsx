@@ -1,4 +1,4 @@
-import { Menu, Search, LogOut, Bell, Volume2, VolumeX } from "lucide-react";
+import { Menu, Search, LogOut, Bell, BellRing, Volume2, VolumeX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
@@ -6,7 +6,14 @@ import { Avatar } from "@/components/ui/Avatar";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   const { user, logout } = useAuth();
-  const { newCount, soundEnabled, setSoundEnabled, markAllSeen } = useNotifications();
+  const {
+    newCount,
+    soundEnabled,
+    setSoundEnabled,
+    markAllSeen,
+    notificationPermission,
+    requestNotificationPermission,
+  } = useNotifications();
   const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/80 px-4 backdrop-blur md:px-6">
@@ -28,6 +35,19 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
       </div>
 
       <div className="ms-auto flex items-center gap-2 sm:gap-3">
+        {/* Desktop-notification opt-in. Shown only while the browser has not
+            been asked, so the admin sees the prompt once and never again. */}
+        {notificationPermission === "default" && (
+          <button
+            onClick={requestNotificationPermission}
+            className="grid h-10 w-10 place-items-center rounded-xl text-brand-dark hover:bg-brand-soft"
+            aria-label="تفعيل إشعارات المتصفح"
+            title="تفعيل إشعارات المتصفح للطلبات الجديدة"
+          >
+            <BellRing className="h-5 w-5" />
+          </button>
+        )}
+
         {/* Sound toggle */}
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}

@@ -38,7 +38,9 @@ const orderStats: AppFunction = async ({ request, env, data }) => {
       since ? prisma.order.count({ where: { createdAt: { gt: since } } }) : Promise.resolve(0),
       prisma.order.findFirst({
         orderBy: { createdAt: "desc" },
-        include: { customer: true },
+        // One item is enough to name the product in the notification; the
+        // storefront label comes from `source`.
+        include: { customer: true, items: { take: 1, include: { product: true } } },
       }),
     ]);
 
@@ -56,6 +58,9 @@ const orderStats: AppFunction = async ({ request, env, data }) => {
             currency: latest.currency,
             customerName: latest.customer.fullName,
             city: latest.customer.city,
+            phone: latest.customer.phone,
+            productName: latest.items[0]?.product.name ?? null,
+            source: latest.source,
           }
         : null,
     });

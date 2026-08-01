@@ -6,6 +6,11 @@ export interface LatestOrder {
   currency: string;
   customerName: string;
   city: string;
+  phone: string;
+  /** Null only if the order somehow has no items. */
+  productName: string | null;
+  /** Which storefront it came from — see features/orders/source.ts. */
+  source: string;
 }
 
 export interface OrderStats {
