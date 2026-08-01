@@ -16,7 +16,7 @@ const KNOWN: Record<string, { label: string; tone: Tone }> = {
   // orders carry the schema default.
   landing: { label: "Nakhwa Store", tone: "brand" },
   "cache-terazo": { label: "Nakhwa Store", tone: "brand" },
-  "lilya-talon": { label: "LILYA TALON", tone: "gold" },
+  "lilya-talon": { label: "LILYA TALON Collection", tone: "gold" },
   admin: { label: "لوحة التحكم", tone: "neutral" },
 };
 
