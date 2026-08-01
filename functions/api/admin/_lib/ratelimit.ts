@@ -1,22 +1,16 @@
-// In-memory per-IP rate limiter for login attempts.
-// NOTE: state lives in a single Worker isolate — fine for this phase / local dev.
-// Production hardening: Cloudflare KV, Durable Objects, or WAF Rate Limiting.
+// Login rate limiting: 5 attempts per IP per 15 minutes.
+//
+// The mechanism moved to api/_lib/ratelimit so the public tracking endpoint
+// could use it too rather than carry a second copy of the same logic. These
+// exports keep their original names and signatures, so no call site changes.
+import { createRateLimiter } from "../../_lib/ratelimit";
 
-const WINDOW_MS = 15 * 60 * 1000;
-const MAX_ATTEMPTS = 5;
-const store = new Map<string, { count: number; resetAt: number }>();
+const limiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 5 });
 
 export function hit(ip: string): { blocked: boolean; retryAfter: number } {
-  const now = Date.now();
-  let entry = store.get(ip);
-  if (!entry || now > entry.resetAt) {
-    entry = { count: 0, resetAt: now + WINDOW_MS };
-    store.set(ip, entry);
-  }
-  entry.count++;
-  return { blocked: entry.count > MAX_ATTEMPTS, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  return limiter.hit(ip);
 }
 
 export function reset(ip: string): void {
-  store.delete(ip);
+  limiter.reset(ip);
 }

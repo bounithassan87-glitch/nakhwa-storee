@@ -16,6 +16,14 @@ export interface Env {
   // HTTP v1 requires. Optional: without it push is skipped and the dashboard
   // still gets its sound, popup and badge.
   FIREBASE_SERVICE_ACCOUNT?: string;
+  // Meta Conversions API token. Optional: without it server-side events are
+  // skipped and the browser pixel carries on alone, so marketing degrades
+  // rather than checkout. Never hardcoded — a leaked token lets anyone write
+  // events into the ad account.
+  META_ACCESS_TOKEN?: string;
+  // Optional. Set it to route events to Events Manager → Test Events instead of
+  // production, for verifying an integration without polluting real data.
+  META_TEST_EVENT_CODE?: string;
 }
 
 /** Resolve the DB connection string, preferring Hyperdrive in production. */

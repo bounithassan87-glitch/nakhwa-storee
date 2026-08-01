@@ -5,30 +5,47 @@ const PRICE_1 = 299;
 const PRICE_2 = 549;
 
 /**
- * Fire a Meta Pixel event.
+ * Meta tracking lives in nk-track.js, shared by every storefront.
  *
- * Guarded on both sides. `fbq` is absent whenever the script did not load — an
- * ad blocker, a content blocker on iOS Safari, a network that cannot reach
- * Facebook — and calling it bare would throw a ReferenceError. Inside the
- * checkout handler that would abort the submit and cost a real order, so the
- * rule here is absolute: analytics observes the sale, it never participates in
- * it. A blocked pixel must look exactly like a working one to the customer.
+ * These wrappers exist only so this file never has to care whether that script
+ * loaded. It is blocked outright by some content blockers, and a bare call to a
+ * missing global would throw a ReferenceError inside the checkout handler,
+ * abort the submit, and cost a real order. Analytics observes the sale; it
+ * never participates in it.
  */
-function trackPixel(event, params) {
+function trackPixelOnce(event, params) {
   try {
-    if (typeof window.fbq !== 'function') return;
-    window.fbq('track', event, params);
+    if (!window.nkTrack) return undefined;
+    return window.nkTrack.trackOnce(event, params);
+  } catch (_) {
+    return undefined;
+  }
+}
+
+/** Browser pixel only, with a caller-supplied id. Used where the server fires
+ *  its own copy of the event and the two must carry the same id. */
+function trackPixelOnly(event, params, eventId) {
+  try {
+    if (window.nkTrack) window.nkTrack.pixel(event, params, eventId);
   } catch (_) {
     /* never let a tracking failure surface to the customer */
   }
 }
 
-/** Fire an event at most once per page view. */
-const pixelFired = {};
-function trackPixelOnce(event, params) {
-  if (pixelFired[event]) return;
-  pixelFired[event] = true;
-  trackPixel(event, params);
+/** Attribution to hand to the server, so its Lead matches the browser's. */
+function trackUserData() {
+  try {
+    return window.nkTrack ? window.nkTrack.userData() : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function newEventId() {
+  try {
+    if (window.nkTrack) return window.nkTrack.id();
+  } catch (_) { /* fall through */ }
+  return 'nk-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -449,6 +466,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /** The request body POST /api/orders expects. */
+    // Minted once per page view, before the order is sent, and used by both the
+    // server's Lead and the browser's.
+    const leadEventId = newEventId();
+
     function collectOrder(){
       const q = qty();
       const items = [{
@@ -461,13 +482,23 @@ document.addEventListener('DOMContentLoaded', () => {
           color: (document.querySelector('input[name="color2"]:checked') || {}).value || ''
         });
       }
+      const u = trackUserData();
       return {
         fullname: document.getElementById('fullname').value.trim(),
         phone: document.getElementById('phone').value.trim(),
         city: document.getElementById('city').value.trim(),
         address: document.getElementById('address').value.trim(),
         quantity: q,
-        items: items
+        items: items,
+        // Attribution. All optional server-side: if nk-track.js was blocked
+        // these are simply absent and the order is unaffected. `eventId` is
+        // generated before the request so the server's Lead and the browser's
+        // carry the same id and Meta counts one conversion, not two.
+        eventId: leadEventId,
+        fbp: u.fbp,
+        fbc: u.fbc,
+        externalId: u.externalId,
+        eventSourceUrl: u.eventSourceUrl
       };
     }
 
@@ -546,12 +577,14 @@ document.addEventListener('DOMContentLoaded', () => {
       // database. Firing on submit instead would count every failed write and
       // every abandoned attempt as a lead, and the ad optimisation would be
       // trained on orders that do not exist.
-      trackPixelOnce('Lead', {
+      // Browser copy only — the server fired its own Lead from the order path,
+      // with this same id, at the moment the row was committed.
+      trackPixelOnly('Lead', {
         value: result.total != null ? result.total / 100 : qty() === 2 ? PRICE_2 : PRICE_1,
         currency: result.currency || 'MAD',
         content_name: 'Cache Terazo',
         order_id: result.orderNumber,
-      });
+      }, leadEventId);
 
       if (result.orderNumber) {
         orderRefValue.textContent = result.orderNumber;

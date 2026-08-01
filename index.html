@@ -28,9 +28,10 @@
 <link rel="preload" as="image" href="DSC03991.jpg" fetchpriority="high">
 <link rel="stylesheet" href="style.css?v=8d3d7732">
 
-<!-- Meta Pixel. Loads async, so it never delays the page; PageView is the only
-     event fired here. InitiateCheckout and Lead are fired from script.js, at
-     the two moments that actually mean something in the funnel. -->
+<!-- Meta Pixel. Loads async, so it never delays the page.
+     `init` only: PageView is fired by nk-track.js immediately below, so the
+     browser event and its Conversions API twin share one event_id and Meta
+     counts the visit once instead of twice. -->
 <link rel="preconnect" href="https://connect.facebook.net" crossorigin>
 <script>
 !function(f,b,e,v,n,t,s)
@@ -42,8 +43,8 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init','2808695152828717');
-fbq('track','PageView');
 </script>
+<script src="nk-track.js?v=37ab88d7"></script>
 <noscript><img height="1" width="1" style="display:none"
 src="https://www.facebook.com/tr?id=2808695152828717&ev=PageView&noscript=1" alt=""></noscript>
 

@@ -13,6 +13,7 @@ import { resolveDatabaseUrl } from "../_lib/env";
 import { getPrisma } from "../_lib/db";
 import { json, log } from "../_lib/http";
 import { sendPush, DASHBOARD_ORDERS_URL, PUSH_ICON_URL } from "./_lib/fcm";
+import { sendCapiEvent, clientSignals } from "./_lib/capi";
 import { COLORS, SIZES, PRICE_BY_QTY, CURRENCY, PRODUCT } from "../../shared/catalog.js";
 
 /** Setting row holding what FCM answered for the most recent order. */
@@ -44,6 +45,18 @@ const customerFields = {
   note: z.string().trim().max(500).optional(),
   /** Which landing page this came from; shown as "المصدر" in the dashboard. */
   source: z.string().trim().min(1).max(60).optional(),
+
+  // Meta attribution. All optional, and shared by every payload shape, so a
+  // landing page that sends them gets deduplicated server-side conversions and
+  // one that does not still orders exactly as before. That is what lets a new
+  // storefront work without touching this file: send the fields or don't.
+  /** Must equal the `eventID` the page gave fbq, or Meta counts the Lead twice. */
+  eventId: z.string().trim().min(8).max(100).optional(),
+  fbp: z.string().trim().max(200).optional(),
+  fbc: z.string().trim().max(400).optional(),
+  externalId: z.string().trim().max(100).optional(),
+  eventSourceUrl: z.string().trim().url().max(500).optional(),
+  email: z.string().trim().email().max(200).optional(),
 };
 
 /**
@@ -121,8 +134,12 @@ export const onRequest: AppFunction = async (ctx) => {
 
 const handleCreateOrder: AppFunction = async ({ request, env, data, waitUntil }) => {
   const reqId = data.reqId;
-  const push: PushContext = {
+  const push: DeferredContext = {
     serviceAccount: env.FIREBASE_SERVICE_ACCOUNT,
+    metaToken: env.META_ACCESS_TOKEN,
+    metaTestCode: env.META_TEST_EVENT_CODE,
+    ...clientSignals(request),
+    referer: request.headers.get("referer") ?? undefined,
     waitUntil: (p) => waitUntil(p),
   };
 
@@ -175,11 +192,47 @@ interface PersistInput {
   productName: string;
   unitPrice: number;
   items: { size: string; color: string }[];
+  /** Meta attribution passed through from the request; absent is normal. */
+  meta?: MetaFields;
 }
 
-/** What `persist` needs to fan a notification out without delaying the reply. */
-interface PushContext {
+interface MetaFields {
+  eventId?: string;
+  fbp?: string;
+  fbc?: string;
+  externalId?: string;
+  eventSourceUrl?: string;
+  email?: string;
+}
+
+/** Lift the attribution fields off a validated order, whatever its shape. */
+function metaFrom(order: MetaFields): MetaFields {
+  return {
+    eventId: order.eventId,
+    fbp: order.fbp,
+    fbc: order.fbc,
+    externalId: order.externalId,
+    eventSourceUrl: order.eventSourceUrl,
+    email: order.email,
+  };
+}
+
+/**
+ * What `persist` needs for the work that happens after the customer has their
+ * confirmation: the new-order notification, and the server-side Lead.
+ *
+ * Both are deferred through `waitUntil` for the same reason — neither a push
+ * service nor an ad platform is allowed to hold up a sale.
+ */
+interface DeferredContext {
   serviceAccount?: string;
+  metaToken?: string;
+  metaTestCode?: string;
+  /** Read from the edge request, never from the body. */
+  clientIpAddress?: string;
+  clientUserAgent?: string;
+  /** Fallback when the page did not name its own URL. */
+  referer?: string;
   waitUntil: (p: Promise<unknown>) => void;
 }
 
@@ -188,7 +241,7 @@ async function createLegacyOrder(
   prisma: PrismaClient,
   raw: unknown,
   reqId: string | undefined,
-  push?: PushContext,
+  push?: DeferredContext,
 ) {
   const parsed = legacySchema.safeParse(raw);
   if (!parsed.success) {
@@ -217,6 +270,7 @@ async function createLegacyOrder(
     productName: product.name,
     unitPrice: product.basePrice,
     items: order.items,
+    meta: metaFrom(order),
   }, push);
 }
 
@@ -230,7 +284,7 @@ async function createCatalogOrder(
   prisma: PrismaClient,
   raw: unknown,
   reqId: string | undefined,
-  push?: PushContext,
+  push?: DeferredContext,
 ) {
   const parsed = catalogSchema.safeParse(raw);
   if (!parsed.success) {
@@ -297,6 +351,7 @@ async function createCatalogOrder(
     productName: product.name,
     unitPrice,
     items,
+    meta: metaFrom(order),
   }, push);
 }
 
@@ -309,7 +364,7 @@ async function createCatalogOrder(
  */
 async function notifyDevices(
   prisma: PrismaClient,
-  push: PushContext,
+  push: DeferredContext,
   reqId: string | undefined,
   o: PersistInput,
   orderId: string,
@@ -345,6 +400,62 @@ async function notifyDevices(
     await recordPushResult(prisma, devices.length, result);
   } catch (err) {
     log("warn", { reqId, msg: "push_failed", error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+/**
+ * Report the sale to Meta, from the server.
+ *
+ * Fired here rather than accepted from the browser because this is the only
+ * place that knows the order exists: it runs after the row is committed, so a
+ * Lead can never be reported for an order that failed, and it still fires for a
+ * customer whose pixel was blocked or who closed the tab on the confirmation.
+ *
+ * The event id comes from the page, and is the same one it gave fbq — that is
+ * what lets Meta drop whichever copy arrives second. A page that sends no id
+ * gets one generated here: the event is still recorded, there is simply no
+ * browser event to reconcile it with, which is exactly right for a storefront
+ * that has no pixel of its own.
+ */
+async function reportLead(
+  ctx: DeferredContext,
+  reqId: string | undefined,
+  o: PersistInput,
+  orderNumber: string,
+): Promise<void> {
+  try {
+    const meta = o.meta ?? {};
+    await sendCapiEvent(
+      ctx.metaToken,
+      {
+        eventName: "Lead",
+        eventId: meta.eventId ?? `srv-${orderNumber}`,
+        eventSourceUrl: meta.eventSourceUrl ?? ctx.referer,
+        user: {
+          clientIpAddress: ctx.clientIpAddress,
+          clientUserAgent: ctx.clientUserAgent,
+          fbp: meta.fbp,
+          fbc: meta.fbc,
+          externalId: meta.externalId,
+          phone: o.phone,
+          email: meta.email,
+          city: o.city,
+          country: "MA",
+        },
+        custom: {
+          value: o.total / 100,
+          currency: o.currency,
+          content_name: o.productName,
+          order_id: orderNumber,
+        },
+      },
+      reqId,
+      ctx.metaTestCode,
+    );
+  } catch (err) {
+    // sendCapiEvent already swallows its own failures; this is the last guard,
+    // because nothing in this function may ever reject into waitUntil.
+    log("warn", { reqId, msg: "lead_report_failed", error: err instanceof Error ? err.message : String(err) });
   }
 }
 
@@ -390,7 +501,7 @@ async function persist(
   prisma: PrismaClient,
   reqId: string | undefined,
   o: PersistInput,
-  push?: PushContext,
+  push?: DeferredContext,
 ) {
   const customer = await prisma.customer.upsert({
     where: { phone: o.phone },
@@ -427,8 +538,13 @@ async function persist(
     source: o.source,
   });
 
-  // Handed to the runtime so the customer's confirmation is not waiting on FCM.
-  if (push) push.waitUntil(notifyDevices(prisma, push, reqId, o, created.id));
+  // Both handed to the runtime: the customer's confirmation waits on neither
+  // FCM nor Meta, and a failure in either cannot reach a sale that is already
+  // committed to the database.
+  if (push) {
+    push.waitUntil(notifyDevices(prisma, push, reqId, o, created.id));
+    push.waitUntil(reportLead(push, reqId, o, created.orderNumber));
+  }
 
   return reply(
     {

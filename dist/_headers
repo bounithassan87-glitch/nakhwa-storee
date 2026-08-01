@@ -28,5 +28,16 @@
 /script.js
   Cache-Control: public, max-age=0, must-revalidate
 
+# Shared tracker, designed to be included by storefronts on other domains.
+# A <script src> is a no-cors request, so the site-wide
+# `Cross-Origin-Resource-Policy: same-origin` would block every one of them —
+# this is the one file that has to opt out of it. Nothing here is secret: it
+# holds the public pixel id and reads only first-party cookies. The access
+# token stays on the server and is never sent to any browser.
+/nk-track.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Cross-Origin-Resource-Policy: cross-origin
+  Access-Control-Allow-Origin: *
+
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
