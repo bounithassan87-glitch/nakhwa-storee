@@ -15,7 +15,7 @@ import {
   primeAudioOnFirstGesture,
   playNewOrderSound,
 } from "./sound";
-import { enablePush, onForegroundPush, type PushOutcome } from "./push";
+import { enablePush, onForegroundPush, type PushResult } from "./push";
 import type { LatestOrder } from "./types";
 
 /** Poll cadence. Kept inside the requested 10–15s window. Polling only happens
@@ -89,7 +89,7 @@ interface NotificationsValue {
   /** Asks the browser once, from a user gesture, and registers for push. */
   requestNotificationPermission: () => void;
   /** Result of the last push registration attempt. */
-  pushStatus: PushOutcome | null;
+  pushStatus: PushResult | null;
 }
 
 const NotificationsContext = createContext<NotificationsValue | null>(null);
@@ -103,7 +103,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [notificationPermission, setNotificationPermission] = useState<
     NotificationPermission | "unsupported"
   >(() => (typeof Notification === "undefined" ? "unsupported" : Notification.permission));
-  const [pushStatus, setPushStatus] = useState<PushOutcome | null>(null);
+  const [pushStatus, setPushStatus] = useState<PushResult | null>(null);
 
   // Baseline cutoff: orders newer than this are "unseen". Set on bootstrap so
   // pre-existing orders never trigger a notification.
@@ -204,11 +204,18 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     primeAudioOnFirstGesture();
   }, []);
 
-  // Re-register on every load when permission is already granted. FCM rotates
-  // tokens, and the server upserts on the token, so this both refreshes an
-  // expired one and records the device as still alive — without ever prompting.
+  // Register on every load when permission is already granted — FCM rotates
+  // tokens, the server upserts on the token, so this refreshes an expired one
+  // and records the device as still alive.
+  //
+  // It also runs when push *cannot* work, purely to find out why: an iPhone in
+  // a Safari tab, a browser with no support, a revoked permission. Without that
+  // the banner has nothing to report and a device that never registers looks
+  // identical to one that did. The single case skipped is "default", where
+  // asking would raise a permission dialog on load — which Safari refuses
+  // outside a gesture anyway, hence the Topbar button.
   useEffect(() => {
-    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    if (typeof Notification !== "undefined" && Notification.permission === "default") return;
     void enablePush().then(setPushStatus);
   }, []);
 

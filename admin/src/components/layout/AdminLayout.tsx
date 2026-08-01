@@ -4,6 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { NotificationsProvider } from "@/features/notifications/NotificationsContext";
 import { ToastHost } from "@/features/notifications/ToastHost";
+import { PushStatusBanner } from "@/features/notifications/PushStatusBanner";
 import { Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/lib/cn";
 
@@ -59,6 +60,9 @@ export default function AdminLayout() {
       {/* Content */}
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onMenu={() => setOpen(true)} />
+        {/* Sits above the scroll area so the reason push is not working is
+            seen on arrival, not scrolled past. Renders nothing once it is. */}
+        <PushStatusBanner />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Suspense fallback={<div className="grid min-h-[50vh] place-items-center"><Spinner className="h-7 w-7 text-brand" /></div>}>
             <Outlet />
