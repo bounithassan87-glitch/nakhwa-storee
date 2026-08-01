@@ -50,6 +50,12 @@ export interface SendResult {
   invalid: string[];
   /** Set when push is not configured; not an error. */
   skipped?: string;
+  /**
+   * Why a send failed, when it failed for a reason other than a dead device.
+   * Push fails silently by design so an order is never held up by it, which
+   * otherwise leaves nothing to diagnose from.
+   */
+  errors?: { status: number; detail: string }[];
 }
 
 /** Access tokens last an hour; reuse within the isolate rather than per send. */
@@ -177,6 +183,40 @@ export async function checkPushConfig(serviceAccountJson: string | undefined): P
 }
 
 /**
+ * Decide whether a rejection means the device is gone, or that we sent
+ * something wrong.
+ *
+ * This distinction is not cosmetic, and getting it wrong is destructive. FCM
+ * answers a malformed *message* with the same `INVALID_ARGUMENT` it uses for a
+ * malformed *token*, so treating that code as "device is dead" deletes every
+ * registration in the table the first time a payload is wrong — and deletes
+ * each one again as soon as it is re-registered. A device can only be pruned on
+ * evidence that names the token: a 404, an `UNREGISTERED` error code, or a
+ * field violation pointing at `message.token`. Anything else is our bug to fix,
+ * and the registration must survive it.
+ */
+function isTokenDead(status: number, text: string): boolean {
+  if (status === 404) return true;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return false;
+  }
+  const err = (parsed as { error?: { status?: string; details?: unknown[] } }).error;
+  if (!err) return false;
+  if (err.status === "UNREGISTERED" || err.status === "NOT_FOUND") return true;
+
+  for (const detail of Array.isArray(err.details) ? err.details : []) {
+    const d = detail as { errorCode?: string; fieldViolations?: { field?: string }[] };
+    if (d.errorCode === "UNREGISTERED") return true;
+    if (d.fieldViolations?.some((v) => v.field === "message.token")) return true;
+  }
+  return false;
+}
+
+/**
  * Deliver one notification to many devices.
  *
  * v1 sends per token, so this fans out and tolerates individual failures: one
@@ -254,22 +294,25 @@ export async function sendPush(
 
       if (res.ok) return { token, ok: true as const };
 
-      // 404 UNREGISTERED / 400 INVALID_ARGUMENT on the token means the device is
-      // gone (app uninstalled, permission revoked, token rotated).
       const text = await res.text();
-      if (res.status === 404 || /UNREGISTERED|INVALID_ARGUMENT/.test(text)) {
-        return { token, ok: false as const, dead: true };
+      const dead = isTokenDead(res.status, text);
+      if (!dead) {
+        log("warn", { reqId, msg: "fcm_send_failed", status: res.status, detail: text.slice(0, 300) });
       }
-      log("warn", { reqId, msg: "fcm_send_failed", status: res.status, detail: text.slice(0, 200) });
-      return { token, ok: false as const, dead: false };
+      return { token, ok: false as const, dead, status: res.status, detail: text.slice(0, 300) };
     }),
   );
 
+  const errors: { status: number; detail: string }[] = [];
   for (const r of results) {
-    if (r.status !== "fulfilled") continue;
+    if (r.status !== "fulfilled") {
+      errors.push({ status: 0, detail: r.reason instanceof Error ? r.reason.message : String(r.reason) });
+      continue;
+    }
     if (r.value.ok) sent++;
     else if (r.value.dead) invalid.push(r.value.token);
+    else errors.push({ status: r.value.status, detail: r.value.detail });
   }
 
-  return { sent, invalid };
+  return errors.length > 0 ? { sent, invalid, errors } : { sent, invalid };
 }

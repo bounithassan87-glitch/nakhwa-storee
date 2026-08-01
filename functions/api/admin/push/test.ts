@@ -64,5 +64,8 @@ export const onRequest: AppFunction = async (ctx) => {
     sent: result.sent,
     pruned: result.invalid.length,
     skipped: result.skipped ?? null,
+    // Surfaced so a rejected payload can be read off directly. FCM's error text
+    // names the offending field; it carries nothing secret.
+    errors: result.errors ?? [],
   });
 };
