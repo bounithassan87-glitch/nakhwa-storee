@@ -725,6 +725,39 @@ ul{ margin:0; padding:0; list-style:none; }
   background:linear-gradient(180deg,#fff,var(--bg));
   animation:fadeUp .3s ease;
 }
+/* The second piece opens and closes rather than snapping.
+   The script already toggles `hidden` on this block; overriding the browser's
+   own display:none for it lets that same toggle animate, so the behaviour is
+   improved without touching the line that drives it. `max-height` is animated
+   rather than height because the block has no fixed size — the value only has
+   to exceed the real height, and 900px does. */
+#piece-2{
+  overflow:hidden;
+  max-height:900px;
+  opacity:1;
+  transform:translateY(0);
+  transition:max-height .3s cubic-bezier(.22,.61,.36,1),
+             opacity .28s ease,
+             transform .3s cubic-bezier(.22,.61,.36,1),
+             padding .3s ease,
+             border-width .3s ease;
+  /* The block-level fade-in would fight the collapse on the way out. */
+  animation:none;
+}
+#piece-2[hidden]{
+  display:flex;
+  max-height:0;
+  opacity:0;
+  transform:translateY(-10px);
+  padding-block:0;
+  border-width:0;
+  pointer-events:none;
+}
+/* Nothing to animate for someone who asked not to see motion. */
+@media (prefers-reduced-motion:reduce){
+  #piece-2{ transition:none; }
+}
+
 .piece-title{
   font-size:.98rem; color:var(--primary-dark);
   display:flex; align-items:center; gap:.4rem;
@@ -902,7 +935,7 @@ ul{ margin:0; padding:0; list-style:none; }
   margin-bottom:.2rem;
 }
 .bundle-hint p{
-  font-size:.82rem; line-height:1.65; color:#6B5B33; margin:0;
+  font-size:.8rem; line-height:1.6; color:#6B5B33; margin:0;
 }
 .bundle-hint p b{ font-weight:900; color:#5E552F; }
 .bundle-hint-save{

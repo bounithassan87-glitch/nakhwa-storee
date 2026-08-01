@@ -674,3 +674,33 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   frame.addEventListener('pointercancel', () => { x0 = null; });
 })();
+
+/* ---------- Second piece: start clean each time ----------
+   Choosing "قطعة واحدة" after filling the second piece used to leave those
+   values selected behind the collapsed block, so going back to "قطعتان"
+   presented a piece the customer had not just chosen — and had no reason to
+   re-check. They are cleared instead.
+
+   Nothing about the order changes: the payload only ever includes the second
+   piece when the quantity is 2, which was already true. Clearing is done by
+   unchecking the radios and firing one `change`, so the existing handler
+   repaints the selected states through its own path rather than this module
+   reaching into them. */
+(function resetSecondPiece(){
+  const qty = document.querySelectorAll('input[name="qty"]');
+  if (!qty.length) return;
+
+  function clearPieceTwo(){
+    const inputs = document.querySelectorAll('input[name="size2"], input[name="color2"]');
+    if (!inputs.length) return;
+    let changed = false;
+    inputs.forEach(i => { if (i.checked) { i.checked = false; changed = true; } });
+    // Unchecking in script fires no event, so the shared refresh is nudged once
+    // and it clears the `is-checked` styling for both groups itself.
+    if (changed) inputs[0].dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  qty.forEach(r => r.addEventListener('change', () => {
+    if (r.checked && r.value === '1') clearPieceTwo();
+  }));
+})();
