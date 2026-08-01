@@ -706,8 +706,17 @@ ul{ margin:0; padding:0; list-style:none; }
    order and everything that reads them — the checkout, the slider colour sync,
    the second-piece enable/disable — sees exactly what it did before. */
 .color-photo[data-kind="solid"]{ order:1; }
-.print-label{ order:2; }
-.color-photo[data-kind="pattern"]{ order:3; }
+.print-label{ order:20; }
+.color-photo[data-kind="pattern"]{ order:30; }
+
+/* The requested running order, set here so the radios never move in the DOM. */
+.color-photo[data-color="أسود"]{ order:1; }
+.color-photo[data-color="أبيض"]{ order:2; }
+.color-photo[data-color="مارون"]{ order:3; }
+.color-photo[data-color="بوردو"]{ order:4; }
+.color-photo[data-color="زيتي"]{ order:5; }
+.color-photo[data-color="مارون نمري"]{ order:30; }
+.color-photo[data-color="أسود نمري"]{ order:31; }
 
 /* A full-width flex item, so it forces the prints onto their own line and
    reads as a section heading without being one. */
@@ -736,10 +745,11 @@ ul{ margin:0; padding:0; list-style:none; }
              border-color .22s ease, box-shadow .22s ease;
 }
 
-/* A solid colour is shown as the colour itself. A photograph of khaki fabric
-   at 58px reads as a brown smudge; a filled disc reads instantly, which is the
-   whole point of a swatch. */
-.color-photo[data-kind="solid"] .cp-img{
+/* Every colour is a disc — no photographs anywhere in the selector. A
+   thumbnail of fabric at this size reads as a smudge; a filled circle reads
+   instantly, and giving all seven the same shape makes them comparable at a
+   glance instead of a mixed grid of pictures and dots. */
+.color-photo .cp-img{
   width:64px; height:64px;
   border-radius:50%;
   padding:0;
@@ -747,30 +757,36 @@ ul{ margin:0; padding:0; list-style:none; }
   border:3px solid #fff;
   box-shadow:0 4px 14px rgba(60,50,25,.22), inset 0 -8px 16px rgba(0,0,0,.12);
 }
-.color-photo[data-kind="solid"] .cp-img img{ display:none; }
+.color-photo .cp-img img{ display:none; }
 
-.color-photo[data-color="كاكي"]{ --sw:#8A7F52; }
-.color-photo[data-color="أسود"]{ --sw:#1C1B18; }
-.color-photo[data-color="عنابي"]{ --sw:#6B1F2E; }
-.color-photo[data-color="أبيض"]{ --sw:#F7F4EC; }
-/* White needs a real edge or it disappears into the card behind it. */
-.color-photo[data-color="أبيض"] .cp-img{ box-shadow:0 0 0 1px rgba(0,0,0,.16), 0 4px 14px rgba(60,50,25,.18); }
+.color-photo[data-color="أسود"]{ --sw:#121212; }
+.color-photo[data-color="أبيض"]{ --sw:#FFFFFF; }
+.color-photo[data-color="مارون"]{ --sw:#7E2B22; }
+.color-photo[data-color="بوردو"]{ --sw:#5A1029; }
+.color-photo[data-color="زيتي"]{ --sw:#6E7541; }
 
-/* A print cannot be one colour, so these stay photographs — as small cards,
-   cropped square so they line up with the discs instead of forming a ragged
-   second row. */
-.color-photo[data-kind="pattern"]{ width:92px; }
+/* White would otherwise vanish into the card behind it. */
+.color-photo[data-color="أبيض"] .cp-img{
+  box-shadow:0 0 0 1px rgba(0,0,0,.18), 0 4px 14px rgba(60,50,25,.18);
+}
+
+/* Leopard, drawn rather than photographed: irregular blotches over the base
+   colour, each with a darker rim, which is what reads as the print at 64px.
+   The two variants differ only in the base underneath. */
 .color-photo[data-kind="pattern"] .cp-img{
-  border-radius:18px;
-  padding:3px;
-  background:var(--surface);
-  box-shadow:0 4px 14px rgba(60,50,25,.16);
+  background-color:var(--sw);
+  background-image:
+    radial-gradient(ellipse 34% 26% at 26% 22%, var(--spot) 55%, transparent 58%),
+    radial-gradient(ellipse 26% 20% at 68% 16%, var(--spot) 55%, transparent 58%),
+    radial-gradient(ellipse 30% 24% at 84% 46%, var(--spot) 55%, transparent 58%),
+    radial-gradient(ellipse 24% 20% at 46% 44%, var(--spot) 55%, transparent 58%),
+    radial-gradient(ellipse 30% 24% at 16% 60%, var(--spot) 55%, transparent 58%),
+    radial-gradient(ellipse 26% 22% at 58% 74%, var(--spot) 55%, transparent 58%),
+    radial-gradient(ellipse 22% 18% at 88% 82%, var(--spot) 55%, transparent 58%),
+    radial-gradient(ellipse 20% 16% at 30% 88%, var(--spot) 55%, transparent 58%);
 }
-.color-photo[data-kind="pattern"] .cp-img img{
-  width:80px; height:88px;
-  object-fit:cover; border-radius:15px; display:block;
-}
-.color-photo[data-kind="pattern"]:hover .cp-img{ transform:translateY(-2px); }
+.color-photo[data-color="مارون نمري"]{ --sw:#8E4A2E; --spot:rgba(46,22,12,.86); }
+.color-photo[data-color="أسود نمري"]{ --sw:#2B2622; --spot:rgba(140,104,60,.92); }
 .color-photo em{
   font-size:.7rem; color:var(--ink-soft); font-style:normal; font-weight:700;
   line-height:1.35; text-align:center;

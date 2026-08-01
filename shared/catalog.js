@@ -17,14 +17,13 @@ export const PRODUCT = {
 
 // Colours exactly as shown in the landing page selector.
 export const COLORS = [
-  "كاكي",
   "أسود",
-  "عنابي",
-  "نمري",
   "أبيض",
-  "نمري أسود",
-  "نمري بني",
-  "أبيض بني",
+  "مارون",
+  "بوردو",
+  "زيتي",
+  "مارون نمري",
+  "أسود نمري",
 ];
 
 export const SIZES = ["L", "XL", "2XL", "3XL"];
