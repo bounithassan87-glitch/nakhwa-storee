@@ -22,6 +22,8 @@ export interface PushPayload {
   link: string;
   /** Collapses repeats of the same order into one notification. */
   tag: string;
+  /** Absolute URL — a relative path is not resolvable from the push service. */
+  icon: string;
 }
 
 export interface SendResult {
@@ -193,19 +195,41 @@ export async function sendPush(
         body: JSON.stringify({
           message: {
             token,
-            // `data` only: the service worker renders the notification itself,
-            // which keeps one code path for foreground and background instead
-            // of the browser drawing its own for `notification` messages.
-            data: {
-              title: payload.title,
-              body: payload.body,
-              link: payload.link,
-              tag: payload.tag,
-            },
+            // A `webpush.notification` block, not data-only.
+            //
+            // Data-only messages are displayed by our own service worker, which
+            // means nothing appears unless that worker is running — so they
+            // arrive while the dashboard is open and silently do not when the
+            // browser is closed. With a notification block the push service and
+            // the browser render it themselves, with no code of ours in the
+            // path, which is what makes background delivery work.
+            notification: { title: payload.title, body: payload.body },
             webpush: {
+              // Urgency high asks the push service not to batch it; TTL keeps it
+              // queued for a day so a device that is offline still gets it when
+              // it comes back.
               headers: { Urgency: "high", TTL: "86400" },
-              fcm_options: { link: payload.link },
+              notification: {
+                title: payload.title,
+                body: payload.body,
+                icon: payload.icon,
+                badge: payload.icon,
+                // The order id — a repeat replaces rather than stacks.
+                tag: payload.tag,
+                // Orders should not disappear on their own before they are seen.
+                requireInteraction: true,
+                dir: "rtl",
+                lang: "ar",
+                data: { link: payload.link },
+              },
+              // `fcm_options.link` is deliberately omitted: it installs the SDK's
+              // own notificationclick handler alongside ours, and both would act
+              // on the same click. The link travels in `notification.data`
+              // instead, which our handler reads.
             },
+            // Mirrored so the click handler can find the target whichever shape
+            // the browser hands it back in.
+            data: { link: payload.link, tag: payload.tag },
           },
         }),
       });

@@ -20,17 +20,27 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Take over as soon as a new version is deployed, rather than waiting for
+// every dashboard tab to close. Without this an old worker can keep serving
+// pushes for days.
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+
 /**
- * The server sends `data` only, so the notification is drawn here for both
- * foreground and background. `tag` is the order id: a repeat delivery of the
- * same order replaces the existing notification rather than stacking a second.
+ * Fallback for a data-only message.
+ *
+ * The server now sends a `webpush.notification` block, which the SDK renders on
+ * its own — that is what makes delivery work while the browser is closed,
+ * because it no longer depends on this callback running. This stays for any
+ * data-only message so one is never silently dropped.
  */
 messaging.onBackgroundMessage((payload) => {
   const d = (payload && payload.data) || {};
+  if (!d.title && !d.body) return; // the SDK already showed a notification block
   self.registration.showNotification(d.title || "🛒 طلب جديد", {
     body: d.body || "",
     tag: d.tag || "nakhwa-order",
-    renotify: false,
+    requireInteraction: true,
     dir: "rtl",
     lang: "ar",
     icon: "/admin/assets/icon-192.png",
@@ -40,9 +50,16 @@ messaging.onBackgroundMessage((payload) => {
 });
 
 // Clicking focuses an already-open dashboard instead of opening a second tab.
+// The link is read from every shape the payload can arrive in: our own
+// `data.link`, or the SDK's FCM_MSG envelope when it rendered the notification.
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const link = (event.notification.data && event.notification.data.link) || "/admin/orders";
+  const data = event.notification.data || {};
+  const link =
+    data.link ||
+    (data.FCM_MSG && data.FCM_MSG.data && data.FCM_MSG.data.link) ||
+    (data.FCM_MSG && data.FCM_MSG.notification && data.FCM_MSG.notification.click_action) ||
+    "/admin/orders";
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((all) => {

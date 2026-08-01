@@ -8,7 +8,13 @@ import {
   type ReactNode,
 } from "react";
 import { fetchOrderStats } from "./api";
-import { isSoundEnabled, setSoundPref, primeAudio, playNewOrderSound } from "./sound";
+import {
+  isSoundEnabled,
+  setSoundPref,
+  primeAudio,
+  primeAudioOnFirstGesture,
+  playNewOrderSound,
+} from "./sound";
 import { enablePush, onForegroundPush, type PushOutcome } from "./push";
 import type { LatestOrder } from "./types";
 
@@ -189,6 +195,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const refreshNow = useCallback(() => {
     void poll();
   }, [poll]);
+
+  // Arm the audio unlock as soon as the dashboard mounts. Without it the chime
+  // only ever worked for an admin who happened to toggle the sound control.
+  useEffect(() => {
+    primeAudioOnFirstGesture();
+  }, []);
 
   // Re-register on every load when permission is already granted. FCM rotates
   // tokens, and the server upserts on the token, so this both refreshes an

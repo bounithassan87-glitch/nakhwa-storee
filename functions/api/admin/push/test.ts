@@ -46,6 +46,7 @@ export const onRequest: AppFunction = async (ctx) => {
       title: "🛒 طلب جديد",
       body: ["المنتج: اختبار", "الزبون: اختبار", "المدينة: اختبار", "المبلغ: 0 DH"].join("\n"),
       link: "https://nakhwa-store.pages.dev/admin/orders",
+      icon: "https://nakhwa-store.pages.dev/admin/assets/icon-192.png",
       tag: `test-${Date.now()}`,
     },
     reqId,

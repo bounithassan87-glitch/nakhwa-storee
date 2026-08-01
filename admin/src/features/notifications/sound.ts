@@ -31,6 +31,30 @@ export function primeAudio(): void {
   if (c && c.state === "suspended") void c.resume();
 }
 
+let listening = false;
+
+/**
+ * Unlock audio on the admin's first interaction with the page, whatever it is.
+ *
+ * This is what was missing: priming only ran when the sound toggle was switched
+ * on, and sound is on by default, so an admin who never touched that control
+ * left the AudioContext suspended for the whole session. Every later
+ * `resume()` was outside a gesture and Chrome refused it — badge, popup and
+ * bell all worked and the chime never played.
+ *
+ * `once` on each listener, and the flag, keep this to a single unlock.
+ */
+export function primeAudioOnFirstGesture(): void {
+  if (listening || typeof window === "undefined") return;
+  listening = true;
+  const unlock = () => {
+    primeAudio();
+    for (const evt of GESTURES) window.removeEventListener(evt, unlock);
+  };
+  const GESTURES = ["pointerdown", "keydown", "touchstart"] as const;
+  for (const evt of GESTURES) window.addEventListener(evt, unlock, { once: true, passive: true });
+}
+
 function beep(c: AudioContext, freq: number, start: number, dur: number): void {
   const osc = c.createOscillator();
   const gain = c.createGain();
@@ -40,21 +64,30 @@ function beep(c: AudioContext, freq: number, start: number, dur: number): void {
   osc.frequency.value = freq;
   const t0 = c.currentTime + start;
   gain.gain.setValueAtTime(0.0001, t0);
-  gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.42, t0 + 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
   osc.start(t0);
   osc.stop(t0 + dur + 0.02);
 }
 
-/** Play the notification chime (respects the persisted mute preference). */
+/**
+ * Play the notification chime (respects the persisted mute preference).
+ *
+ * Three rising tones rather than two, longer and louder than before: this has
+ * to carry across a room while someone is packing orders, not sit politely
+ * under the UI.
+ */
 export function playNewOrderSound(): void {
   if (!isSoundEnabled()) return;
   const c = getCtx();
   if (!c) return;
   try {
+    // Resume is a no-op once primed; kept for the case where the gesture and
+    // the first order land in the same moment.
     if (c.state === "suspended") void c.resume();
-    beep(c, 784, 0, 0.18); // G5
-    beep(c, 1047, 0.12, 0.22); // C6
+    beep(c, 784, 0, 0.16); // G5
+    beep(c, 1047, 0.14, 0.16); // C6
+    beep(c, 1319, 0.28, 0.34); // E6 — held, so the phrase resolves audibly
   } catch {
     /* ignore audio errors */
   }

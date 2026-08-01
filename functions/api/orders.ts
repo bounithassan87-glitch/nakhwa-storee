@@ -22,6 +22,9 @@ import { COLORS, SIZES, PRICE_BY_QTY, CURRENCY, PRODUCT } from "../../shared/cat
  */
 const DASHBOARD_ORDERS_URL = "https://nakhwa-store.pages.dev/admin/orders";
 
+/** Absolute — the push service cannot resolve a relative path. */
+const PUSH_ICON_URL = "https://nakhwa-store.pages.dev/admin/assets/icon-192.png";
+
 /**
  * Cross-origin access for storefronts hosted elsewhere.
  *
@@ -334,6 +337,7 @@ async function notifyDevices(
           `المبلغ: ${o.total / 100} DH`,
         ].join("\n"),
         link: DASHBOARD_ORDERS_URL,
+        icon: PUSH_ICON_URL,
         // The order id, so a repeat delivery replaces rather than stacks.
         tag: orderId,
       },
