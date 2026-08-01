@@ -15,6 +15,9 @@ import { json, log } from "../_lib/http";
 import { sendPush, DASHBOARD_ORDERS_URL, PUSH_ICON_URL } from "./_lib/fcm";
 import { COLORS, SIZES, PRICE_BY_QTY, CURRENCY, PRODUCT } from "../../shared/catalog.js";
 
+/** Setting row holding what FCM answered for the most recent order. */
+const PUSH_LAST_RESULT_KEY = "push_last_result";
+
 /**
  * Cross-origin access for storefronts hosted elsewhere.
  *
@@ -339,8 +342,46 @@ async function notifyDevices(
       await prisma.pushToken.deleteMany({ where: { token: { in: result.invalid } } });
     }
     log("info", { reqId, msg: "push_sent", sent: result.sent, pruned: result.invalid.length, skipped: result.skipped });
+    await recordPushResult(prisma, devices.length, result);
   } catch (err) {
     log("warn", { reqId, msg: "push_failed", error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+/**
+ * Record what FCM answered for the last order.
+ *
+ * Delivery happens in `waitUntil`, after the response has gone back to the
+ * customer, so nothing about it reaches the caller and a failure shows up only
+ * in logs nobody reads at 2am. This leaves one durable row saying whether the
+ * last notification was accepted, how many devices it went to, and the error if
+ * it was not — which is the difference between "push is working" and "push has
+ * been silently broken for a week".
+ *
+ * It reuses the existing Setting table, so there is no schema change, and it is
+ * wrapped so that bookkeeping can never affect an order that is already saved.
+ */
+async function recordPushResult(
+  prisma: PrismaClient,
+  devices: number,
+  result: { sent: number; invalid: string[]; skipped?: string; errors?: { status: number; detail: string }[] },
+): Promise<void> {
+  try {
+    const value = JSON.stringify({
+      at: new Date().toISOString(),
+      devices,
+      sent: result.sent,
+      pruned: result.invalid.length,
+      skipped: result.skipped ?? null,
+      errors: (result.errors ?? []).slice(0, 3),
+    }).slice(0, 2000);
+    await prisma.setting.upsert({
+      where: { key: PUSH_LAST_RESULT_KEY },
+      update: { value },
+      create: { key: PUSH_LAST_RESULT_KEY, value },
+    });
+  } catch {
+    /* diagnostics must never break the order path */
   }
 }
 
