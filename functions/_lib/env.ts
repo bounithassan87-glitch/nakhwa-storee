@@ -12,6 +12,10 @@ export interface Env {
   AUTH_SECRET?: string;
   ADMIN_EMAIL?: string;
   ADMIN_PASSWORD_HASH?: string;
+  // Firebase service-account JSON, used to mint the OAuth2 token that FCM
+  // HTTP v1 requires. Optional: without it push is skipped and the dashboard
+  // still gets its sound, popup and badge.
+  FIREBASE_SERVICE_ACCOUNT?: string;
 }
 
 /** Resolve the DB connection string, preferring Hyperdrive in production. */

@@ -9,6 +9,7 @@ import {
 } from "react";
 import { fetchOrderStats } from "./api";
 import { isSoundEnabled, setSoundPref, primeAudio, playNewOrderSound } from "./sound";
+import { enablePush, onForegroundPush, type PushOutcome } from "./push";
 import type { LatestOrder } from "./types";
 
 /** Poll cadence. Kept inside the requested 10–15s window. Polling only happens
@@ -25,12 +26,14 @@ export interface ToastItem {
 }
 
 /**
- * Desktop notification for an order that arrived while the tab was not in
- * front. Nothing is shown when the tab is visible — the in-page popup already
- * covers that, and two alerts for one order is noise.
+ * Desktop notification raised by the poll for an order that arrived while the
+ * tab was not in front.
  *
- * `tag` is the order id, so the browser replaces rather than stacks if the same
- * order were ever notified twice.
+ * This is the fallback path, used when FCM has nothing to deliver through —
+ * no service account configured, or the device never registered. When push is
+ * working the service worker draws the notification instead; both use the order
+ * id as `tag`, so the browser replaces rather than stacks and the admin sees
+ * one notification per order either way.
  */
 function notifyBrowser(order: LatestOrder, onOpen: () => void): void {
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
@@ -75,8 +78,10 @@ interface NotificationsValue {
   dismissToast: (id: number) => void;
   /** "default" until the admin has been asked; drives the Topbar prompt. */
   notificationPermission: NotificationPermission | "unsupported";
-  /** Asks the browser once, from a user gesture. */
+  /** Asks the browser once, from a user gesture, and registers for push. */
   requestNotificationPermission: () => void;
+  /** Result of the last push registration attempt. */
+  pushStatus: PushOutcome | null;
 }
 
 const NotificationsContext = createContext<NotificationsValue | null>(null);
@@ -90,6 +95,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [notificationPermission, setNotificationPermission] = useState<
     NotificationPermission | "unsupported"
   >(() => (typeof Notification === "undefined" ? "unsupported" : Notification.permission));
+  const [pushStatus, setPushStatus] = useState<PushOutcome | null>(null);
 
   // Baseline cutoff: orders newer than this are "unseen". Set on bootstrap so
   // pre-existing orders never trigger a notification.
@@ -114,9 +120,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     [dismissToast],
   );
 
+  // Asks the browser and registers the device in one step, from the Topbar
+  // button — a real gesture, which Safari requires and which is better than
+  // ambushing the admin with a permission dialog on load.
   const requestNotificationPermission = useCallback(() => {
-    if (typeof Notification === "undefined") return;
-    void Notification.requestPermission().then(setNotificationPermission);
+    void enablePush().then((outcome) => {
+      setPushStatus(outcome);
+      if (typeof Notification !== "undefined") setNotificationPermission(Notification.permission);
+    });
   }, []);
 
   const setSoundEnabled = useCallback((enabled: boolean) => {
@@ -179,6 +190,20 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     void poll();
   }, [poll]);
 
+  // Re-register on every load when permission is already granted. FCM rotates
+  // tokens, and the server upserts on the token, so this both refreshes an
+  // expired one and records the device as still alive — without ever prompting.
+  useEffect(() => {
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    void enablePush().then(setPushStatus);
+  }, []);
+
+  // A push arriving while the tab is focused never reaches the service worker,
+  // so it is used purely as a trigger: poll immediately and let the existing
+  // path raise the toast. One source of truth for the toast, and the order-id
+  // guard inside `poll` still prevents a second announcement.
+  useEffect(() => onForegroundPush(() => void poll()), [poll]);
+
   // Polling loop with Page Visibility optimization: no polls while hidden, and
   // an immediate poll the moment the tab becomes visible again.
   useEffect(() => {
@@ -216,6 +241,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         dismissToast,
         notificationPermission,
         requestNotificationPermission,
+        pushStatus,
       }}
     >
       {children}

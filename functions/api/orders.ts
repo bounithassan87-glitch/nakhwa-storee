@@ -12,7 +12,15 @@ import type { AppFunction } from "../_lib/context";
 import { resolveDatabaseUrl } from "../_lib/env";
 import { getPrisma } from "../_lib/db";
 import { json, log } from "../_lib/http";
+import { sendPush } from "./_lib/fcm";
 import { COLORS, SIZES, PRICE_BY_QTY, CURRENCY, PRODUCT } from "../../shared/catalog.js";
+
+/**
+ * Where a push notification sends the admin. The dashboard is served under
+ * /admin, so this is the orders page itself rather than a bare /orders which
+ * has no route.
+ */
+const DASHBOARD_ORDERS_URL = "https://nakhwa-store.pages.dev/admin/orders";
 
 /**
  * Cross-origin access for storefronts hosted elsewhere.
@@ -115,8 +123,12 @@ export const onRequest: AppFunction = async (ctx) => {
   return handleCreateOrder(ctx);
 };
 
-const handleCreateOrder: AppFunction = async ({ request, env, data }) => {
+const handleCreateOrder: AppFunction = async ({ request, env, data, waitUntil }) => {
   const reqId = data.reqId;
+  const push: PushContext = {
+    serviceAccount: env.FIREBASE_SERVICE_ACCOUNT,
+    waitUntil: (p) => waitUntil(p),
+  };
 
   let raw: unknown;
   try {
@@ -141,8 +153,8 @@ const handleCreateOrder: AppFunction = async ({ request, env, data }) => {
 
   try {
     return usesCatalog
-      ? await createCatalogOrder(prisma, raw, reqId)
-      : await createLegacyOrder(prisma, raw, reqId);
+      ? await createCatalogOrder(prisma, raw, reqId, push)
+      : await createLegacyOrder(prisma, raw, reqId, push);
   } catch (err) {
     log("error", { reqId, msg: "order_create_failed", error: err instanceof Error ? err.message : String(err) });
     return reply({ ok: false, error: "server_error" }, 500);
@@ -164,12 +176,24 @@ interface PersistInput {
   total: number;
   currency: string;
   productId: string;
+  productName: string;
   unitPrice: number;
   items: { size: string; color: string }[];
 }
 
+/** What `persist` needs to fan a notification out without delaying the reply. */
+interface PushContext {
+  serviceAccount?: string;
+  waitUntil: (p: Promise<unknown>) => void;
+}
+
 /** The original Nakhwa flow, behaviour-for-behaviour as it was. */
-async function createLegacyOrder(prisma: PrismaClient, raw: unknown, reqId: string | undefined) {
+async function createLegacyOrder(
+  prisma: PrismaClient,
+  raw: unknown,
+  reqId: string | undefined,
+  push?: PushContext,
+) {
   const parsed = legacySchema.safeParse(raw);
   if (!parsed.success) {
     log("warn", { reqId, msg: "order_validation_failed", issues: parsed.error.flatten().fieldErrors });
@@ -194,9 +218,10 @@ async function createLegacyOrder(prisma: PrismaClient, raw: unknown, reqId: stri
     total: PRICE_BY_QTY[order.quantity],
     currency: CURRENCY,
     productId: product.id,
+    productName: product.name,
     unitPrice: product.basePrice,
     items: order.items,
-  });
+  }, push);
 }
 
 /**
@@ -205,7 +230,12 @@ async function createLegacyOrder(prisma: PrismaClient, raw: unknown, reqId: stri
  * The price is read from the product row and never from the request — a client
  * can ask for a product, not for what it costs.
  */
-async function createCatalogOrder(prisma: PrismaClient, raw: unknown, reqId: string | undefined) {
+async function createCatalogOrder(
+  prisma: PrismaClient,
+  raw: unknown,
+  reqId: string | undefined,
+  push?: PushContext,
+) {
   const parsed = catalogSchema.safeParse(raw);
   if (!parsed.success) {
     log("warn", { reqId, msg: "order_validation_failed", issues: parsed.error.flatten().fieldErrors });
@@ -268,13 +298,65 @@ async function createCatalogOrder(prisma: PrismaClient, raw: unknown, reqId: str
     total: unitPrice * order.quantity,
     currency: product.currency,
     productId: product.id,
+    productName: product.name,
     unitPrice,
     items,
-  });
+  }, push);
+}
+
+/**
+ * Fan a "new order" notification out to every registered device.
+ *
+ * Runs after the response has been sent and swallows everything: an order is
+ * recorded whether or not anyone could be told about it, and the dashboard's
+ * own sound/popup/badge do not depend on this path.
+ */
+async function notifyDevices(
+  prisma: PrismaClient,
+  push: PushContext,
+  reqId: string | undefined,
+  o: PersistInput,
+  orderId: string,
+): Promise<void> {
+  try {
+    const devices = await prisma.pushToken.findMany({ select: { token: true } });
+    if (devices.length === 0) return;
+
+    const result = await sendPush(
+      push.serviceAccount,
+      devices.map((d) => d.token),
+      {
+        title: "🛒 طلب جديد",
+        body: [
+          `المنتج: ${o.productName}`,
+          `الزبون: ${o.fullname}`,
+          `المدينة: ${o.city}`,
+          `المبلغ: ${o.total / 100} DH`,
+        ].join("\n"),
+        link: DASHBOARD_ORDERS_URL,
+        // The order id, so a repeat delivery replaces rather than stacks.
+        tag: orderId,
+      },
+      reqId,
+    );
+
+    // Prune devices FCM says are gone, so the list does not grow stale.
+    if (result.invalid.length > 0) {
+      await prisma.pushToken.deleteMany({ where: { token: { in: result.invalid } } });
+    }
+    log("info", { reqId, msg: "push_sent", sent: result.sent, pruned: result.invalid.length, skipped: result.skipped });
+  } catch (err) {
+    log("warn", { reqId, msg: "push_failed", error: err instanceof Error ? err.message : String(err) });
+  }
 }
 
 /** Shared write path: upsert the customer, then create the order and its items. */
-async function persist(prisma: PrismaClient, reqId: string | undefined, o: PersistInput) {
+async function persist(
+  prisma: PrismaClient,
+  reqId: string | undefined,
+  o: PersistInput,
+  push?: PushContext,
+) {
   const customer = await prisma.customer.upsert({
     where: { phone: o.phone },
     update: { fullName: o.fullname, city: o.city, address: o.address },
@@ -299,7 +381,7 @@ async function persist(prisma: PrismaClient, reqId: string | undefined, o: Persi
         })),
       },
     },
-    select: { orderNumber: true, quantity: true, totalPrice: true, currency: true },
+    select: { id: true, orderNumber: true, quantity: true, totalPrice: true, currency: true },
   });
 
   log("info", {
@@ -309,6 +391,9 @@ async function persist(prisma: PrismaClient, reqId: string | undefined, o: Persi
     quantity: created.quantity,
     source: o.source,
   });
+
+  // Handed to the runtime so the customer's confirmation is not waiting on FCM.
+  if (push) push.waitUntil(notifyDevices(prisma, push, reqId, o, created.id));
 
   return reply(
     {

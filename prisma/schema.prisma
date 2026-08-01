@@ -8,8 +8,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")           // pooled — app runtime
-  directUrl = env("DATABASE_URL_UNPOOLED")  // direct — migrations
+  url       = env("DATABASE_URL") // pooled — app runtime
+  directUrl = env("DATABASE_URL_UNPOOLED") // direct — migrations
 }
 
 enum ProductStatus {
@@ -119,27 +119,27 @@ enum OrderStatus {
 
 /// A COD order. Financial fields are snapshots — history never mutates.
 model Order {
-  id            String      @id @default(cuid())
-  orderNumber   String      @unique
+  id            String       @id @default(cuid())
+  orderNumber   String       @unique
   customerId    String
-  customer      Customer    @relation(fields: [customerId], references: [id])
+  customer      Customer     @relation(fields: [customerId], references: [id])
   quantity      Int
   totalPrice    Int // centimes
-  currency      String      @default("MAD")
-  status        OrderStatus @default(PENDING)
-  paymentMethod String      @default("COD")
-  freeShipping  Boolean     @default(true)
+  currency      String       @default("MAD")
+  status        OrderStatus  @default(PENDING)
+  paymentMethod String       @default("COD")
+  freeShipping  Boolean      @default(true)
   note          String?
-  source        String      @default("landing")
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  source        String       @default("landing")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   items         OrderItem[]
   events        OrderEvent[]
   shipment      Shipment?
   // Marketing attribution (Phase 2.9) — nullable; the public checkout never sets
   // it. onDelete: SetNull keeps order history if a campaign is deleted.
   campaignId    String?
-  campaign      Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  campaign      Campaign?    @relation(fields: [campaignId], references: [id], onDelete: SetNull)
 
   @@index([customerId])
   @@index([status])
@@ -163,18 +163,18 @@ model OrderEvent {
 /// Shipment details for an order (one-to-one). All fields optional so a shipment
 /// record is created lazily when fulfillment begins.
 model Shipment {
-  id                 String    @id @default(cuid())
-  orderId            String    @unique
-  order              Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  company            String? // shipping company name
-  trackingNumber     String?
-  shippingCost       Int? // centimes
-  codAmount          Int? // centimes collected on delivery
+  id                  String    @id @default(cuid())
+  orderId             String    @unique
+  order               Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  company             String? // shipping company name
+  trackingNumber      String?
+  shippingCost        Int? // centimes
+  codAmount           Int? // centimes collected on delivery
   estimatedDeliveryAt DateTime?
-  deliveredAt        DateTime?
-  status             String? // carrier-reported status (free text)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  deliveredAt         DateTime?
+  status              String? // carrier-reported status (free text)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@index([company])
 }
@@ -325,4 +325,24 @@ model CampaignEvent {
   createdAt  DateTime @default(now())
 
   @@index([campaignId])
+}
+
+/// One row per browser/device that has granted notification permission.
+///
+/// FCM issues a token per browser installation; it is the delivery address, not
+/// an identity, so it is unique on its own and is re-saved on every dashboard
+/// load. That keeps a rotated token from leaving a stale duplicate behind, and
+/// means a device that reinstalls simply replaces its row.
+model PushToken {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  /// Which admin registered it — used to clean up when an admin is removed.
+  adminEmail String
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  /// Refreshed on every successful save; a token FCM rejects is deleted.
+  lastSeenAt DateTime @default(now())
+
+  @@index([adminEmail])
 }
