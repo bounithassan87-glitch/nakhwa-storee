@@ -667,6 +667,117 @@ ul{ margin:0; padding:0; list-style:none; }
 .benefit-card h3{ font-size:.95rem; margin-bottom:.35rem; }
 .benefit-card p{ font-size:.8rem; color:var(--ink-soft); line-height:1.5; }
 
+/* ===== Trust & delivery =====
+   Sits between the hero and the order form. Deliberately compact: it exists to
+   answer "will this reach me, and is it worth it" in one screen, and every
+   extra centimetre here is distance between the customer and the form. */
+.trust-delivery{
+  padding:1.3rem 1.25rem 1.25rem;
+  background:
+    radial-gradient(120% 90% at 50% 0%, #FBF3DC 0%, transparent 60%),
+    var(--bg);
+  border-block:1px solid rgba(184,145,47,.22);
+}
+.td-inner{ max-width:560px; margin:0 auto; text-align:center; }
+
+.td-ribbon{
+  display:inline-block;
+  background:linear-gradient(135deg,var(--gold),#9c7a26);
+  color:#fff; font-weight:900; font-size:.78rem; letter-spacing:.02em;
+  padding:.4rem .95rem; border-radius:999px;
+  box-shadow:0 8px 20px rgba(184,145,47,.34);
+  margin-bottom:.75rem;
+}
+.td-title{
+  font-size:clamp(1.18rem,5vw,1.6rem);
+  line-height:1.45; font-weight:900; color:var(--ink);
+  margin-bottom:1rem;
+}
+.td-title span{ color:var(--primary-dark); }
+
+.td-benefits{
+  display:grid; gap:.4rem;
+  text-align:start; margin-bottom:.95rem;
+}
+.td-benefits li{
+  display:flex; align-items:flex-start; gap:.6rem;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:.5rem .75rem;
+  font-size:.83rem; font-weight:700; color:var(--ink);
+  line-height:1.45;
+  box-shadow:0 2px 8px rgba(60,50,25,.05);
+}
+.td-ico{ font-size:1.05rem; line-height:1.4; flex:0 0 auto; }
+
+/* The one-line summary, for someone who reads nothing else. */
+.td-bar{
+  display:flex; align-items:center; justify-content:center;
+  flex-wrap:wrap; gap:.5rem .7rem;
+  background:var(--dark); color:#F3EAD4;
+  border-radius:999px;
+  padding:.65rem 1rem;
+  font-size:.8rem; font-weight:800;
+  box-shadow:0 10px 24px rgba(36,31,22,.25);
+  margin-bottom:1rem;
+}
+.td-bar i{ width:1px; height:14px; background:rgba(243,234,212,.35); display:inline-block; }
+
+.td-quality{
+  background:var(--surface);
+  border:1px solid rgba(184,145,47,.3);
+  border-radius:var(--radius-md);
+  padding:.85rem .9rem;
+  box-shadow:var(--shadow-card);
+}
+.td-quality-title{
+  font-size:1rem; font-weight:900; color:var(--bordeaux,#6B1F2E);
+  margin-bottom:.6rem;
+}
+.td-quality-list{
+  display:grid; grid-template-columns:1fr 1fr; gap:.45rem .6rem;
+  text-align:start;
+}
+.td-quality-list li{
+  position:relative; padding-inline-start:1.15rem;
+  font-size:.82rem; font-weight:700; color:var(--ink-soft); line-height:1.5;
+}
+.td-quality-list li::before{
+  content:"◆"; position:absolute; inset-inline-start:0; top:0;
+  color:var(--gold); font-size:.7rem;
+}
+
+/* The last thing read before the fields. */
+.order-promise{
+  display:flex; flex-direction:column; align-items:center; gap:.35rem;
+  background:linear-gradient(140deg,#6B1F2E,#4A1420);
+  color:#fff;
+  border:1.5px solid rgba(184,145,47,.55);
+  border-radius:var(--radius-md);
+  padding:.9rem 1rem;
+  margin-bottom:.8rem;
+  text-align:center;
+  box-shadow:0 14px 32px rgba(74,20,32,.28);
+}
+.op-flag{
+  background:linear-gradient(135deg,var(--gold),#9c7a26);
+  color:#fff; font-size:.72rem; font-weight:900;
+  padding:.25rem .7rem; border-radius:999px;
+}
+.op-main{ font-size:.98rem; font-weight:900; line-height:1.5; }
+.op-sub{ font-size:.83rem; font-weight:700; color:#F0DCA9; }
+
+.order-cta-line{
+  text-align:center; font-size:.9rem; font-weight:800;
+  color:var(--primary-dark); margin-bottom:.95rem;
+}
+
+@media (min-width:640px){
+  .td-benefits{ grid-template-columns:1fr 1fr; }
+  .td-quality-list{ grid-template-columns:repeat(3,1fr); }
+}
+
 /* ===== Order Form ===== */
 /* Top padding is deliberately small: the form now sits directly under the hero
    and the point of moving it was to remove the gap a visitor had to scroll
