@@ -19,6 +19,20 @@
 (function () {
   'use strict';
 
+  // Meta Pixel bootstrap. It lives here rather than inline in the page so the
+  // document carries no executable inline script at all — which is what allows
+  // 'unsafe-inline' to be removed from script-src. Same code, same order: init
+  // first, then the PageView fired at the bottom of this file.
+  (function (f, b, e, v, n, t, s) {
+    if (f.fbq) return;
+    n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+    if (!f._fbq) f._fbq = n;
+    n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = [];
+    t = b.createElement(e); t.async = !0; t.src = v;
+    s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+  })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+  try { window.fbq('init', '2808695152828717'); } catch (_) { /* blocked */ }
+
   var API_BASE = (function () {
     try {
       var src = (document.currentScript && document.currentScript.src) || '';
@@ -50,10 +64,16 @@
    * A stable id for this visitor, so events from the same person link together
    * across a session. Random and first-party — it identifies nobody by itself.
    */
+  // Anything that reaches the server is validated there too, but a value read
+  // back out of storage is attacker-controlled on a compromised device and is
+  // not trusted on the way out: only the shape this file writes is accepted,
+  // and anything else is replaced rather than forwarded.
+  var ID_SHAPE = /^(?:[0-9a-f-]{36}|nk-[0-9a-z]{1,12}-[0-9a-z]{1,12})$/i;
+
   function externalId() {
     try {
       var existing = localStorage.getItem(EXTERNAL_ID_KEY);
-      if (existing) return existing;
+      if (existing && ID_SHAPE.test(existing)) return existing;
       var fresh = uuid();
       localStorage.setItem(EXTERNAL_ID_KEY, fresh);
       return fresh;
@@ -119,6 +139,9 @@
         body: JSON.stringify(body),
         keepalive: true,
         mode: 'cors',
+        credentials: 'omit',
+        referrerPolicy: 'strict-origin',
+        cache: 'no-store',
       }).catch(function () { /* offline, blocked, CORS — not the page's problem */ });
     } catch (_) { /* ignore */ }
   }

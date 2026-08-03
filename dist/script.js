@@ -53,7 +53,7 @@ const WA_NUMBER="212624273714",PRICE_1=299,PRICE_2=549;function trackPixelOnce(e
 
   // Swipe. Horizontal only, so vertical scrolling is never captured.
   let x0 = null, y0 = null;
-  frame.addEventListener('pointerdown', (e) => { x0 = e.clientX; y0 = e.clientY; });
+  frame.addEventListener('pointerdown', (e) => { x0 = e.clientX; y0 = e.clientY; }, { passive: true });
   frame.addEventListener('pointerup', (e) => {
     if (x0 === null) return;
     const dx = e.clientX - x0, dy = e.clientY - y0;
@@ -61,8 +61,8 @@ const WA_NUMBER="212624273714",PRICE_1=299,PRICE_2=549;function trackPixelOnce(e
     if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
     // RTL: a leftward swipe advances, matching the strip's reading direction.
     step(dx < 0 ? 1 : -1);
-  });
-  frame.addEventListener('pointercancel', () => { x0 = null; });
+  }, { passive: true });
+  frame.addEventListener('pointercancel', () => { x0 = null; }, { passive: true });
 })();
 
 /* ---------- Second piece: start clean each time ----------

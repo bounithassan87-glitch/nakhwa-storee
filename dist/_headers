@@ -1,12 +1,19 @@
 /*
   X-Content-Type-Options: nosniff
-  X-Frame-Options: SAMEORIGIN
+  X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), midi=(), serial=(), bluetooth=(), display-capture=(), idle-detection=(), local-fonts=(), screen-wake-lock=(), xr-spatial-tracking=(), browsing-topics=(), interest-cohort=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://connect.facebook.net; connect-src 'self' https://fcmregistrations.googleapis.com https://firebaseinstallations.googleapis.com https://fcm.googleapis.com https://www.googleapis.com https://www.facebook.com https://connect.facebook.net; media-src 'self'
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' https://www.gstatic.com https://connect.facebook.net; connect-src 'self' https://fcmregistrations.googleapis.com https://firebaseinstallations.googleapis.com https://fcm.googleapis.com https://www.googleapis.com https://www.facebook.com https://connect.facebook.net; media-src 'self'; upgrade-insecure-requests
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: credentialless
+
+# img-src deliberately allows any https host. ProductMedia stores free-form
+# image URLs by design ("URL-based so it works without object storage"), so the
+# admin can point a product at any host. Narrowing this to the two Facebook
+# origins passes today only because the table is empty — it would block the
+# first image the owner pastes, with no clue why. Images execute nothing, so
+# the directive is a weak control to trade a working feature for.
 
 # Cross-Origin-Resource-Policy is declared per path, not under /*.
 #
