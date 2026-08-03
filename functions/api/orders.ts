@@ -14,6 +14,7 @@ import { getPrisma } from "../_lib/db";
 import { json, log } from "../_lib/http";
 import { sendPush, DASHBOARD_ORDERS_URL, PUSH_ICON_URL } from "./_lib/fcm";
 import { sendCapiEvent, clientSignals } from "./_lib/capi";
+import { createRateLimiter } from "./_lib/ratelimit";
 import { COLORS, SIZES, PRICE_BY_QTY, CURRENCY, PRODUCT } from "../../shared/catalog.js";
 
 /** Setting row holding what FCM answered for the most recent order. */
@@ -125,12 +126,51 @@ function orderNumber(): string {
   );
 }
 
+/**
+ * Flood brake on the public checkout.
+ *
+ * The endpoint is unauthenticated by necessity and every accepted request costs
+ * three customer rows, a push to the owner's phone and a Lead to Meta. Without
+ * a ceiling, a script can bury real orders in noise, make the notification
+ * useless, and train ad optimisation on conversions that never happened.
+ *
+ * The threshold is set far above any human: thirty a minute from one address is
+ * an order every two seconds, sustained. A shared carrier NAT — normal on
+ * Moroccan mobile — will not reach it, and a customer retrying a rejected form
+ * is nowhere near it. That is deliberate. A limit tight enough to bite an
+ * attacker meaningfully would eventually bite a real buyer, and losing one sale
+ * costs more than the abuse this prevents.
+ *
+ * It is a speed bump, not a wall: the counter lives in one Worker isolate, so a
+ * distributed flood gets a budget per isolate. Cloudflare's own WAF rate
+ * limiting is the real control and belongs in front of this.
+ */
+const orderLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
+
 export const onRequest: AppFunction = async (ctx) => {
   // Preflight for cross-origin storefronts.
   if (ctx.request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   if (ctx.request.method !== "POST") {
     return reply({ ok: false, error: "method_not_allowed" }, 405, { allow: "POST, OPTIONS" });
   }
+
+  // Fails open on purpose. If anything here throws, the order proceeds: a
+  // checkout must never be lost to its own abuse protection.
+  try {
+    const ip = ctx.request.headers.get("cf-connecting-ip");
+    if (ip) {
+      const rl = orderLimiter.hit(ip);
+      if (rl.blocked) {
+        log("warn", { reqId: ctx.data.reqId, msg: "order_rate_limited" });
+        return reply({ ok: false, error: "too_many_requests" }, 429, {
+          "retry-after": String(rl.retryAfter),
+        });
+      }
+    }
+  } catch {
+    /* never block a sale on the limiter */
+  }
+
   return handleCreateOrder(ctx);
 };
 
