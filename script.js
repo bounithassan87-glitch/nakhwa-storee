@@ -466,9 +466,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /** The request body POST /api/orders expects. */
-    // Minted once per page view, before the order is sent, and used by both the
-    // server's Lead and the browser's.
+    // Minted once per page view, before the order is sent, so the browser copy
+    // and the server copy of each event can carry the same id. Purchase gets its
+    // own: Meta deduplicates per event name AND id, so sharing one id across two
+    // event names would be legal but makes the two impossible to tell apart in
+    // Events Manager.
     const leadEventId = newEventId();
+    const purchaseEventId = newEventId();
 
     function collectOrder(){
       const q = qty();
@@ -495,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // generated before the request so the server's Lead and the browser's
         // carry the same id and Meta counts one conversion, not two.
         eventId: leadEventId,
+        purchaseEventId: purchaseEventId,
         fbp: u.fbp,
         fbc: u.fbc,
         externalId: u.externalId,
@@ -579,12 +584,35 @@ document.addEventListener('DOMContentLoaded', () => {
       // trained on orders that do not exist.
       // Browser copy only — the server fired its own Lead from the order path,
       // with this same id, at the moment the row was committed.
+      const orderValue = result.total != null ? result.total / 100 : qty() === 2 ? PRICE_2 : PRICE_1;
+      const orderCurrency = result.currency || 'MAD';
+
       trackPixelOnly('Lead', {
-        value: result.total != null ? result.total / 100 : qty() === 2 ? PRICE_2 : PRICE_1,
-        currency: result.currency || 'MAD',
+        value: orderValue,
+        currency: orderCurrency,
         content_name: 'Cache Terazo',
         order_id: result.orderNumber,
       }, leadEventId);
+
+      // Purchase. This is the event campaigns optimise against, and it was the
+      // one thing never being sent — which is why Ads Manager had nothing to
+      // optimise on despite orders arriving.
+      //
+      // The value is the amount the API confirmed, not a constant: it is what
+      // the server priced the order at, so 299, 549 or whatever the catalog
+      // says. Reporting a fixed figure would hand Meta a revenue number that
+      // does not match the sale and corrupt the ROAS it optimises toward.
+      //
+      // Browser copy only — the server fires its own Purchase from the order
+      // path with this same id, and Meta keeps whichever arrives first.
+      trackPixelOnly('Purchase', {
+        value: orderValue,
+        currency: orderCurrency,
+        content_name: 'Cache Terazo',
+        content_type: 'product',
+        contents: [{ id: 'cache-terazo', quantity: qty() }],
+        order_id: result.orderNumber,
+      }, purchaseEventId);
 
       if (result.orderNumber) {
         orderRefValue.textContent = result.orderNumber;

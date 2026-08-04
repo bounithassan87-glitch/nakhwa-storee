@@ -21,6 +21,8 @@ import { COLORS, SIZES, PRICE_BY_QTY, CURRENCY, PRODUCT } from "../../shared/cat
 const PUSH_LAST_RESULT_KEY = "push_last_result";
 /** Setting row holding what Meta answered for the most recent Lead. */
 const CAPI_LAST_RESULT_KEY = "capi_last_result";
+/** Setting row holding what Meta answered for the most recent Purchase. */
+const CAPI_PURCHASE_RESULT_KEY = "capi_purchase_result";
 
 /**
  * Cross-origin access for storefronts hosted elsewhere.
@@ -55,6 +57,8 @@ const customerFields = {
   // storefront work without touching this file: send the fields or don't.
   /** Must equal the `eventID` the page gave fbq, or Meta counts the Lead twice. */
   eventId: z.string().trim().min(8).max(100).optional(),
+  /** Must equal the eventID the page gave fbq for Purchase, or Meta counts it twice. */
+  purchaseEventId: z.string().trim().min(8).max(100).optional(),
   fbp: z.string().trim().max(200).optional(),
   fbc: z.string().trim().max(400).optional(),
   externalId: z.string().trim().max(100).optional(),
@@ -240,6 +244,7 @@ interface PersistInput {
 
 interface MetaFields {
   eventId?: string;
+  purchaseEventId?: string;
   fbp?: string;
   fbc?: string;
   externalId?: string;
@@ -251,6 +256,7 @@ interface MetaFields {
 function metaFrom(order: MetaFields): MetaFields {
   return {
     eventId: order.eventId,
+    purchaseEventId: order.purchaseEventId,
     fbp: order.fbp,
     fbc: order.fbc,
     externalId: order.externalId,
@@ -517,6 +523,77 @@ async function reportLead(
 }
 
 /**
+ * Report the sale to Meta as a Purchase.
+ *
+ * Purchase is the event ad campaigns optimise against, and it was the one this
+ * store never sent — orders were arriving and Ads Manager had nothing to learn
+ * from. It runs beside the Lead, after the row is committed, so a Purchase can
+ * never be reported for an order that failed.
+ *
+ * The value is the total the server priced, in dirhams, never a figure supplied
+ * by the page. The id comes from the browser so Meta can drop whichever copy
+ * arrives second; a storefront that sends none still gets a Purchase recorded,
+ * with an id derived from the order number so repeated delivery of the same
+ * event stays idempotent.
+ */
+async function reportPurchase(
+  prisma: PrismaClient,
+  ctx: DeferredContext,
+  reqId: string | undefined,
+  o: PersistInput,
+  orderNumber: string,
+): Promise<void> {
+  try {
+    const meta = o.meta ?? {};
+    const result = await sendCapiEvent(
+      ctx.metaToken,
+      {
+        eventName: "Purchase",
+        eventId: meta.purchaseEventId ?? `srv-purchase-${orderNumber}`,
+        eventSourceUrl: meta.eventSourceUrl ?? ctx.referer,
+        user: {
+          clientIpAddress: ctx.clientIpAddress,
+          clientUserAgent: ctx.clientUserAgent,
+          fbp: meta.fbp,
+          fbc: meta.fbc,
+          externalId: meta.externalId,
+          phone: o.phone,
+          email: meta.email,
+          city: o.city,
+          country: "MA",
+        },
+        custom: {
+          value: o.total / 100,
+          currency: o.currency,
+          content_name: o.productName,
+          content_type: "product",
+          contents: [{ id: o.productId, quantity: o.quantity, item_price: o.unitPrice / 100 }],
+          num_items: o.quantity,
+          order_id: orderNumber,
+        },
+      },
+      reqId,
+      ctx.metaTestCode,
+    );
+
+    await recordSetting(prisma, CAPI_PURCHASE_RESULT_KEY, {
+      at: new Date().toISOString(),
+      event: "Purchase",
+      ok: result.ok,
+      status: result.status ?? null,
+      skipped: result.skipped ?? null,
+      value: o.total / 100,
+      currency: o.currency,
+      orderNumber,
+      deduplicatedWithBrowser: Boolean(meta.purchaseEventId),
+      detail: result.detail ? result.detail.slice(0, 300) : null,
+    });
+  } catch (err) {
+    log("warn", { reqId, msg: "purchase_report_failed", error: err instanceof Error ? err.message : String(err) });
+  }
+}
+
+/**
  * Record what FCM answered for the last order.
  *
  * Delivery happens in `waitUntil`, after the response has gone back to the
@@ -611,6 +688,7 @@ async function persist(
   if (push) {
     push.waitUntil(notifyDevices(prisma, push, reqId, o, created.id));
     push.waitUntil(reportLead(prisma, push, reqId, o, created.orderNumber));
+    push.waitUntil(reportPurchase(prisma, push, reqId, o, created.orderNumber));
   }
 
   return reply(

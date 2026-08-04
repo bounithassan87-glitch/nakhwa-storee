@@ -26,7 +26,7 @@ const TIMEOUT_MS = 3000;
 const MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 400;
 
-export type CapiEventName = "PageView" | "InitiateCheckout" | "Lead";
+export type CapiEventName = "PageView" | "InitiateCheckout" | "Lead" | "Purchase";
 
 export interface CapiUserData {
   /** The customer's IP, taken from the edge — never from the request body. */
