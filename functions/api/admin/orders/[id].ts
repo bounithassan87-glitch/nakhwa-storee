@@ -8,6 +8,7 @@ import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
 import { canTransition, isOrderStatus, ORDER_STATUSES, type OrderStatus } from "../_lib/orderWorkflow";
+import { CONFIRMATION_MESSAGE, sendWhatsApp } from "../../_lib/ultramsg";
 
 const bodySchema = z.object({
   status: z.enum(ORDER_STATUSES),
@@ -75,7 +76,7 @@ const getOrder: AppFunction = async ({ env, params, data }) => {
   }
 };
 
-const transition: AppFunction = async ({ request, env, params, data }) => {
+const transition: AppFunction = async ({ request, env, params, data, waitUntil }) => {
   const reqId = data.reqId;
   const actor = data.admin?.email ?? null;
   const id = String(params.id ?? "");
@@ -124,6 +125,15 @@ const transition: AppFunction = async ({ request, env, params, data }) => {
     });
 
     log("info", { reqId, msg: "order_transition", id, from: current.status, to: target, actor });
+
+    // Confirmation WhatsApp. Deferred, so the admin's request returns as soon as
+    // the status is saved rather than waiting on a third party — and so a slow
+    // or unreachable UltraMsg cannot turn a successful confirmation into a
+    // failed one in the dashboard.
+    if (target === "CONFIRMED") {
+      waitUntil(notifyCustomerConfirmed(prisma, env, reqId, id));
+    }
+
     const detail = await loadDetail(prisma, id);
     return json({ ok: true, data: detail });
   } catch (err) {
@@ -131,3 +141,83 @@ const transition: AppFunction = async ({ request, env, params, data }) => {
     return json({ ok: false, error: "server_error" }, 500);
   }
 };
+
+/**
+ * Send the confirmation WhatsApp, at most once per order.
+ *
+ * The flag is claimed with a conditional update before anything is sent: the
+ * write only matches while it is still false, so of two admins confirming the
+ * same order at the same instant exactly one wins the claim and only one
+ * message goes out. Reading the flag and then writing it would let both pass
+ * the check before either had written.
+ *
+ * If the send then fails the claim is released, leaving the flag false so the
+ * order can be retried — which is what the shop asked for, and why the flag is
+ * not simply set after a successful send.
+ *
+ * The order itself is never touched. It has already been confirmed and
+ * committed; WhatsApp being down is not a reason to undo that.
+ */
+async function notifyCustomerConfirmed(
+  prisma: ReturnType<typeof getPrisma>,
+  env: { ULTRAMSG_INSTANCE_ID?: string; ULTRAMSG_TOKEN?: string },
+  reqId: string | undefined,
+  orderId: string,
+): Promise<void> {
+  try {
+    const claim = await prisma.order.updateMany({
+      where: { id: orderId, whatsappConfirmationSent: false },
+      data: { whatsappConfirmationSent: true },
+    });
+    if (claim.count === 0) {
+      log("info", { reqId, msg: "whatsapp_already_sent", orderId });
+      return;
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { orderNumber: true, customer: { select: { phone: true } } },
+    });
+    if (!order) return;
+
+    const result = await sendWhatsApp(
+      env.ULTRAMSG_INSTANCE_ID,
+      env.ULTRAMSG_TOKEN,
+      order.customer.phone,
+      CONFIRMATION_MESSAGE,
+      reqId,
+    );
+
+    if (!result.ok) {
+      // Release the claim so a later confirmation, or a manual retry, can send.
+      await prisma.order.updateMany({
+        where: { id: orderId },
+        data: { whatsappConfirmationSent: false },
+      });
+      log("warn", {
+        reqId,
+        msg: "whatsapp_confirmation_failed",
+        orderId,
+        orderNumber: order.orderNumber,
+        skipped: result.skipped ?? null,
+        status: result.status ?? null,
+        detail: result.detail ?? null,
+      });
+      return;
+    }
+
+    log("info", { reqId, msg: "whatsapp_confirmation_sent", orderId, orderNumber: order.orderNumber });
+  } catch (err) {
+    // Anything unexpected must also leave the flag false rather than stranding
+    // an order as "sent" when nothing was.
+    try {
+      await prisma.order.updateMany({ where: { id: orderId }, data: { whatsappConfirmationSent: false } });
+    } catch { /* the release is best-effort too */ }
+    log("error", {
+      reqId,
+      msg: "whatsapp_confirmation_error",
+      orderId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}

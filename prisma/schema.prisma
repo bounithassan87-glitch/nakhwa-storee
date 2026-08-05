@@ -131,6 +131,10 @@ model Order {
   freeShipping  Boolean      @default(true)
   note          String?
   source        String       @default("landing")
+  /// Set once the confirmation WhatsApp has actually been accepted by UltraMsg.
+  /// Claimed before sending and released on failure, so the message goes out at
+  /// most once even if two admins confirm the same order at the same moment.
+  whatsappConfirmationSent Boolean @default(false) @map("whatsapp_confirmation_sent")
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   items         OrderItem[]

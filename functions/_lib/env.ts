@@ -16,6 +16,11 @@ export interface Env {
   // HTTP v1 requires. Optional: without it push is skipped and the dashboard
   // still gets its sound, popup and badge.
   FIREBASE_SERVICE_ACCOUNT?: string;
+  // UltraMsg — the confirmation WhatsApp sent when an order is confirmed.
+  // Both are secrets and live only in Cloudflare; without them the send is
+  // skipped and the confirmation itself is unaffected.
+  ULTRAMSG_INSTANCE_ID?: string;
+  ULTRAMSG_TOKEN?: string;
   // Meta Conversions API token. Optional: without it server-side events are
   // skipped and the browser pixel carries on alone, so marketing degrades
   // rather than checkout. Never hardcoded — a leaked token lets anyone write
