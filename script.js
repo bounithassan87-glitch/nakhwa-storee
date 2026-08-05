@@ -50,6 +50,24 @@ function newEventId() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  /* ---------- ViewContent ----------
+     A single-product landing page: arriving on it is looking at the product,
+     so this fires on load rather than on scroll. A scroll trigger would miss
+     every visitor who bounces, and those are exactly the impressions Meta
+     needs to learn from.
+
+     trackOnce sends the pixel copy and the Conversions API copy under one
+     event_id and refuses a second send for the same name, so this is once per
+     page view by construction — no extra guard, no new plumbing. */
+  trackPixelOnce('ViewContent', {
+    content_name: 'Cache Terazo',
+    content_type: 'product',
+    content_ids: ['cache-terazo'],
+    value: PRICE_1,
+    currency: 'MAD',
+  });
+
+
   /* ---------- Hero Color Showcase ---------- */
   (function heroShowcase(){
     const frame = document.querySelector('.showcase-frame');

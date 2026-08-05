@@ -29,7 +29,7 @@ const CORS: Record<string, string> = {
 
 const bodySchema = z.object({
   // Lead is absent on purpose; see the note above.
-  eventName: z.enum(["PageView", "InitiateCheckout"]),
+  eventName: z.enum(["PageView", "ViewContent", "InitiateCheckout"]),
   /** Must match the `eventID` the browser passed to fbq, or Meta counts twice. */
   eventId: z.string().trim().min(8).max(100),
   eventSourceUrl: z.string().trim().url().max(500).optional(),
@@ -38,7 +38,38 @@ const bodySchema = z.object({
   externalId: z.string().trim().max(100).optional(),
   value: z.number().nonnegative().max(1_000_000).optional(),
   currency: z.string().trim().length(3).optional(),
+  // Product identity, so ViewContent tells Meta which item was looked at rather
+  // than only that something was. Bounded like every other field here — this
+  // endpoint is public.
+  contentName: z.string().trim().max(150).optional(),
+  contentType: z.string().trim().max(40).optional(),
+  contentIds: z.array(z.string().trim().min(1).max(100)).max(10).optional(),
 });
+
+/**
+ * The custom_data block, built only from what the caller actually sent.
+ *
+ * Omitted entirely when there is nothing to say, which is the previous
+ * behaviour for a bare PageView — Meta treats an absent custom_data and an
+ * empty one differently in its reporting.
+ */
+function buildCustomData(b: {
+  value?: number;
+  currency?: string;
+  contentName?: string;
+  contentType?: string;
+  contentIds?: string[];
+}): Record<string, unknown> | undefined {
+  const custom: Record<string, unknown> = {};
+  if (b.value != null) {
+    custom.value = b.value;
+    custom.currency = b.currency ?? "MAD";
+  }
+  if (b.contentName) custom.content_name = b.contentName;
+  if (b.contentType) custom.content_type = b.contentType;
+  if (b.contentIds?.length) custom.content_ids = b.contentIds;
+  return Object.keys(custom).length > 0 ? custom : undefined;
+}
 
 export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
@@ -80,7 +111,7 @@ export const onRequest: AppFunction = async (ctx) => {
         fbc: b.fbc,
         externalId: b.externalId,
       },
-      custom: b.value != null ? { value: b.value, currency: b.currency ?? "MAD" } : undefined,
+      custom: buildCustomData(b),
     },
     ctx.data.reqId,
     ctx.env.META_TEST_EVENT_CODE,

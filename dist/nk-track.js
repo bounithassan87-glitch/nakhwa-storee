@@ -168,6 +168,16 @@
         body.value = params.value;
         body.currency = params.currency || 'MAD';
       }
+      // Product identity, so the server copy describes the same item the pixel
+      // copy did. Sent under the names the endpoint validates; it rebuilds the
+      // Meta-shaped custom_data itself.
+      if (params) {
+        if (params.content_name) body.contentName = params.content_name;
+        if (params.content_type) body.contentType = params.content_type;
+        if (Array.isArray(params.content_ids) && params.content_ids.length) {
+          body.contentIds = params.content_ids.slice(0, 10);
+        }
+      }
       // keepalive so the request still leaves if the page is navigating away.
       fetch(API_BASE + '/api/track', {
         method: 'POST',
