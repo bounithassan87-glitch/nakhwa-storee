@@ -304,8 +304,8 @@ ul{ margin:0; padding:0; list-style:none; }
    showing small photographs of fabric. */
 .thumb img{ display:none; }
 .thumb{
-  width:52px; height:52px;
-  border-radius:50%;
+  width:44px; height:44px;
+  border-radius:6px;
   padding:0;
   background:var(--sw);
   border:3px solid #fff;
@@ -945,8 +945,8 @@ ul{ margin:0; padding:0; list-style:none; }
 
 .color-photo{
   position:relative; cursor:pointer;
-  display:flex; flex-direction:column; align-items:center; gap:.5rem;
-  width:64px;
+  display:flex; flex-direction:column; align-items:center; gap:.42rem;
+  width:52px;
 }
 .color-photo input{ position:absolute; opacity:0; inset:0; }
 .color-photo .cp-img{
@@ -963,8 +963,8 @@ ul{ margin:0; padding:0; list-style:none; }
    instantly, and giving all seven the same shape makes them comparable at a
    glance instead of a mixed grid of pictures and dots. */
 .color-photo .cp-img{
-  width:64px; height:64px;
-  border-radius:50%;
+  width:48px; height:48px;
+  border-radius:6px;
   padding:0;
   background:var(--sw);
   border:3px solid #fff;
