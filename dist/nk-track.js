@@ -99,9 +99,45 @@
     }
   }
 
+  /**
+   * Make sure a _fbp exists before any event reports one.
+   *
+   * The pixel writes _fbp, but fbevents.js is injected async and PageView fires
+   * in the same synchronous tick — so on a first visit the cookie does not exist
+   * yet and the server copy of the highest-volume event went out with no fbp at
+   * all. That is what held the match rate near 20%: not a propagation bug, a
+   * race.
+   *
+   * Rather than delay the event waiting for Meta's script, the cookie is seeded
+   * here in Meta's own format when it is absent. fbevents.js reads an existing
+   * first-party _fbp and keeps it, so the browser copy and the server copy carry
+   * the same value and every later event in the session inherits it.
+   *
+   * It is only ever written when missing — the pixel's own value is never
+   * overwritten.
+   */
+  function ensureFbp() {
+    var existing = cookie('_fbp');
+    if (existing) return existing;
+    try {
+      // fb.<subdomainIndex>.<creationTime>.<random>, the format Meta documents.
+      // The index counts the labels the cookie is scoped to, which is what
+      // fbevents itself uses — 2 for a host like shop.example.com.
+      var index = Math.max(1, window.location.hostname.split('.').length - 1);
+      var value = 'fb.' + index + '.' + Date.now() + '.' +
+        String(Math.floor(Math.random() * 1e18));
+      // 90 days, matching the pixel's own lifetime.
+      document.cookie = '_fbp=' + value + ';path=/;max-age=7776000;SameSite=Lax';
+      // Only report it if the browser actually stored it.
+      return cookie('_fbp');
+    } catch (_) {
+      return undefined;
+    }
+  }
+
   function userData() {
     return {
-      fbp: cookie('_fbp'),
+      fbp: ensureFbp(),
       fbc: fbc(),
       externalId: externalId(),
       eventSourceUrl: window.location.href,
