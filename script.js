@@ -623,6 +623,14 @@ document.addEventListener('DOMContentLoaded', () => {
       //
       // Browser copy only — the server fires its own Purchase from the order
       // path with this same id, and Meta keeps whichever arrives first.
+      // The console warns "Parameter 'currency' is invalid for event 'Purchase'"
+      // on every one of these. It is Meta's validator, not this call: fbevents
+      // checks currency against a hardcoded list of 49 codes that omits MAD, and
+      // Purchase is the only standard event carrying a validation schema. The
+      // warning is advisory — the track path discards the validator's result and
+      // sends the event anyway, and the Conversions API accepts MAD.
+      //
+      // Do not "fix" it by changing the currency. See META-TRACKING.md.
       trackPixelOnly('Purchase', {
         value: orderValue,
         currency: orderCurrency,

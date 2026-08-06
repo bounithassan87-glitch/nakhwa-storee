@@ -26,6 +26,10 @@ const TIMEOUT_MS = 3000;
 const MAX_RETRIES = 1;
 const RETRY_DELAY_MS = 400;
 
+// Meta's Conversions API accepts MAD; its browser pixel does not recognise it
+// and warns on Purchase. That asymmetry is upstream and documented in
+// META-TRACKING.md — this implementation is frozen, and no workaround may
+// report a currency other than the one the customer was charged.
 export type CapiEventName = "PageView" | "ViewContent" | "InitiateCheckout" | "Lead" | "Purchase";
 
 export interface CapiUserData {
