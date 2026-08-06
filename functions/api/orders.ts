@@ -235,6 +235,10 @@ interface PersistInput {
   total: number;
   currency: string;
   productId: string;
+  /** Catalog identifier reported to Meta. The database id is meaningless to a
+   *  product feed, and the browser pixel sends the slug — the two copies of an
+   *  event have to name the same product or catalog matching sees two. */
+  productSlug: string;
   productName: string;
   unitPrice: number;
   items: { size: string; color: string }[];
@@ -315,6 +319,7 @@ async function createLegacyOrder(
     total: PRICE_BY_QTY[order.quantity],
     currency: CURRENCY,
     productId: product.id,
+    productSlug: product.slug,
     productName: product.name,
     unitPrice: product.basePrice,
     items: order.items,
@@ -396,6 +401,7 @@ async function createCatalogOrder(
     total: unitPrice * order.quantity,
     currency: product.currency,
     productId: product.id,
+    productSlug: product.slug,
     productName: product.name,
     unitPrice,
     items,
@@ -567,7 +573,8 @@ async function reportPurchase(
           currency: o.currency,
           content_name: o.productName,
           content_type: "product",
-          contents: [{ id: o.productId, quantity: o.quantity, item_price: o.unitPrice / 100 }],
+          content_ids: [o.productSlug],
+          contents: [{ id: o.productSlug, quantity: o.quantity, item_price: o.unitPrice / 100 }],
           num_items: o.quantity,
           order_id: orderNumber,
         },

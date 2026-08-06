@@ -628,7 +628,9 @@ document.addEventListener('DOMContentLoaded', () => {
         currency: orderCurrency,
         content_name: 'Cache Terazo',
         content_type: 'product',
-        contents: [{ id: 'cache-terazo', quantity: qty() }],
+        content_ids: ['cache-terazo'],
+        contents: [{ id: 'cache-terazo', quantity: qty(), item_price: orderValue / qty() }],
+        num_items: qty(),
         order_id: result.orderNumber,
       }, purchaseEventId);
 
