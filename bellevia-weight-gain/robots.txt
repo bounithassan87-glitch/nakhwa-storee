@@ -1,0 +1,5 @@
+# بدّل REPLACE-WITH-YOUR-DOMAIN بالدومين الحقيقي
+User-agent: *
+Allow: /
+
+Sitemap: https://REPLACE-WITH-YOUR-DOMAIN/sitemap.xml

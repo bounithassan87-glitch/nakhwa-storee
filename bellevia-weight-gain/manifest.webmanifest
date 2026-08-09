@@ -1,0 +1,17 @@
+{
+  "name": "Bellevia Weight Gain",
+  "short_name": "Bellevia",
+  "description": "مكمل غذائي بتركيبة غنية بالمغذيات لدعم الزيادة في الوزن. 30 كبسولة.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf6ec",
+  "theme_color": "#27442C",
+  "icons": [
+    { "src": "./assets/favicon/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./assets/favicon/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./assets/favicon/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
