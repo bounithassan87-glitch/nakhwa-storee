@@ -15,7 +15,15 @@ import { json, log } from "../_lib/http";
 import { sendPush, DASHBOARD_ORDERS_URL, PUSH_ICON_URL } from "./_lib/fcm";
 import { sendCapiEvent, clientSignals } from "./_lib/capi";
 import { createRateLimiter } from "./_lib/ratelimit";
-import { COLORS, SIZES, PRICE_BY_QTY, CURRENCY, PRODUCT } from "../../shared/catalog.js";
+import {
+  COLORS,
+  SIZES,
+  PRICE_BY_QTY,
+  CURRENCY,
+  PRODUCT,
+  packTotalFor,
+  packQuantitiesFor,
+} from "../../shared/catalog.js";
 
 /** Setting row holding what FCM answered for the most recent order. */
 const PUSH_LAST_RESULT_KEY = "push_last_result";
@@ -388,6 +396,21 @@ async function createCatalogOrder(
   // The selling price, from the database.
   const unitPrice = product.offerPrice ?? product.basePrice;
 
+  // Multi-buy pricing, for the products that have it. `packTotal` is the price
+  // of the whole pack, so "2 for 349" is charged 349 and not 2 × 199.
+  //
+  // The quantity is the only thing the request gets a say in, and even that is
+  // checked against the table: a pack-priced product is sold in the quantities
+  // it lists and no others, because there is no honest price for the rest —
+  // falling back to unit × quantity would quietly charge 4 × 199 to someone who
+  // was shown a pack ladder. A product with no entry is untouched.
+  const packTotal = packTotalFor(order.productSlug, order.quantity);
+  if (packTotal === undefined) {
+    const allowed = packQuantitiesFor(order.productSlug);
+    log("warn", { reqId, msg: "invalid_quantity", slug: order.productSlug, quantity: order.quantity });
+    return reply({ ok: false, error: "invalid_quantity", allowed }, 422);
+  }
+
   return persist(prisma, reqId, {
     fullname: (order.fullname ?? order.customerName)!,
     phone: order.phone,
@@ -398,7 +421,7 @@ async function createCatalogOrder(
     // even when a page does not label itself.
     source: order.source ?? order.productSlug,
     quantity: order.quantity,
-    total: unitPrice * order.quantity,
+    total: packTotal ?? unitPrice * order.quantity,
     currency: product.currency,
     productId: product.id,
     productSlug: product.slug,
