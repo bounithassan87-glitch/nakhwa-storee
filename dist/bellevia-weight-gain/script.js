@@ -302,18 +302,52 @@
     if (selectedPack) { val.textContent = money(selectedPack.total); box.hidden = false; }
   })();
 
-  /* The whole ladder in the closing panel. */
+  /* One compact line of the ladder in the hero, so the offer is legible before
+     the first scroll. Informational only — the selector below is the control. */
+  (function heroLadder() {
+    var el = $('#heroLadder');
+    if (!el || PACKS.length < 2) return;
+    // Only the rungs above the entry price. The line right above already reads
+    // "ابتداءً من 199 درهم", so repeating 1×199 here spends a line to say
+    // nothing — what earns the space is that 2 and 3 cost less per box.
+    el.innerHTML = PACKS.slice(1).map(function (p) {
+      return '<span class="hero__ladder-i">' +
+        escapeHtml(p.label) + ' <b>' + money(p.total) + '</b>' +
+      '</span>';
+    }).join('<span class="hero__ladder-sep" aria-hidden="true">·</span>');
+    el.hidden = false;
+  })();
+
+  /* The whole ladder in the closing panel, with the chosen pack marked so the
+     closing screen agrees with the selector rather than restating a menu she
+     has already decided on. */
   (function finalLadder() {
     var el = $('#finalPacks');
     if (!el || !PACKS.length) return;
     el.innerHTML = PACKS.map(function (p) {
-      return '<li class="ladder__i">' +
+      // data-pack-qty, not data-qty: the stepper binds a click handler to
+      // every [data-qty] on the page, so reusing that name here would make
+      // tapping a closing-panel row silently change the order quantity.
+      return '<li class="ladder__i" data-pack-qty="' + p.qty + '">' +
         '<span class="ladder__q">' + escapeHtml(p.label) + '</span>' +
         '<span class="ladder__p">' + money(p.total) + '</span>' +
         (p.saving > 0 ? '<span class="ladder__s">وفري ' + money(p.saving) + '</span>' : '') +
       '</li>';
     }).join('');
     el.hidden = false;
+
+    var items = $$('.ladder__i', el);
+    function mark(pack) {
+      items.forEach(function (li) {
+        var on = Number(li.getAttribute('data-pack-qty')) === pack.qty;
+        li.classList.toggle('is-on', on);
+        // Announced, not just coloured — the mark carries meaning.
+        if (on) li.setAttribute('aria-current', 'true');
+        else li.removeAttribute('aria-current');
+      });
+    }
+    onPackChange(mark);
+    if (selectedPack) mark(selectedPack);
   })();
 
   /* ══ 05 · Sticky CTA ═══════════════════════════════════════════════════ */
@@ -330,8 +364,17 @@
       var stickOld = $('[data-price-old]', bar);
       if (stickOld) stickOld.remove();
       if (stickPrice) {
+        // Name the pack as well as the price. "449 درهم" on its own reads as a
+        // different, higher price than the 199 she saw in the hero; "3 علب —
+        // 449 درهم" reads as the choice she just made.
+        var label = document.createElement('span');
+        label.className = 'sticky__pack';
+        stickPrice.parentNode.insertBefore(label, stickPrice);
         stickPrice.classList.remove('is-placeholder');
-        var paint = function (p) { stickPrice.textContent = money(p.total); };
+        var paint = function (p) {
+          label.textContent = p.label;
+          stickPrice.textContent = money(p.total);
+        };
         onPackChange(paint);
         if (selectedPack) paint(selectedPack);
       }

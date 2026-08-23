@@ -15,11 +15,48 @@ export interface OrderItem {
   sizeLabel: string;
 }
 
+/**
+ * Which product an order is for.
+ *
+ * Comes from the OrderItem → Product join, not from the `source` string: with
+ * several storefronts posting to one endpoint, `source` is a label a landing
+ * page chose for itself and nothing guarantees it matches a catalog slug.
+ *
+ * `unitPrice` is a snapshot of what one unit was charged when the order was
+ * placed. Repricing the catalog does not change it, which is why an old order
+ * can legitimately disagree with today's product page.
+ *
+ * Null for the small number of historic orders whose items predate the join.
+ */
+export interface OrderProduct {
+  name: string;
+  slug: string;
+  unitPrice: number;
+}
+
 export interface OrderCustomer {
   fullName: string;
   phone: string;
   city: string;
   address: string;
+}
+
+/**
+ * State of the confirmation WhatsApp for one order.
+ *
+ * `status` distinguishes a message that failed to send from one that was never
+ * attempted because nothing is configured — the shop needs to tell those apart.
+ */
+export type WhatsAppStatus =
+  | "sent" | "failed" | "not_configured" | "disabled" | "invalid_phone"
+  /** Meta is the gateway but this product has no approved template yet. */
+  | "no_template";
+
+export interface OrderWhatsApp {
+  sent: boolean;
+  sentAt: string | null;
+  status: WhatsAppStatus | null;
+  error?: string | null;
 }
 
 export interface Order {
@@ -35,6 +72,8 @@ export interface Order {
   createdAt: string;
   customer: OrderCustomer;
   items: OrderItem[];
+  product: OrderProduct | null;
+  whatsapp?: OrderWhatsApp | null;
 }
 
 export type SortField = "createdAt" | "totalPrice" | "status";

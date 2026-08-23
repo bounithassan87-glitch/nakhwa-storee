@@ -15,6 +15,7 @@ import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma, prismaCode } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
 import { statsFromItems } from "../_lib/productStats";
+import { landingStatusFor, ORDER_ENDPOINT } from "../../../../shared/landing-pages.js";
 
 const patchSchema = z.object({
   name: z.string().trim().min(2).max(150).optional(),
@@ -73,6 +74,12 @@ function serialize(full: NonNullable<Awaited<ReturnType<typeof loadFull>>>) {
     currency: product.currency,
     status: product.status,
     isActive: product.isActive,
+    // The one price that reaches a customer. `/api/orders` computes it the same
+    // way — `offerPrice ?? basePrice` — from this row, and never from the
+    // request, so this is the number the delivery slip will carry.
+    sellingPrice: product.offerPrice ?? product.basePrice,
+    landingPage: landingStatusFor(product.slug, product),
+    orderEndpoint: ORDER_ENDPOINT,
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
     colors: product.colors,
@@ -122,6 +129,30 @@ const updateProduct: AppFunction = async ({ params, request, env, data }) => {
 
   const prisma = getPrisma(dbUrl);
   try {
+    // A patch may touch one price and not the other, so the resulting selling
+    // price has to be checked against the row as it will be, not as it was
+    // sent. Same rule as create: `/api/orders` charges `offerPrice ?? basePrice`
+    // and a product that resolves to zero would take orders for nothing.
+    if (body.basePrice !== undefined || body.offerPrice !== undefined) {
+      const current = await prisma.product.findUnique({
+        where: { id },
+        select: { basePrice: true, offerPrice: true },
+      });
+      if (!current) return json({ ok: false, error: "not_found" }, 404);
+      const nextBase = body.basePrice ?? current.basePrice;
+      const nextOffer = body.offerPrice === undefined ? current.offerPrice : body.offerPrice;
+      if ((nextOffer ?? nextBase) <= 0) {
+        return json(
+          {
+            ok: false,
+            error: "validation_error",
+            details: { fieldErrors: { basePrice: ["selling_price_must_be_positive"] } },
+          },
+          422,
+        );
+      }
+    }
+
     await prisma.product.update({ where: { id }, data: patch });
     const full = await loadFull(prisma, id);
     if (!full) return json({ ok: false, error: "not_found" }, 404);

@@ -1,6 +1,23 @@
 export type ProductStatus = "ACTIVE" | "DRAFT" | "ARCHIVED";
 export type MediaType = "IMAGE" | "VIDEO";
 
+/**
+ * How a product and its landing page stand. Computed by the server from
+ * `shared/landing-pages.js` — the same list the build script deploys from, so
+ * the dashboard cannot claim a page that was never shipped.
+ *
+ * `connected` is the state worth noticing: the page is live but the product is
+ * a draft, so `/api/orders` answers `product_unavailable` and every order from
+ * that page is lost silently.
+ */
+export type LandingStatus = "not_connected" | "connected" | "active" | "inactive";
+
+export interface LandingPageLink {
+  /** `/bellevia-anti-joint-pain/`, or null when no page is deployed. */
+  url: string | null;
+  status: LandingStatus;
+}
+
 export interface ProductColor {
   id: string;
   name: string;
@@ -43,6 +60,9 @@ export interface ProductListItem {
   currency: string;
   status: ProductStatus;
   isActive: boolean;
+  /** What `/api/orders` charges for one unit: `offerPrice ?? basePrice`. */
+  sellingPrice: number;
+  landingPage: LandingPageLink;
   createdAt: string;
   image: string | null;
   colorsCount: number;

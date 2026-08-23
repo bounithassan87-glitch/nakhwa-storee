@@ -14,14 +14,17 @@
 import { cpSync, existsSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { LANDING_PAGES } from "../shared/landing-pages.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(root, "dist");
 
-/** Folders at the repo root that deploy as-is under the same name. */
-const PAGES = ["bellevia-weight-gain"];
+// The list lives in shared/ because the admin dashboard reads it too, to tell
+// an admin whether a product has a landing page in front of it. One array, so
+// the dashboard can never claim a page this script did not deploy.
+const PAGES = LANDING_PAGES;
 
-const raw = process.env.SITE_URL || process.argv[2] || "https://nakhwa-store.pages.dev";
+const raw = process.env.SITE_URL || process.argv[2] || "https://belleviabeuty.com";
 let origin;
 try {
   origin = new URL(raw).origin;

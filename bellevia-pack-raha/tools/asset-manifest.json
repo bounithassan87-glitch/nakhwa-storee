@@ -1,0 +1,520 @@
+{
+  "builtAt": "2026-08-22T18:05:11.377Z",
+  "approvedCreative": "pack-raha-background-reference.png.png",
+  "productAssets": [
+    "hero-pack-380.webp",
+    "hero-pack-698.webp",
+    "product-spray-129.webp",
+    "product-spray-258.webp",
+    "product-oil-199.webp",
+    "product-shampoo-116.webp",
+    "product-shampoo-232.webp",
+    "og-cover.jpg"
+  ],
+  "files": {
+    "hero-pack-380.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 120,
+        "top": 470,
+        "width": 698,
+        "height": 875
+      },
+      "width": 380,
+      "sha256": "30e4808c85252624e16a020d9aee47f3a42a9486804527398f23e7e9853aa206"
+    },
+    "hero-pack-698.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 120,
+        "top": 470,
+        "width": 698,
+        "height": 875
+      },
+      "width": 698,
+      "sha256": "aa637a7afc3a11608a6f17e537ba3ccf5bb9d061deeb3fd04cbd7bdbc7171fe3"
+    },
+    "product-spray-129.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 140,
+        "top": 488,
+        "width": 258,
+        "height": 860
+      },
+      "width": 129,
+      "sha256": "5d5ad0c11200e28ce9c633225a47f721ed06e4921b11742b611408aabd714e58"
+    },
+    "product-spray-258.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 140,
+        "top": 488,
+        "width": 258,
+        "height": 860
+      },
+      "width": 258,
+      "sha256": "abe8dcdf449d7530e6c43ab14fa920dc3f2617a25a2e90207e534f159df06be7"
+    },
+    "product-oil-199.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 398,
+        "top": 516,
+        "width": 199,
+        "height": 832
+      },
+      "width": 199,
+      "sha256": "9c5111fa61b88a51f27170fed2e7b7556569f56283282a54b0de95c8e9b4e965"
+    },
+    "product-shampoo-116.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 586,
+        "top": 488,
+        "width": 232,
+        "height": 860
+      },
+      "width": 116,
+      "sha256": "a8df03804bee02649cd6c418786a8eef8abb37267a22501ed3123aea0e779959"
+    },
+    "product-shampoo-232.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 586,
+        "top": 488,
+        "width": 232,
+        "height": 860
+      },
+      "width": 232,
+      "sha256": "a2ccae6c7ecec63b39f05678e348849866534d0b4b1abd4fe433e7dcb79f1a26"
+    },
+    "bg-leaves-265.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 265,
+        "height": 205
+      },
+      "width": 265,
+      "sha256": "413a3cc36066142491461ffcc79a4b83fbcd571be69cde5856a12430c6dcadf6"
+    },
+    "bg-leaves-530.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 265,
+        "height": 205
+      },
+      "width": 530,
+      "sha256": "02860171497713377a0dda052416ce5daad5220e3ce0e3d2d53bd415e9d2622a"
+    },
+    "bg-botanical-196.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 828,
+        "top": 640,
+        "width": 196,
+        "height": 700
+      },
+      "width": 196,
+      "sha256": "dad703ca04daf8fb364f90d9ed0eb237a7b590610dfd1e43d1eabf1759580bd0"
+    },
+    "bg-botanical-392.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 828,
+        "top": 640,
+        "width": 196,
+        "height": 700
+      },
+      "width": 392,
+      "sha256": "afb371d6ae6fe148fd3d361fc88c102a732be2a29399daf39a05f4135aadd7e0"
+    },
+    "bg-wash-900.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 265,
+        "height": 205
+      },
+      "width": 900,
+      "blur": 21,
+      "sha256": "93b916974631b527d02adee9af85fc57ea383723876bc113a8de6b175bbb55df"
+    },
+    "bg-wash-1600.webp": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 265,
+        "height": 205
+      },
+      "width": 1600,
+      "blur": 38,
+      "sha256": "047c01133ff30c3eee88324fdf701608c90479a21c9dd15d79e3c3023a4a924b"
+    },
+    "problem-woman-380.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 600,
+        "top": 300,
+        "width": 458,
+        "height": 1010
+      },
+      "width": 380,
+      "sha256": "2b3002d89020af1e910dc504e3345b8214ea7d9de11cfebc4fc5de61d8e38b81"
+    },
+    "problem-woman-458.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 600,
+        "top": 300,
+        "width": 458,
+        "height": 1010
+      },
+      "width": 458,
+      "sha256": "44d5f6dd50019e8218694166c8d84c48b1b6624254f4a90729f7da49e6954cf7"
+    },
+    "hairloss-man-540.webp": {
+      "source": "hairloss-man-reference.jpg",
+      "rect": null,
+      "width": 540,
+      "sha256": "65c8ca48221fa9cd2918861735e9746ac3703891aa8d3a88eca9d8d717069581"
+    },
+    "hairloss-man-1080.webp": {
+      "source": "hairloss-man-reference.jpg",
+      "rect": null,
+      "width": 1080,
+      "sha256": "2fd36803801f34ea90f636ec2928dd69437323046d7f014f93dcc8eea9d99f48"
+    },
+    "hairloss-man-1620.webp": {
+      "source": "hairloss-man-reference.jpg",
+      "rect": null,
+      "width": 1620,
+      "sha256": "2f1c9d25ee91a21ecd075050455ab8965b2cd879530bfd282aa8df9f12e3a8e6"
+    },
+    "use-woman-150.webp": {
+      "source": "7934e9f4-84a3-4d6b-80ce-51b5c169e8a8.png",
+      "rect": {
+        "left": 272,
+        "top": 175,
+        "width": 300,
+        "height": 300
+      },
+      "width": 150,
+      "sha256": "087958b431b8a48b59299de98b46e10aee941e7bee141e5af32047aba8bbb1a6"
+    },
+    "use-woman-300.webp": {
+      "source": "7934e9f4-84a3-4d6b-80ce-51b5c169e8a8.png",
+      "rect": {
+        "left": 272,
+        "top": 175,
+        "width": 300,
+        "height": 300
+      },
+      "width": 300,
+      "sha256": "e01435060108f3724c1f8af596ac7f0d42cc93c872abff75a4a3e92b180b593a"
+    },
+    "botanical-aloe-220.webp": {
+      "source": "2d9eeb12-c5fd-409d-b217-9eab3daf3154.png",
+      "rect": {
+        "left": 20,
+        "top": 760,
+        "width": 440,
+        "height": 400
+      },
+      "width": 220,
+      "sha256": "59e0bd81eed680b2766f9216591efbdbb949fb96e952a10e520db2d243a8b0a2"
+    },
+    "botanical-aloe-440.webp": {
+      "source": "2d9eeb12-c5fd-409d-b217-9eab3daf3154.png",
+      "rect": {
+        "left": 20,
+        "top": 760,
+        "width": 440,
+        "height": 400
+      },
+      "width": 440,
+      "sha256": "fddecb0a33270d793c69f30d2ed61c0076442ec153756fb3a233d4c2efc689bd"
+    },
+    "botanical-argan-200.webp": {
+      "source": "2d9eeb12-c5fd-409d-b217-9eab3daf3154.png",
+      "rect": {
+        "left": 480,
+        "top": 830,
+        "width": 400,
+        "height": 330
+      },
+      "width": 200,
+      "sha256": "f9072cbb3015759437caf705895c133891ee0ed0e54ffa5594817c01a6442ec0"
+    },
+    "botanical-argan-400.webp": {
+      "source": "2d9eeb12-c5fd-409d-b217-9eab3daf3154.png",
+      "rect": {
+        "left": 480,
+        "top": 830,
+        "width": 400,
+        "height": 330
+      },
+      "width": 400,
+      "sha256": "e8b172f3a645ba1b06e3cdbe28ac768916a406adcdcdc92f313034769c93b6f1"
+    },
+    "botanical-rosemary-210.webp": {
+      "source": "2d9eeb12-c5fd-409d-b217-9eab3daf3154.png",
+      "rect": {
+        "left": 890,
+        "top": 760,
+        "width": 420,
+        "height": 400
+      },
+      "width": 210,
+      "sha256": "4afdbae04932cb9a619e6082ab54eaca2e37194e1fbd75c545854ef0ed94752b"
+    },
+    "botanical-rosemary-420.webp": {
+      "source": "2d9eeb12-c5fd-409d-b217-9eab3daf3154.png",
+      "rect": {
+        "left": 890,
+        "top": 760,
+        "width": 420,
+        "height": 400
+      },
+      "width": 420,
+      "sha256": "3b442f96db02651f8dfc5b1446f149601580afeb2dfb1221c46c3f269544d592"
+    },
+    "icon-unisex-44.webp": {
+      "source": "84cef62e-15c7-478a-a4f8-4e53f7484b57.png",
+      "rect": {
+        "left": 210,
+        "top": 1296,
+        "width": 88,
+        "height": 96
+      },
+      "width": 44,
+      "sha256": "b58b81846c7d0515e4376702e86b415aabeea22a6aa3cdaa5b7096aa54096134"
+    },
+    "icon-unisex-88.webp": {
+      "source": "84cef62e-15c7-478a-a4f8-4e53f7484b57.png",
+      "rect": {
+        "left": 210,
+        "top": 1296,
+        "width": 88,
+        "height": 96
+      },
+      "width": 88,
+      "sha256": "4d76f359cbb945e2a8001cff16451c5bb1d493f84319ec2d7d4125744eae2425"
+    },
+    "prob-weak-73.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 78,
+        "top": 604,
+        "width": 146,
+        "height": 146
+      },
+      "width": 73,
+      "sha256": "b93e62e2d0a61ac66a469d7ac9f693728c5a83699bea9c8ff4ad44345f0420c8"
+    },
+    "prob-weak-146.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 78,
+        "top": 604,
+        "width": 146,
+        "height": 146
+      },
+      "width": 146,
+      "sha256": "f89f60ab14f635c4a51a21adf8e57c9561b0e47c9e5eec90fd6c6a39989c33c1"
+    },
+    "prob-fall-73.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 300,
+        "top": 604,
+        "width": 146,
+        "height": 146
+      },
+      "width": 73,
+      "sha256": "a39e202e3185e0b64580d6511f4fd82a9b04aed2a26e6c9a3bb13714659daba9"
+    },
+    "prob-fall-146.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 300,
+        "top": 604,
+        "width": 146,
+        "height": 146
+      },
+      "width": 146,
+      "sha256": "2d8b459705847f377d0336c07e87d04347169de21428894a05ff70567c2b6a15"
+    },
+    "prob-roots-73.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 78,
+        "top": 844,
+        "width": 146,
+        "height": 146
+      },
+      "width": 73,
+      "sha256": "6fe7bbf231b11e3cac16d340c974225328db1128c1c0fa34bf88ad205a2f793c"
+    },
+    "prob-roots-146.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 78,
+        "top": 844,
+        "width": 146,
+        "height": 146
+      },
+      "width": 146,
+      "sha256": "654a35866fbb8d44da676e2740b8ceb44a35136e00e940704d6a8532b6097f1b"
+    },
+    "prob-flakes-73.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 300,
+        "top": 844,
+        "width": 146,
+        "height": 146
+      },
+      "width": 73,
+      "sha256": "66c4982df192b1867a7aec0397d30a89c28f5e6666f8df0a893c88d1e5111125"
+    },
+    "prob-flakes-146.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 300,
+        "top": 844,
+        "width": 146,
+        "height": 146
+      },
+      "width": 146,
+      "sha256": "a36c4f4c99111be61975fbda2cad0a44692d1b9e3801d3c28baabc875f479402"
+    },
+    "prob-dull-73.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 78,
+        "top": 1084,
+        "width": 146,
+        "height": 146
+      },
+      "width": 73,
+      "sha256": "6dde1c00ad96a2dc85b52f3e18aaf4fa756ca08cc043f9295877354bae55fabe"
+    },
+    "prob-dull-146.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 78,
+        "top": 1084,
+        "width": 146,
+        "height": 146
+      },
+      "width": 146,
+      "sha256": "5e92d1e426ea53a2d4e5be94c888fffdf63caa17373bdd5aa0966389c779af35"
+    },
+    "prob-breakage-73.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 300,
+        "top": 1084,
+        "width": 146,
+        "height": 146
+      },
+      "width": 73,
+      "sha256": "f5054bce318d01d88b1245045811dd9ade88a95f8f4ea56a374675e19d1ef1cf"
+    },
+    "prob-breakage-146.webp": {
+      "source": "57200c1d-036d-4261-bb64-9e9b50c43aa0.png",
+      "rect": {
+        "left": 300,
+        "top": 1084,
+        "width": 146,
+        "height": 146
+      },
+      "width": 146,
+      "sha256": "98d25c9034d99466567de4270034e0cd58daf095df4b7b5efbf91417e75408de"
+    },
+    "out-density-52.webp": {
+      "source": "23cf29bc-6c99-4ac4-a04c-13384c5ec7d7.png",
+      "rect": {
+        "left": 195,
+        "top": 1189,
+        "width": 104,
+        "height": 104
+      },
+      "width": 52,
+      "sha256": "cb24803b0cf9f74d2ad861c36801433c1d935003d10151e405191120594dc045"
+    },
+    "out-density-104.webp": {
+      "source": "23cf29bc-6c99-4ac4-a04c-13384c5ec7d7.png",
+      "rect": {
+        "left": 195,
+        "top": 1189,
+        "width": 104,
+        "height": 104
+      },
+      "width": 104,
+      "sha256": "3a42629e934750a5d2c598105b538556b5c11ea09054baa44de5aae4e8c3bb35"
+    },
+    "out-scalp-52.webp": {
+      "source": "23cf29bc-6c99-4ac4-a04c-13384c5ec7d7.png",
+      "rect": {
+        "left": 492,
+        "top": 1189,
+        "width": 104,
+        "height": 104
+      },
+      "width": 52,
+      "sha256": "59fb1ab31f2d281413551323976f416edf7215b50ab4ec1c1ebd57ae6b0bca29"
+    },
+    "out-scalp-104.webp": {
+      "source": "23cf29bc-6c99-4ac4-a04c-13384c5ec7d7.png",
+      "rect": {
+        "left": 492,
+        "top": 1189,
+        "width": 104,
+        "height": 104
+      },
+      "width": 104,
+      "sha256": "8518a722aabbe45253be11becfea9646536fd7b03ac1b5afb0c0b9044216ae6e"
+    },
+    "out-strong-52.webp": {
+      "source": "23cf29bc-6c99-4ac4-a04c-13384c5ec7d7.png",
+      "rect": {
+        "left": 789,
+        "top": 1189,
+        "width": 104,
+        "height": 104
+      },
+      "width": 52,
+      "sha256": "3f65324f390944f808eec622cb8b1649c72b3a3f0ae8dae24f112e6e5350c2ab"
+    },
+    "out-strong-104.webp": {
+      "source": "23cf29bc-6c99-4ac4-a04c-13384c5ec7d7.png",
+      "rect": {
+        "left": 789,
+        "top": 1189,
+        "width": 104,
+        "height": 104
+      },
+      "width": 104,
+      "sha256": "a31f5595342f71bb75a1d104083d6587459c75ccd4acaca04d1aafbe5d63ebe5"
+    },
+    "og-cover.jpg": {
+      "source": "pack-raha-background-reference.png.png",
+      "rect": {
+        "left": 120,
+        "top": 470,
+        "width": 698,
+        "height": 875
+      },
+      "width": 1200,
+      "sha256": "adeacb99b0a2b19381d6f5b8151372ba25e86c47d923aa20835f90a80ff2d498"
+    }
+  }
+}

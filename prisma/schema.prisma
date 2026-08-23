@@ -134,7 +134,17 @@ model Order {
   /// Set once the confirmation WhatsApp has actually been accepted by UltraMsg.
   /// Claimed before sending and released on failure, so the message goes out at
   /// most once even if two admins confirm the same order at the same moment.
-  whatsappConfirmationSent Boolean @default(false) @map("whatsapp_confirmation_sent")
+  // Confirmation WhatsApp. `whatsappConfirmationSent` is the *claim* flag: it is
+  // flipped false→true by a conditional update before anything is sent, so two
+  // admins confirming at the same instant produce exactly one message. The four
+  // columns below are the *outcome* of that attempt, for the dashboard and for
+  // support — they never gate sending.
+  whatsappConfirmationSent      Boolean   @default(false) @map("whatsapp_confirmation_sent")
+  whatsappConfirmationSentAt    DateTime? @map("whatsapp_confirmation_sent_at")
+  whatsappConfirmationMessageId String?   @map("whatsapp_confirmation_message_id")
+  /// sent | failed | not_configured | disabled | invalid_phone
+  whatsappConfirmationStatus    String?   @map("whatsapp_confirmation_status")
+  whatsappConfirmationError     String?   @map("whatsapp_confirmation_error")
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   items         OrderItem[]

@@ -8,6 +8,9 @@ import { Pagination } from "@/components/ui/Pagination";
 import { useDebouncedValue } from "@/lib/useDebounce";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { useOrders } from "@/features/orders/useOrders";
+import { resendWhatsApp } from "@/features/orders/api";
+import { roleCan } from "@/features/settings/permissions";
+import { useAuth } from "@/auth/AuthContext";
 import { OrdersToolbar } from "@/features/orders/components/OrdersToolbar";
 import { OrdersTable } from "@/features/orders/components/OrdersTable";
 import { OrdersCardList } from "@/features/orders/components/OrdersCardList";
@@ -29,6 +32,11 @@ export default function Orders() {
 
   const [selected, setSelected] = useState<Order | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
+  const [whatsappBusy, setWhatsappBusy] = useState(false);
+  const { user } = useAuth();
+  // The server enforces this too; hiding the control just avoids offering an
+  // action that would come back 403.
+  const canResendWhatsApp = roleCan(user?.role, "manage_orders");
   const [toast, setToast] = useState<string | null>(null);
   const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
 
@@ -112,6 +120,29 @@ export default function Orders() {
     }
   }
 
+  /**
+   * Resend the confirmation WhatsApp. Never automatic: this runs only because
+   * an admin pressed the button, and it is the one path allowed to produce a
+   * second message for an order.
+   */
+  async function onResendWhatsApp(id: string) {
+    setWhatsappBusy(true);
+    try {
+      await resendWhatsApp(id);
+      setSelected((sel) =>
+        sel && sel.id === id
+          ? { ...sel, whatsapp: { sent: true, sentAt: new Date().toISOString(), status: "sent" as const, error: null } }
+          : sel,
+      );
+      setToast("تصيفط واتساب التأكيد");
+    } catch {
+      setToast("ما تصيفطش واتساب التأكيد");
+    } finally {
+      setWhatsappBusy(false);
+      setTimeout(() => setToast(null), 2200);
+    }
+  }
+
   return (
     <>
       <PageHeader title="الطلبات" subtitle={total ? `${total} طلب` : "إدارة طلبات الزبناء"} />
@@ -167,6 +198,9 @@ export default function Orders() {
         onClose={() => setSelected(null)}
         onChangeStatus={onChangeStatus}
         statusBusy={statusBusy}
+        onResendWhatsApp={onResendWhatsApp}
+        whatsappBusy={whatsappBusy}
+        canResendWhatsApp={canResendWhatsApp}
       />
 
       {toast && (

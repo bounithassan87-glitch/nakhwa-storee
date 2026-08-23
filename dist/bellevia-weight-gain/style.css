@@ -290,10 +290,25 @@ svg[class] { overflow: visible; }
 }
 .hero__points .i { color: var(--gold); font-size: 1.15rem; }
 
-.hero__offer {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px;
-  margin-top: 22px;
+/* Price and the two reassurances as one block, so they cannot drift apart and
+   leave the trust line under the fold. */
+.hero__offer { margin-top: 20px; }
+.hero__pricerow {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px;
+  margin: 0 0 10px;
 }
+.hero__offer .trustrow { margin-top: 0; padding-top: 0; border-top: 0; gap: 8px 16px; }
+
+/* The ladder as one line of text, not a second set of cards — it informs, the
+   selector below decides. */
+.hero__ladder {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px;
+  margin: 0 0 12px;
+  font-size: .93rem; color: var(--muted);
+}
+.hero__ladder-i { white-space: nowrap; }
+.hero__ladder-i b { color: var(--g-700); font-weight: 800; direction: ltr; unicode-bidi: isolate; }
+.hero__ladder-sep { color: var(--gold-2); }
 
 .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
 .hero__actions .btn { flex: 1 1 auto; min-width: 168px; }
@@ -347,23 +362,55 @@ svg[class] { overflow: visible; }
    breakpoint is left alone. Two tiers rather than one: a 390×844 needs a
    little tightening, an iPhone SE needs a lot, and applying the SE treatment
    everywhere would shrink the bottle on screens that have room for it. */
-@media (max-width: 899px) and (max-height: 880px) {
-  .hero { padding-block: 18px 26px; }
-  .hero__in { gap: 18px; }
-  .hero__shot { max-width: min(272px, 68vw); }
-  .hero__points { margin-top: 16px; }
-  .hero__offer { margin-top: 16px; }
-  .hero__actions { margin-top: 18px; }
-}
-@media (max-width: 899px) and (max-height: 720px) {
-  .hero { padding-block: 8px 16px; }
-  .hero__in { gap: 10px; }
-  .hero__shot { max-width: min(205px, 53vw); }
-  .hero__sub { font-size: .95rem; }
-  .hero__points { gap: 4px; margin-top: 10px; }
-  .hero__offer { margin-top: 10px; }
+/* The opening screen has to carry the product, the headline, the price and the
+   two COD reassurances, and still leave the CTA reachable. Keyed on viewport
+   height rather than width, because that is what actually runs out — and
+   tiered, so a roomy phone keeps a large bottle while a short one trades image
+   size for a visible button. Widths are untouched. */
+@media (max-width: 899px) and (max-height: 950px) {
+  .hero { padding-block: 16px 24px; }
+  .hero__in { gap: 16px; }
+  .hero__shot { max-width: min(258px, 64vw); }
+  .hero__points { margin-top: 13px; gap: 7px; }
+  .hero__offer { margin-top: 12px; }
+  .hero__ladder { margin-bottom: 8px; }
   .hero__actions { margin-top: 12px; }
+}
+@media (max-width: 899px) and (max-height: 820px) {
+  .hero { padding-block: 10px 18px; }
+  .hero__in { gap: 11px; }
+  .hero__shot { max-width: min(208px, 54vw); }
+  .hero__sub { font-size: .95rem; }
+  .hero__points { gap: 5px; margin-top: 11px; font-size: .95rem; }
+  .hero__offer { margin-top: 11px; }
+  .hero__ladder { margin-bottom: 9px; font-size: .89rem; }
+  .hero__actions { margin-top: 13px; }
   .hero__actions .btn { min-height: 52px; }
+}
+
+/* Three reassurances wrap onto a second line below ~405px, which costs more
+   height than the third one is worth. Payment and delivery are the two that
+   decide a COD order; phone-confirmation still appears directly under the
+   submit button, where it does the most work. Keyed on width because wrapping
+   is what actually causes it. */
+@media (max-width: 405px) {
+  .hero__offer .trustrow li:nth-child(3) { display: none; }
+}
+/* Smallest screens still in real use: the secondary CTA steps aside so the
+   primary one stays on the first screen. It is a duplicate of a link that
+   appears again further down, so nothing is lost. */
+@media (max-width: 899px) and (max-height: 700px) {
+  .hero__shot { max-width: min(178px, 47vw); }
+  .hero__actions .btn--ghost { display: none; }
+  /* A question this long runs to four lines at the default size on a 360px
+     screen. Stepping it down keeps the whole offer and the button on one
+     screen, which is worth more here than a larger headline. */
+  .hero h1 { font-size: 1.5rem; }
+  .hero__kicker { font-size: .72em; margin-bottom: .3em; }
+  /* Its first half repeats the first bullet below it and the solution section
+     says it again in full, so on the shortest screens it is the line to spend
+     rather than the button. */
+  .hero__sub { display: none; }
 }
 .hero__shot img {
   width: 100%; border-radius: var(--r-xl);
@@ -522,6 +569,15 @@ svg[class] { overflow: visible; }
   font-size: .9rem; font-weight: 700; color: var(--g-700);
 }
 .assure .i { color: var(--g-600); font-size: 1.2rem; }
+/* Under the submit button: quieter than the offer-side row, since it reassures
+   rather than sells. */
+.assure--under {
+  margin: 0; background: none; padding: 4px 0 0;
+  justify-content: center; gap: 6px 16px;
+}
+.assure--under li { font-size: .86rem; color: var(--muted); font-weight: 700; }
+.assure--under .i { color: var(--g-500); font-size: 1.05rem; }
+
 .assure--dark {
   background: rgba(255, 255, 255, .08); justify-content: center;
   margin: 0 0 24px;
@@ -550,6 +606,14 @@ svg[class] { overflow: visible; }
   border: 1px solid rgba(255, 255, 255, .16);
   border-radius: var(--r-sm); text-align: center;
 }
+/* The pack she actually chose, marked on the closing panel. */
+.ladder__i.is-on {
+  background: rgba(201, 169, 97, .16);
+  border-color: var(--gold-2);
+  box-shadow: 0 0 0 1px var(--gold-2) inset;
+}
+.ladder__i.is-on .ladder__q { color: var(--gold-2); }
+
 .ladder__q { font-size: .84rem; color: #BFCFBC; }
 .ladder__p {
   direction: ltr; unicode-bidi: isolate;
@@ -1081,7 +1145,8 @@ svg[class] { overflow: visible; }
   transition: transform .28s var(--ease);
 }
 .sticky.is-up { transform: none; }
-.sticky__price { display: flex; flex-direction: column; line-height: 1.15; }
+.sticky__price { display: flex; flex-direction: column; line-height: 1.2; }
+.sticky__pack { font-size: .78rem; font-weight: 700; color: var(--muted); }
 .sticky__price .price { font-size: 1.18rem; }
 .sticky__price .price--old { font-size: .8rem; }
 .sticky .btn { margin-inline-start: auto; flex: 1 1 auto; max-width: 210px; }

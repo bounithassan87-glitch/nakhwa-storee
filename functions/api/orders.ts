@@ -15,6 +15,13 @@ import { json, log } from "../_lib/http";
 import { sendPush, DASHBOARD_ORDERS_URL, PUSH_ICON_URL } from "./_lib/fcm";
 import { sendCapiEvent, clientSignals } from "./_lib/capi";
 import { createRateLimiter } from "./_lib/ratelimit";
+import type { WhatsAppEnv } from "./_lib/whatsapp";
+import { sendConfirmationWhatsApp } from "./admin/_lib/whatsappConfirm";
+
+// When a product's confirmation fires — at order time or on the admin's
+// CONFIRM — is the product's own setting, read from the one registry that also
+// decides its gateway and its wording. This file names no individual product.
+import { triggerFor } from "../../shared/whatsapp-templates.js";
 import {
   COLORS,
   SIZES,
@@ -192,6 +199,15 @@ const handleCreateOrder: AppFunction = async ({ request, env, data, waitUntil })
     serviceAccount: env.FIREBASE_SERVICE_ACCOUNT,
     metaToken: env.META_ACCESS_TOKEN,
     metaTestCode: env.META_TEST_EVENT_CODE,
+    whatsapp: {
+      WHATSAPP_ACCESS_TOKEN: env.WHATSAPP_ACCESS_TOKEN,
+      WHATSAPP_PHONE_NUMBER_ID: env.WHATSAPP_PHONE_NUMBER_ID,
+      WHATSAPP_GRAPH_VERSION: env.WHATSAPP_GRAPH_VERSION,
+      WHATSAPP_TEMPLATE_LANGUAGE: env.WHATSAPP_TEMPLATE_LANGUAGE,
+      WHATSAPP_API_BASE: env.WHATSAPP_API_BASE,
+      ULTRAMSG_INSTANCE_ID: env.ULTRAMSG_INSTANCE_ID,
+      ULTRAMSG_TOKEN: env.ULTRAMSG_TOKEN,
+    },
     ...clientSignals(request),
     referer: request.headers.get("referer") ?? undefined,
     waitUntil: (p) => waitUntil(p),
@@ -288,6 +304,12 @@ interface DeferredContext {
   serviceAccount?: string;
   metaToken?: string;
   metaTestCode?: string;
+  /**
+   * WhatsApp gateway credentials, passed through untouched so the confirmation
+   * can be sent from `waitUntil` after the order is committed. Only read by the
+   * provider; nothing here is logged.
+   */
+  whatsapp?: WhatsAppEnv;
   /** Read from the edge request, never from the body. */
   clientIpAddress?: string;
   clientUserAgent?: string;
@@ -719,6 +741,30 @@ async function persist(
     push.waitUntil(notifyDevices(prisma, push, reqId, o, created.id));
     push.waitUntil(reportLead(prisma, push, reqId, o, created.orderNumber));
     push.waitUntil(reportPurchase(prisma, push, reqId, o, created.orderNumber));
+
+    // The customer's "we received your order" WhatsApp.
+    //
+    // Deliberately AFTER `prisma.order.create` resolved: a message may only go
+    // out once the sale is committed, never before, and never if the write
+    // failed. Deferred through `waitUntil` for the same reason as the other
+    // three — a slow or unpaid gateway must not turn a saved order into a 500.
+    //
+    // Restricted to products configured `trigger: "order"`. Every other
+    // storefront keeps its existing behaviour untouched: nothing is sent here,
+    // and the admin's CONFIRM remains its only trigger — which is also what an
+    // unknown slug gets, so a typo delays a message rather than firing one.
+    //
+    // No second idempotency mechanism is introduced. This calls the SAME
+    // `sendConfirmationWhatsApp` the admin uses, which claims
+    // `whatsappConfirmationSent` with a conditional update before sending. So
+    // when an admin later presses CONFIRM on this order, the claim is already
+    // taken and the send is skipped — one message, whichever path runs first.
+    if (triggerFor(o.productSlug) === "order" && push.whatsapp) {
+      push.waitUntil(
+        sendConfirmationWhatsApp(prisma, push.whatsapp, created.id, { reqId })
+          .catch(() => undefined), // never reject into waitUntil
+      );
+    }
   }
 
   return reply(

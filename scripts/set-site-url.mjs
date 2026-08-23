@@ -5,8 +5,8 @@
 //   SITE_URL=https://your-domain.tld node scripts/set-site-url.mjs
 //   node scripts/set-site-url.mjs https://your-domain.tld
 //
-// Default is the project's real Cloudflare Pages URL (nakhwa-store.pages.dev);
-// override with SITE_URL for a custom domain. Idempotent — safe to re-run.
+// Default is the brand's main domain (belleviabeuty.com), the spelling that is
+// configured in Cloudflare; override with SITE_URL. Idempotent — safe to re-run.
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -14,7 +14,7 @@ import { dirname, join } from "node:path";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(root, "dist");
 
-const raw = process.env.SITE_URL || process.argv[2] || "https://nakhwa-store.pages.dev";
+const raw = process.env.SITE_URL || process.argv[2] || "https://belleviabeuty.com";
 let origin;
 try {
   origin = new URL(raw).origin; // validate + normalise (drops path/trailing slash)

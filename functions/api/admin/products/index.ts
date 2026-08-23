@@ -12,26 +12,36 @@ import { getPrisma, prismaCode } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
 import { statsFromItems } from "../_lib/productStats";
 import { uniqueSlug } from "./_lib/slug";
+import { landingStatusFor, ORDER_ENDPOINT } from "../../../../shared/landing-pages.js";
 
 const STATUSES = ["ACTIVE", "DRAFT", "ARCHIVED"] as const;
 const SORT_FIELDS = ["createdAt", "name", "basePrice", "ordersCount", "revenue", "status"] as const;
 
-const createSchema = z.object({
-  name: z.string().trim().min(2).max(150),
-  // Optional: derived from the name when omitted. Arabic names reduce to an
-  // empty slug, so `uniqueSlug` falls back to a generated stem.
-  slug: z.string().trim().min(2).max(150).regex(/^[a-z0-9-]+$/, "invalid_slug").optional(),
-  sku: z.string().trim().max(80).nullable().optional(),
-  category: z.string().trim().max(80).nullable().optional(),
-  description: z.string().trim().max(2000).nullable().optional(),
-  basePrice: z.number().int().min(0),
-  offerPrice: z.number().int().min(0).nullable().optional(),
-  compareAtPrice: z.number().int().min(0).nullable().optional(),
-  // A new product starts as a DRAFT: publishing is a deliberate second step, so
-  // a half-configured product (no colours, sizes or images yet) can never appear
-  // in the storefront by accident.
-  status: z.enum(STATUSES).default("DRAFT"),
-});
+const createSchema = z
+  .object({
+    name: z.string().trim().min(2).max(150),
+    // Optional: derived from the name when omitted. Arabic names reduce to an
+    // empty slug, so `uniqueSlug` falls back to a generated stem.
+    slug: z.string().trim().min(2).max(150).regex(/^[a-z0-9-]+$/, "invalid_slug").optional(),
+    sku: z.string().trim().max(80).nullable().optional(),
+    category: z.string().trim().max(80).nullable().optional(),
+    description: z.string().trim().max(2000).nullable().optional(),
+    basePrice: z.number().int().min(0),
+    offerPrice: z.number().int().min(0).nullable().optional(),
+    compareAtPrice: z.number().int().min(0).nullable().optional(),
+    // A new product starts as a DRAFT: publishing is a deliberate second step, so
+    // a half-configured product (no colours, sizes or images yet) can never appear
+    // in the storefront by accident.
+    status: z.enum(STATUSES).default("DRAFT"),
+  })
+  // The selling price is what `/api/orders` will actually charge:
+  // `offerPrice ?? basePrice`, read from this row and never from the request.
+  // A product that resolves to zero would take orders for nothing, so it is
+  // rejected here rather than discovered on a delivery slip.
+  .refine((d) => (d.offerPrice ?? d.basePrice) > 0, {
+    message: "selling_price_must_be_positive",
+    path: ["basePrice"],
+  });
 
 export const onRequest: AppFunction = async (ctx) => {
   if (ctx.request.method === "GET") return listProducts(ctx);
@@ -75,10 +85,23 @@ const createProduct: AppFunction = async ({ request, env, data }) => {
         // Mirrors the admin lifecycle onto the flag the public flow reads.
         isActive: body.status === "ACTIVE",
       },
-      select: { id: true, slug: true, name: true, status: true },
+      select: { id: true, slug: true, name: true, status: true, isActive: true, basePrice: true, offerPrice: true, currency: true },
     });
     log("info", { reqId, msg: "product_created", productId: created.id, slug: created.slug });
-    return json({ ok: true, data: created }, 201);
+    return json(
+      {
+        ok: true,
+        data: {
+          ...created,
+          // What the storefront is now wired to, returned with the row so the
+          // dashboard can show it without a second request.
+          sellingPrice: created.offerPrice ?? created.basePrice,
+          landingPage: landingStatusFor(created.slug, created),
+          orderEndpoint: ORDER_ENDPOINT,
+        },
+      },
+      201,
+    );
   } catch (err) {
     if (prismaCode(err) === "P2002") return json({ ok: false, error: "duplicate_slug_or_sku" }, 409);
     log("error", { reqId, msg: "product_create_failed", error: err instanceof Error ? err.message : String(err) });
@@ -165,6 +188,11 @@ const listProducts: AppFunction = async ({ request, env, data }) => {
         currency: pr.currency,
         status: pr.status,
         isActive: pr.isActive,
+        // The price `/api/orders` will charge for one unit of this product.
+        // Surfaced explicitly because three price columns are easy to confuse,
+        // and only this one reaches a customer's delivery slip.
+        sellingPrice: pr.offerPrice ?? pr.basePrice,
+        landingPage: landingStatusFor(pr.slug, pr),
         createdAt: pr.createdAt,
         image: main?.url ?? null,
         colorsCount: pr._count.colors,

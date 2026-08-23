@@ -1,0 +1,17 @@
+{
+  "name": "Belle Via — Pack الراحة",
+  "short_name": "Belle Via",
+  "description": "شامبو وسيروم للعناية بالشعر والتعامل مع القمل والصيبان.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf6ec",
+  "theme_color": "#27442C",
+  "icons": [
+    { "src": "./assets/favicon/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./assets/favicon/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./assets/favicon/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

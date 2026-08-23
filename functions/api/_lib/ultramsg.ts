@@ -34,6 +34,35 @@ export interface WhatsAppResult {
   status?: number;
   /** UltraMsg's own message, truncated. Carries no credential. */
   detail?: string;
+  /** Provider-side id for the accepted message, when it returns one. */
+  messageId?: string;
+}
+
+/**
+ * The provider contract, as the rest of the app sees it.
+ *
+ * Everything above the transport talks to this shape, so swapping UltraMsg for
+ * another gateway is one implementation of this function — and tests inject a
+ * mock rather than reaching the network.
+ */
+export interface SendWhatsAppInput {
+  phone: string;
+  message: string;
+}
+export type WhatsAppSender = (input: SendWhatsAppInput) => Promise<WhatsAppResult>;
+
+/**
+ * Bind the configured provider to its credentials.
+ *
+ * Returns a `WhatsAppSender` that takes only `{ phone, message }`; the instance
+ * id and token stay captured in the closure and never travel with the call.
+ */
+export function whatsAppSender(
+  env: { ULTRAMSG_INSTANCE_ID?: string; ULTRAMSG_TOKEN?: string; ULTRAMSG_API_BASE?: string },
+  reqId?: string,
+): WhatsAppSender {
+  return ({ phone, message }) =>
+    sendWhatsApp(env.ULTRAMSG_INSTANCE_ID, env.ULTRAMSG_TOKEN, phone, message, reqId, env.ULTRAMSG_API_BASE);
 }
 
 /**
@@ -48,6 +77,13 @@ export async function sendWhatsApp(
   toPhone: string,
   body: string,
   reqId?: string,
+  /**
+   * Test seam only, mirroring `WHATSAPP_API_BASE` on the Meta provider: points
+   * the send at a local mock so the routing rule can be proved end-to-end
+   * without messaging anyone. Never set in production; absent, this is
+   * UltraMsg's real host exactly as before.
+   */
+  apiBase?: string,
 ): Promise<WhatsAppResult> {
   if (!instanceId || !token) return { ok: false, skipped: "not_configured" };
 
@@ -62,7 +98,7 @@ export async function sendWhatsApp(
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const res = await fetch(`https://api.ultramsg.com/${instanceId}/messages/chat`, {
+    const res = await fetch(`${apiBase || "https://api.ultramsg.com"}/${instanceId}/messages/chat`, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded" },
       // Token in the body, never the query string.
@@ -87,7 +123,18 @@ export async function sendWhatsApp(
       log("warn", { reqId, msg: "whatsapp_send_failed", status: res.status, detail: text.slice(0, 200) });
       return { ok: false, status: res.status, detail: text.slice(0, 200) };
     }
-    return { ok: true, status: res.status };
+
+    // UltraMsg returns the queued message's id as `id`. It is useful for support
+    // ("which message went out?") and is stored on the order. Absent on some
+    // plans, in which case the send is still a success.
+    let messageId: string | undefined;
+    try {
+      const parsed: unknown = JSON.parse(text);
+      const raw = (parsed as { id?: unknown }).id;
+      if (typeof raw === "string" || typeof raw === "number") messageId = String(raw).slice(0, 120);
+    } catch { /* not JSON — no id to record */ }
+
+    return { ok: true, status: res.status, messageId };
   } catch (err) {
     const aborted = err instanceof Error && err.name === "AbortError";
     log("warn", {

@@ -1,0 +1,445 @@
+/* ===== BELLEVIA — main storefront homepage =====
+   Its own stylesheet. The previous homepage's style.css belongs to the burkini
+   page and is not loaded here, so nothing on this page inherits rules written
+   for a product that is no longer on it.
+
+   Design tokens are lifted verbatim from the Bellevia landing pages, so the
+   storefront and the product pages are visibly one brand.
+
+   No JavaScript. Every interaction here is a link or CSS. */
+
+/* Tajawal, self-hosted. These are the same files the landing pages preload, so
+   a visitor arriving from one of them already has the font cached. */
+@font-face {
+  font-family: Tajawal; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(bellevia-anti-lice/assets/fonts/tajawal-400-ar.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: Tajawal; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(bellevia-anti-lice/assets/fonts/tajawal-400-lat.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21BB, U+2212;
+}
+@font-face {
+  font-family: Tajawal; font-style: normal; font-weight: 700; font-display: swap;
+  src: url(bellevia-anti-lice/assets/fonts/tajawal-700-ar.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: Tajawal; font-style: normal; font-weight: 700; font-display: swap;
+  src: url(bellevia-anti-lice/assets/fonts/tajawal-700-lat.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21BB, U+2212;
+}
+@font-face {
+  font-family: Tajawal; font-style: normal; font-weight: 800; font-display: swap;
+  src: url(bellevia-anti-lice/assets/fonts/tajawal-800-ar.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+@font-face {
+  font-family: Tajawal; font-style: normal; font-weight: 800; font-display: swap;
+  src: url(bellevia-anti-lice/assets/fonts/tajawal-800-lat.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F, U+2190-21BB, U+2212;
+}
+
+:root {
+  --g-900: #14301A;
+  --g-800: #1E4422;
+  --g-700: #2D5B2F;
+  --g-600: #3A6E33;
+  --g-500: #5D8F24;
+  --g-300: #9CBF6E;
+  --g-100: #DCEBCD;
+  --g-50:  #F1F7EA;
+
+  --gold: #E8A900;
+  --gold-2: #F4C13F;
+  --gold-soft: #FCEFCB;
+  --gold-ink: #FFDD8A;
+
+  --paper: #FFFFFF;
+  --ink: #16261A;
+  --ink-2: #42544A;
+  --muted: #5E7060;
+  --line: #DDE8D3;
+
+  --r-sm: 12px;
+  --r: 16px;
+  --r-lg: 22px;
+
+  --sh-1: 0 1px 2px rgba(20,48,26,.05), 0 4px 14px rgba(20,48,26,.06);
+  --sh-2: 0 2px 8px rgba(20,48,26,.07), 0 16px 38px rgba(20,48,26,.12);
+
+  --pad: 16px;
+  --sec-y: 56px;
+  --wrap: 1120px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* The two "discover our products" buttons are in-page anchors; this is what
+     makes them glide rather than jump, with no script involved. */
+  scroll-behavior: smooth;
+  /* Keeps a heading clear of the sticky header when an anchor lands. */
+  scroll-padding-top: 84px;
+}
+
+body {
+  margin: 0;
+  font-family: Tajawal, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -.2px; line-height: 1.3; }
+p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+
+.wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: var(--pad); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .95rem 1.6rem;
+  border-radius: 999px;
+  font-weight: 800; font-size: 1rem;
+  transition: transform .16s ease, box-shadow .22s ease, background .22s ease;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--g-600), var(--g-700) 60%, var(--g-800));
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(45,91,47,.28);
+}
+.btn-primary:hover { box-shadow: 0 14px 32px rgba(45,91,47,.36); }
+.btn-primary:active { transform: scale(.97); }
+.btn-ghost {
+  background: var(--paper); color: var(--g-700);
+  border: 1.5px solid var(--line);
+}
+.btn-ghost:hover { border-color: var(--g-300); background: var(--g-50); }
+.btn-sm { padding: .6rem 1.1rem; font-size: .88rem; }
+
+/* ---------- Header ---------- */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  display: flex; align-items: center; gap: .75rem;
+  min-height: 64px;
+}
+.brand { display: inline-flex; align-items: center; gap: .55rem; flex: 0 0 auto; }
+.brand img { height: 38px; width: auto; }
+.brand-name {
+  font-weight: 800; font-size: 1.15rem; letter-spacing: .5px;
+  color: var(--g-700);
+}
+.nav { display: none; }
+.nav a {
+  font-weight: 700; font-size: .95rem; color: var(--ink-2);
+  padding: .4rem .1rem; position: relative;
+  transition: color .2s ease;
+}
+.nav a:hover { color: var(--g-700); }
+.nav a::after {
+  content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 2px;
+  background: var(--gold); border-radius: 2px;
+  transform: scaleX(0); transition: transform .22s ease;
+}
+.nav a:hover::after { transform: scaleX(1); }
+.header-cta { margin-inline-start: auto; flex: 0 0 auto; }
+
+/* Nav is a quiet second row on a phone rather than a hamburger — four links
+   fit, and a menu that needs a script is a menu that can fail. */
+.nav-mobile {
+  display: flex; gap: 1.1rem; justify-content: center;
+  padding: .55rem 0 .7rem;
+  border-top: 1px solid var(--line);
+  overflow-x: auto; scrollbar-width: none;
+}
+.nav-mobile::-webkit-scrollbar { display: none; }
+.nav-mobile a { font-size: .86rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.nav-mobile a:hover { color: var(--g-700); }
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative; overflow: hidden;
+  background:
+    radial-gradient(120% 85% at 80% 0%, var(--g-100) 0%, transparent 58%),
+    radial-gradient(100% 70% at 5% 100%, #EAF3DF 0%, transparent 55%),
+    linear-gradient(180deg, var(--g-50), var(--paper));
+  padding: 2.2rem 0 2.6rem;
+}
+.hero-inner { display: grid; gap: 1.6rem; align-items: center; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: .45rem;
+  background: var(--paper); border: 1px solid var(--line);
+  color: var(--g-700); font-weight: 800; font-size: .78rem;
+  padding: .32rem .8rem; border-radius: 999px;
+  box-shadow: var(--sh-1);
+  margin-bottom: .85rem;
+}
+.hero-eyebrow svg { width: 14px; height: 14px; }
+.hero h1 {
+  font-size: clamp(1.9rem, 7.4vw, 3.1rem);
+  color: var(--g-900);
+  margin-bottom: .7rem;
+}
+.hero-sub {
+  font-size: clamp(.98rem, 3.6vw, 1.12rem);
+  color: var(--ink-2);
+  max-width: 46ch;
+  margin-bottom: 1.4rem;
+}
+.hero-actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+
+/* Two real packs, shown as they are. Nothing is recoloured or relabelled — the
+   files are the same ones the product pages ship. */
+/* Two matched tiles rather than two loose images. The anti-lice pack is a
+   cut-out and the Raha pack was photographed on a background — floating one
+   beside the other reads as a mistake, so both get the same rounded frame and
+   only the fill differs. Neither image is altered. */
+.hero-art {
+  position: relative;
+  display: grid; grid-template-columns: 1fr 1fr; gap: .75rem;
+  align-items: stretch;
+}
+.hero-art figure {
+  margin: 0; position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: linear-gradient(165deg, #fff, var(--g-50));
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-2);
+}
+.hero-art img { width: 100%; height: 100%; }
+/* Cut-out: sits on the wash with room to breathe. */
+.hero-art .art-cut img { object-fit: contain; padding: 12px 10px; }
+/* Photographed: fills its frame. */
+.hero-art .art-photo img { object-fit: cover; }
+
+.hero-trust {
+  display: flex; flex-wrap: wrap; gap: .5rem .9rem;
+  margin-top: 1.3rem; padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+}
+.hero-trust li {
+  display: inline-flex; align-items: center; gap: .38rem;
+  font-size: .84rem; font-weight: 700; color: var(--muted);
+}
+.hero-trust svg { width: 15px; height: 15px; color: var(--g-500); flex: 0 0 auto; }
+
+/* ---------- Sections ---------- */
+.section { padding: var(--sec-y) 0; }
+.section-alt { background: var(--g-50); }
+.section-head { text-align: center; margin-bottom: 2rem; }
+.section-head h2 {
+  font-size: clamp(1.5rem, 5.6vw, 2.2rem);
+  color: var(--g-900);
+  margin-bottom: .45rem;
+}
+.section-head p { color: var(--muted); font-size: clamp(.92rem, 3.4vw, 1.03rem); }
+.section-head .rule {
+  width: 54px; height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-2));
+  margin: .9rem auto 0;
+}
+
+/* ---------- Products ---------- */
+.products { display: grid; gap: 1.3rem; }
+.p-card {
+  display: flex; flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--sh-1);
+  transition: transform .3s cubic-bezier(.22,.61,.36,1), box-shadow .3s ease, border-color .3s ease;
+}
+.p-card:hover, .p-card:focus-within {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-2);
+  border-color: var(--g-300);
+}
+.p-media {
+  position: relative;
+  background: linear-gradient(160deg, var(--g-50), #fff 70%);
+  /* Portrait, matching how both packs were shot — a landscape frame would
+     crop the bottles top and bottom. */
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  /* Deliberately not a centred grid. place-items:center stops the image from
+     stretching, so its height:100% fell back to intrinsic, the element grew
+     taller than the frame, and overflow:hidden cropped what object-fit had
+     already fitted. Block layout lets the image be exactly the size of the
+     frame and object-fit decide what happens inside it. */
+  display: block;
+}
+.p-media img {
+  width: 100%; height: 100%;
+  transition: transform .4s cubic-bezier(.22,.61,.36,1);
+}
+/* A cut-out floats on the wash; a photographed pack fills the frame. Same box
+   either way, so the two cards stay a matched pair. */
+.p-media--cut img { object-fit: contain; padding: 1.1rem 1rem; filter: drop-shadow(0 14px 24px rgba(20,48,26,.16)); }
+.p-media--photo img { object-fit: cover; }
+.p-card:hover .p-media img { transform: scale(1.04); }
+.p-tag {
+  position: absolute; top: .85rem; inset-inline-start: .85rem;
+  background: var(--g-700); color: #fff;
+  font-size: .7rem; font-weight: 800;
+  padding: .28rem .7rem; border-radius: 999px;
+}
+.p-body { padding: 1.2rem 1.15rem 1.35rem; display: flex; flex-direction: column; gap: .55rem; flex: 1; }
+.p-body h3 { font-size: 1.14rem; color: var(--g-900); }
+.p-body p { color: var(--muted); font-size: .93rem; line-height: 1.65; flex: 1; }
+.p-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+  margin-top: .5rem;
+  background: linear-gradient(135deg, var(--g-600), var(--g-700) 60%, var(--g-800));
+  color: #fff; font-weight: 800; font-size: .95rem;
+  padding: .8rem 1.2rem; border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(45,91,47,.24);
+  transition: box-shadow .22s ease, transform .16s ease;
+}
+.p-card:hover .p-cta { box-shadow: 0 12px 26px rgba(45,91,47,.32); }
+.p-cta:active { transform: scale(.98); }
+.p-cta svg { width: 15px; height: 15px; }
+
+/* ---------- Why Bellevia ---------- */
+.why { display: grid; gap: .9rem; }
+.why-item {
+  display: flex; align-items: flex-start; gap: .85rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 1.05rem 1.1rem;
+  box-shadow: var(--sh-1);
+}
+.why-ico {
+  flex: 0 0 auto;
+  width: 42px; height: 42px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: var(--g-50);
+  border: 1px solid var(--g-100);
+  color: var(--g-700);
+}
+.why-ico svg { width: 21px; height: 21px; }
+.why-item h3 { font-size: 1rem; color: var(--g-900); margin-bottom: .15rem; }
+.why-item p { font-size: .87rem; color: var(--muted); line-height: 1.6; }
+
+/* ---------- Brand ---------- */
+.brand-band {
+  background: linear-gradient(150deg, var(--g-800), var(--g-700) 55%, var(--g-600));
+  color: #fff;
+  border-radius: var(--r-lg);
+  padding: 2.3rem 1.4rem;
+  text-align: center;
+  position: relative; overflow: hidden;
+  box-shadow: var(--sh-2);
+}
+.brand-band::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(70% 90% at 85% 5%, rgba(232,169,0,.18), transparent 60%);
+  pointer-events: none;
+}
+.brand-band h2 { font-size: clamp(1.35rem, 5.2vw, 2rem); margin-bottom: .8rem; position: relative; }
+.brand-band p {
+  color: #E7F1DE; font-size: clamp(.95rem, 3.5vw, 1.06rem);
+  max-width: 52ch; margin-inline: auto; position: relative;
+}
+.brand-band .leaf {
+  width: 34px; height: 34px; color: var(--gold-2);
+  margin: 0 auto .8rem; position: relative;
+}
+
+/* ---------- Final CTA ---------- */
+.final-cta { text-align: center; }
+.final-cta h2 { font-size: clamp(1.45rem, 5.4vw, 2.1rem); color: var(--g-900); margin-bottom: 1.1rem; }
+
+/* ---------- Footer ---------- */
+.site-footer {
+  background: var(--g-900); color: #D6E4CE;
+  padding: 2.4rem 0 1.6rem; margin-top: var(--sec-y);
+}
+.footer-top { display: grid; gap: 1.5rem; }
+.footer-brand .brand-name { color: #fff; font-size: 1.25rem; }
+.footer-brand img { height: 40px; width: auto; filter: brightness(0) invert(1); opacity: .95; }
+.footer-brand p { color: #A9BFA4; font-size: .88rem; margin-top: .6rem; max-width: 40ch; }
+.footer-links h4 { font-size: .92rem; color: #fff; font-weight: 800; margin: 0 0 .6rem; }
+.footer-links li + li { margin-top: .4rem; }
+.footer-links a { font-size: .89rem; color: #C3D6BD; transition: color .2s ease; }
+.footer-links a:hover { color: var(--gold-2); }
+.footer-bottom {
+  margin-top: 1.8rem; padding-top: 1.1rem;
+  border-top: 1px solid rgba(255,255,255,.12);
+  display: flex; flex-wrap: wrap; gap: .5rem 1rem;
+  justify-content: space-between; align-items: center;
+  font-size: .8rem; color: #9CB397;
+}
+
+/* ---------- Focus, for keyboard users ---------- */
+a:focus-visible, .btn:focus-visible, .p-cta:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+/* Visible only when tabbed to — lets a keyboard user skip the header.
+
+   Hidden by clipping, not by being parked off-canvas. The -9999px trick
+   resolves to right:-9999px under dir="rtl", which pushes the element ten
+   thousand pixels past the right edge and inflates the layout canvas to match;
+   overflow-x:hidden hides the scrollbar but the page is still laid out that
+   wide, which is enough to throw off rendering and any full-page capture.
+   Clipping keeps it a 1px box that moves nothing. */
+.skip-link {
+  position: absolute; top: .5rem; inset-inline-start: .5rem;
+  width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+  background: var(--g-700); color: #fff;
+  padding: .6rem 1rem; border-radius: var(--r-sm);
+  font-weight: 800; z-index: 100;
+}
+.skip-link:focus {
+  width: auto; height: auto; overflow: visible;
+  clip-path: none;
+}
+
+/* ---------- Tablet ---------- */
+@media (min-width: 700px) {
+  :root { --pad: 24px; --sec-y: 72px; }
+  .products { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .why { grid-template-columns: 1fr 1fr; }
+  .footer-top { grid-template-columns: 1.4fr 1fr; }
+  .brand-band { padding: 3rem 2.4rem; }
+}
+
+/* ---------- Desktop ---------- */
+@media (min-width: 980px) {
+  .nav { display: flex; gap: 1.6rem; margin-inline-start: 2rem; }
+  .nav-mobile { display: none; }
+  .hero { padding: 3.4rem 0 3.6rem; }
+  .hero-inner { grid-template-columns: 1.05fr .95fr; gap: 2.6rem; }
+  .why { grid-template-columns: repeat(4, 1fr); }
+  .why-item { flex-direction: column; align-items: flex-start; gap: .7rem; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}

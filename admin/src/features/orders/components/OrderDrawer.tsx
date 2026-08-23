@@ -18,18 +18,41 @@ function Row({ label, value, ltr }: { label: string; value: ReactNode; ltr?: boo
   );
 }
 
+/**
+ * How the confirmation WhatsApp went, in one line.
+ *
+ * "Not configured" is deliberately its own state: it means nobody has given the
+ * shop WhatsApp credentials yet, which is a different problem from a message
+ * that was attempted and rejected, and it must not read as a failure.
+ */
+const WHATSAPP_META: Record<string, { label: string; tone: "success" | "danger" | "neutral" | "warning" }> = {
+  sent: { label: "✓ تم الإرسال", tone: "success" },
+  failed: { label: "⚠ فشل الإرسال", tone: "danger" },
+  not_configured: { label: "— غير مفعّل", tone: "neutral" },
+  disabled: { label: "— موقوف لهاد المنتج", tone: "neutral" },
+  invalid_phone: { label: "⚠ رقم غير صالح", tone: "warning" },
+  no_template: { label: "— ما كاينش قالب معتمد", tone: "warning" },
+};
+
 export function OrderDrawer({
   order,
   open,
   onClose,
   onChangeStatus,
   statusBusy,
+  onResendWhatsApp,
+  whatsappBusy,
+  canResendWhatsApp,
 }: {
   order: Order | null;
   open: boolean;
   onClose: () => void;
   onChangeStatus: (id: string, status: OrderStatus) => void;
   statusBusy: boolean;
+  /** Explicit resend. Absent when the signed-in admin may not send messages. */
+  onResendWhatsApp?: (id: string) => void;
+  whatsappBusy?: boolean;
+  canResendWhatsApp?: boolean;
 }) {
   return (
     <Drawer open={open} onClose={onClose} title={order ? `طلب ${order.orderNumber}` : ""}>
@@ -51,18 +74,67 @@ export function OrderDrawer({
             </div>
           </section>
 
-          <section>
-            <h3 className="mb-1 text-xs font-bold text-faint">القطع ({order.quantity})</h3>
-            {order.items.map((it, i) => (
-              <Row key={i} label={`القطعة ${i + 1}`} value={`${it.sizeLabel} — ${it.colorName}`} />
-            ))}
-          </section>
+          {/* Which product, at what unit price. With one dashboard serving
+              several storefronts, an order that only shows a total and a
+              size is not enough to pack the right box. */}
+          {order.product && (
+            <section>
+              <h3 className="mb-1 text-xs font-bold text-faint">المنتج</h3>
+              <Row label="الاسم" value={order.product.name} />
+              <Row label="المعرّف (slug)" value={order.product.slug} ltr />
+              <Row label="سعر الوحدة" value={formatMoney(order.product.unitPrice)} />
+              <Row label="الكمية" value={String(order.quantity)} />
+              <Row label="المجموع" value={formatMoney(order.totalPrice)} />
+            </section>
+          )}
+
+          {/* Colour and size only exist for products that have them; a
+              single-variant product records empty strings, and printing
+              "القطعة 1: —" for each unit is noise. */}
+          {order.items.some((it) => it.sizeLabel || it.colorName) && (
+            <section>
+              <h3 className="mb-1 text-xs font-bold text-faint">القطع ({order.quantity})</h3>
+              {order.items.map((it, i) => (
+                <Row key={i} label={`القطعة ${i + 1}`} value={[it.sizeLabel, it.colorName].filter(Boolean).join(" — ")} />
+              ))}
+            </section>
+          )}
 
           <section>
             <h3 className="mb-1 text-xs font-bold text-faint">تفاصيل</h3>
             <Row label="طريقة الدفع" value={order.paymentMethod === "COD" ? "الدفع عند الاستلام" : order.paymentMethod} />
+            <Row label="المصدر" value={order.source} ltr />
             <Row label="التاريخ" value={formatDate(order.createdAt)} />
           </section>
+
+          {/* Confirmation WhatsApp. Only meaningful once the order has left
+              PENDING — before that no message has been attempted. */}
+          {order.status !== "PENDING" && (
+            <section>
+              <h3 className="mb-2 text-xs font-bold text-faint">واتساب التأكيد</h3>
+              <div className="flex items-center justify-between gap-3">
+                <Badge tone={WHATSAPP_META[order.whatsapp?.status ?? "not_configured"]?.tone ?? "neutral"}>
+                  {WHATSAPP_META[order.whatsapp?.status ?? "not_configured"]?.label ?? "— غير معروف"}
+                </Badge>
+                {canResendWhatsApp && onResendWhatsApp && (
+                  <button
+                    type="button"
+                    className="rounded-lg border border-line px-3 py-1.5 text-xs font-bold text-ink disabled:opacity-50"
+                    disabled={whatsappBusy}
+                    onClick={() => onResendWhatsApp(order.id)}
+                  >
+                    {whatsappBusy ? "كيتصيفط…" : "إعادة الإرسال"}
+                  </button>
+                )}
+              </div>
+              {order.whatsapp?.sentAt && (
+                <p className="mt-1 text-xs text-muted">{formatDate(order.whatsapp.sentAt)}</p>
+              )}
+              {order.whatsapp?.error && (
+                <p className="mt-1 text-xs text-danger">{order.whatsapp.error}</p>
+              )}
+            </section>
+          )}
 
           <section>
             <h3 className="mb-2 text-xs font-bold text-faint">تغيير الحالة</h3>

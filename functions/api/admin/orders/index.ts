@@ -78,7 +78,15 @@ const listOrders: AppFunction = async ({ request, env, data }) => {
         orderBy: { [sort]: dir },
         skip: (page - 1) * pageSize,
         take: pageSize,
-        include: { customer: true, items: true, shipment: true },
+        // The product name and slug come from the join, not from the free-text
+        // `source` column: `source` is whatever a landing page called itself,
+        // and with several storefronts sharing this dashboard it is not a
+        // reliable answer to "which product is this".
+        include: {
+          customer: true,
+          items: { include: { product: { select: { name: true, slug: true } } } },
+          shipment: true,
+        },
       }),
       // Global status snapshot for the shipping KPIs (unfiltered).
       prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
@@ -106,6 +114,14 @@ const listOrders: AppFunction = async ({ request, env, data }) => {
       // sent. Shown as the "المصدر" column.
       source: o.source,
       createdAt: o.createdAt,
+      // Confirmation WhatsApp, so the drawer can show its state without a
+      // second request. Read-only summary; the send path is server-side.
+      whatsapp: {
+        sent: o.whatsappConfirmationSent,
+        sentAt: o.whatsappConfirmationSentAt,
+        status: o.whatsappConfirmationStatus,
+        error: o.whatsappConfirmationError,
+      },
       customer: {
         fullName: o.customer.fullName,
         phone: o.customer.phone,
@@ -113,6 +129,11 @@ const listOrders: AppFunction = async ({ request, env, data }) => {
         address: o.customer.address,
       },
       items: o.items.map((i) => ({ colorName: i.colorName, sizeLabel: i.sizeLabel })),
+      // Which product was sold, and what one unit was charged at the time.
+      // `unitPrice` is a snapshot: repricing the catalog never rewrites it.
+      product: o.items[0]
+        ? { name: o.items[0].product.name, slug: o.items[0].product.slug, unitPrice: o.items[0].unitPrice }
+        : null,
       shipment: o.shipment
         ? { company: o.shipment.company, trackingNumber: o.shipment.trackingNumber, status: o.shipment.status }
         : null,

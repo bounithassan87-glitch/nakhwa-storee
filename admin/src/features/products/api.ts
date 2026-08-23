@@ -1,5 +1,6 @@
 import { apiGet, apiPatch, apiPost, apiDelete } from "@/lib/api";
 import type {
+  LandingStatus,
   MediaType,
   ProductColor,
   ProductDetail,
@@ -58,6 +59,12 @@ export interface ProductCreated {
   slug: string;
   name: string;
   status: ProductStatus;
+  /** Present on create: what `/api/orders` will charge for one unit. */
+  sellingPrice?: number;
+  /** Present on create: whether a landing page is deployed at `/<slug>/`. */
+  landingPage?: { url: string | null; status: LandingStatus };
+  /** Present on create: always `/api/orders`. There is no per-product API. */
+  orderEndpoint?: string;
 }
 
 export const createProduct = (body: ProductCreate) =>

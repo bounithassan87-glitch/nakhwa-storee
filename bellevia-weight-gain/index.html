@@ -85,42 +85,52 @@
            name, which is already burned into the label in the photo directly
            above it, in the header lockup, and in <title>. -->
       <h1 id="hero-t">
-        <span class="hero__kicker">مكمل غذائي · 30 كبسولة</span>
-        كتعاني من صعوبة فزيادة الوزن؟
+        <span class="hero__kicker">Bellevia Weight Gain</span>
+        كتحاولي تزيدي فالوزن ولكن ما لقيتيش الطريقة المناسبة ليك؟
       </h1>
 
       <p class="hero__sub">
-        <strong>Bellevia Weight&nbsp;Gain</strong> — مكمل غذائي بتركيبة متعددة
-        المكونات، كيتدمج فروتينك اليومي حسب طريقة الاستعمال المكتوبة على العبوة.
+        إضافة عملية للنظام الغذائي اليومي — مكمل غذائي بتركيبة متعددة المكونات.
       </p>
 
       <ul class="hero__points">
-        <li><svg class="i" aria-hidden="true"><use href="#i-leaf"></use></svg>تركيبة من 14 مكوّن مكتوبين على العلبة</li>
-        <li><svg class="i" aria-hidden="true"><use href="#i-capsule"></use></svg>كبسولة بعد الوجبة — بلا خلط ولا تحضير</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-leaf"></use></svg>تركيبة متعددة المكونات</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-capsule"></use></svg>30 كبسولة</li>
+        <li><svg class="i" aria-hidden="true"><use href="#i-info"></use></svg>طريقة استعمال واضحة على العبوة</li>
       </ul>
 
-      <!-- Entry price only. Three figures here would compete with the headline;
-           the full ladder lives in the selector under the hero. -->
+      <!-- Price, cash-on-delivery and free delivery ride together, above the
+           CTA. Split apart they fell below the fold on a phone, which is where
+           a COD shopper's two questions — what does it cost, and do I pay a
+           stranger up front — went unanswered on the first screen.
+           Entry price only: three figures here would compete with the
+           headline, and the full ladder is in the selector just below. -->
       <div class="hero__offer" data-offer-mini hidden>
-        <span class="price__from" data-from-label>ابتداءً من</span>
-        <span class="price" data-price>[PRICE]</span>
-        <span class="price price--old" data-price-old>[OLD PRICE]</span>
-        <span class="pill pill--gold" data-offer>[OFFER]</span>
+        <p class="hero__pricerow">
+          <span class="price__from" data-from-label>ابتداءً من</span>
+          <span class="price" data-price>[PRICE]</span>
+          <span class="price price--old" data-price-old>[OLD PRICE]</span>
+          <span class="pill pill--gold" data-offer>[OFFER]</span>
+        </p>
+
+        <!-- The whole ladder as one compact line, filled from config by
+             script.js. Deliberately not a second selector: a shopper arriving
+             from an ad should see that buying more costs less per box before
+             she scrolls, but the choosing happens once, in the selector below,
+             so there is only ever one control to keep in sync. -->
+        <p class="hero__ladder" id="heroLadder" hidden></p>
+
+        <ul class="trustrow">
+          <li data-cod><svg class="i" aria-hidden="true"><use href="#i-cash"></use></svg>الدفع عند الاستلام</li>
+          <li data-delivery><svg class="i" aria-hidden="true"><use href="#i-truck"></use></svg><span data-delivery-text>[DELIVERY]</span></li>
+          <li><svg class="i" aria-hidden="true"><use href="#i-phone"></use></svg>تأكيد الطلب عبر الهاتف</li>
+        </ul>
       </div>
 
       <div class="hero__actions">
         <a class="btn btn--primary btn--lg" href="#commander" data-cta="hero">اطلبي الآن</a>
         <a class="btn btn--ghost btn--lg" href="#ingredients">شوفي المكونات</a>
       </div>
-
-      <!-- COD and delivery are claims about a service, so both are gated on
-           config: turn COD off or leave delivery blank and the row loses that
-           item rather than promising something the backend does not do. -->
-      <ul class="trustrow">
-        <li data-cod><svg class="i" aria-hidden="true"><use href="#i-cash"></use></svg>الدفع عند الاستلام</li>
-        <li data-delivery><svg class="i" aria-hidden="true"><use href="#i-truck"></use></svg><span data-delivery-text>[DELIVERY]</span></li>
-        <li><svg class="i" aria-hidden="true"><use href="#i-shield"></use></svg>منتج أصلي</li>
-      </ul>
     </div>
 
     <!-- Two shots composed side by side on desktop, the product leading. The
@@ -153,7 +163,7 @@
     <header class="sec-head reveal">
       <p class="eyebrow eyebrow--center">الطلب</p>
       <h2 id="ord-t">طلبيتك كتحتاج غير دقيقة</h2>
-      <p class="sec-head__sub">عمّري المعلومات وغادي نتواصلو معاك باش نأكدو الطلب قبل ما نصيفطوه.</p>
+      <p class="sec-head__sub">عمّري معلوماتك، وغادي نتواصلو معاك لتأكيد الطلب.</p>
     </header>
 
     <div class="order">
@@ -281,6 +291,16 @@
             أكدي الطلب
           </button>
 
+          <!-- Directly under the button, because that is where hesitation
+               peaks: the three things a COD shopper wants to be sure of before
+               she hands over her number. Gated on config like every other
+               mention, so nothing is promised that can be switched off. -->
+          <ul class="assure assure--under">
+            <li data-cod><svg class="i" aria-hidden="true"><use href="#i-cash"></use></svg>الدفع عند الاستلام</li>
+            <li data-delivery><svg class="i" aria-hidden="true"><use href="#i-truck"></use></svg><span data-delivery-text>[DELIVERY]</span></li>
+            <li><svg class="i" aria-hidden="true"><use href="#i-phone"></use></svg>تأكيد الطلب عبر الهاتف</li>
+          </ul>
+
           <p class="form__note">
             كنستعملو المعلومات ديالك غير باش نأكدو ونصيفطو الطلب.
           </p>
@@ -304,7 +324,10 @@
   <div class="wrap">
     <header class="sec-head reveal">
       <p class="eyebrow eyebrow--center">المشكل</p>
-      <h2 id="prob-t">كتحاولي تزيدي فالوزن ولكن ما لقيتيش الطريقة المناسبة ليك؟</h2>
+      <!-- The hero now asks the "have you tried and not found a way" question,
+           so this one moves on to where the day actually breaks down. Asking it
+           twice would waste the section. -->
+      <h2 id="prob-t">فين كتوقف عادة؟</h2>
       <p class="sec-head__sub">
         ماشي مسألة إرادة، وماشي مسألة غلط فالماكلة. غالباً غير مسألة تنظيم:
         نهار كيمشي بسرعة، والحصيلة اليومية كتولي صعيبة تتبّعها.
@@ -657,7 +680,7 @@
         </p>
         <ul class="checks">
           <li>ما فيها لا مسحوق ولا شيكر</li>
-          <li>30 كبسولة = شهر كامل بجرعة يومية</li>
+          <li>كتمشي معاك فالساك بلا ما تحسي بيها</li>
           <li>يحفظ فبلاصة باردة وناشفة</li>
         </ul>
         <a class="btn btn--primary" href="#commander" data-cta="lifestyle">اطلبي الآن</a>
@@ -743,11 +766,11 @@
       </details>
 
       <details class="qa reveal">
-        <summary>شحال كاين فالعلبة؟</summary>
+        <summary>شنو غادي يوصلني؟</summary>
         <div class="qa__a">
           <p>
-            <strong>30 كبسولة</strong>، مكتوبة على العلبة (<span class="ltr">30 Capsules</span>).
-            بجرعة كبسولة فالنهار كتكفي شهر.
+            علبة <strong>Bellevia Weight Gain</strong> فيها <strong>30 كبسولة</strong>
+            (<span class="ltr">30 Capsules</span>) — حسب العرض اللي ختاريتي: علبة، جوج ولا تلاتة.
           </p>
         </div>
       </details>
@@ -776,11 +799,19 @@
       </details>
 
       <details class="qa reveal">
-        <summary>واش كاين الدفع عند الاستلام؟</summary>
+        <summary>كيفاش كنخلص؟</summary>
         <div class="qa__a">
           <p data-cod-answer>
-            إيه. كتخلصي ملي يوصلك الطلب لعندك — ما كاين حتى خلاص مسبق.
+            <strong>كتخلصي منين يوصلك الطلب.</strong> ما كاين حتى خلاص مسبق،
+            وما كنطلبوش منك حتى معلومة ديال بطاقة بنكية.
           </p>
+        </div>
+      </details>
+
+      <details class="qa reveal" data-delivery>
+        <summary>واش التوصيل مجاني؟</summary>
+        <div class="qa__a">
+          <p><span data-delivery-text>[DELIVERY]</span> — الثمن اللي كتشوفي هو اللي كتخلصي.</p>
         </div>
       </details>
     </div>
@@ -851,10 +882,7 @@
     <div class="final__copy reveal">
       <p class="eyebrow eyebrow--gold">Bellevia · Weight Gain</p>
       <h2 id="final-t">بغيتي تجربي Bellevia Weight Gain؟</h2>
-      <p>
-        طلبي دابا وخلي معلوماتك، وغادي نتواصلو معاك لتأكيد الطلب. علبة وحدة
-        كتكفي شهر كامل<span data-cod>، والدفع عند الاستلام</span>.
-      </p>
+      <p>خلي معلوماتك، وغادي نتواصلو معاك لتأكيد الطلب.</p>
 
       <!-- The whole ladder, filled from config.packs by script.js. -->
       <ul class="ladder" id="finalPacks" hidden></ul>
@@ -879,17 +907,16 @@
            srcset="./assets/logo/logo-171.webp 171w, ./assets/logo/logo-342.webp 342w"
            sizes="140px" width="171" height="75" loading="lazy" decoding="async"
            alt="Bellevia — Natural Wellness">
-      <p>مكمل غذائي · <span class="ltr" lang="fr">Complément alimentaire</span> · 30 كبسولة</p>
+      <p>مكمل غذائي · <span class="ltr" lang="fr">Complément alimentaire</span></p>
     </div>
 
+    <!-- Trimmed to the two links a reader might still want at the bottom, plus
+         the phone. A six-item site map on a single-page landing is navigation
+         for a site that does not exist. -->
     <nav class="foot__nav" aria-label="روابط الفوتر">
       <h2>الصفحة</h2>
       <ul>
         <li><a href="#commander">الطلب</a></li>
-        <li><a href="#bienfaits">المميزات</a></li>
-        <li><a href="#ingredients">المكونات</a></li>
-        <li><a href="#utilisation">الاستعمال</a></li>
-        <li><a href="#faq">أسئلة</a></li>
         <li><a href="#avertissements">تفاصيل المنتج</a></li>
       </ul>
     </nav>

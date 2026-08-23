@@ -8,7 +8,7 @@ import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
 import { canTransition, isOrderStatus, ORDER_STATUSES, type OrderStatus } from "../_lib/orderWorkflow";
-import { CONFIRMATION_MESSAGE, sendWhatsApp } from "../../_lib/ultramsg";
+import { sendConfirmationWhatsApp } from "../_lib/whatsappConfirm";
 
 const bodySchema = z.object({
   status: z.enum(ORDER_STATUSES),
@@ -26,7 +26,12 @@ async function loadDetail(prisma: ReturnType<typeof getPrisma>, id: string) {
     where: { id },
     include: {
       customer: true,
-      items: true,
+      // The product is joined rather than left to the free-text `source`
+      // column. `source` is whatever the landing page chose to call itself and
+      // is not guaranteed to match anything; the join is the only reliable
+      // answer to "which product is this order for", which matters now that
+      // one dashboard serves several storefronts.
+      items: { include: { product: { select: { name: true, slug: true, sku: true } } } },
       shipment: true,
       events: { orderBy: { createdAt: "asc" } },
     },
@@ -48,7 +53,35 @@ async function loadDetail(prisma: ReturnType<typeof getPrisma>, id: string) {
       city: order.customer.city,
       address: order.customer.address,
     },
-    items: order.items.map((i) => ({ colorName: i.colorName, sizeLabel: i.sizeLabel })),
+    // `unitPrice` is the snapshot taken when the order was placed, not today's
+    // catalog price — repricing a product must never rewrite what a customer
+    // was charged.
+    items: order.items.map((i) => ({
+      colorName: i.colorName,
+      sizeLabel: i.sizeLabel,
+      unitPrice: i.unitPrice,
+      productName: i.product.name,
+      productSlug: i.product.slug,
+      productSku: i.product.sku,
+    })),
+    // The product this order is for, hoisted out of the line items so the
+    // dashboard does not have to guess from the first one.
+    product: order.items[0]
+      ? {
+          name: order.items[0].product.name,
+          slug: order.items[0].product.slug,
+          sku: order.items[0].product.sku,
+          unitPrice: order.items[0].unitPrice,
+        }
+      : null,
+    // Confirmation WhatsApp, for the badge and the Resend button.
+    whatsapp: {
+      sent: order.whatsappConfirmationSent,
+      sentAt: order.whatsappConfirmationSentAt,
+      status: order.whatsappConfirmationStatus,
+      messageId: order.whatsappConfirmationMessageId,
+      error: order.whatsappConfirmationError,
+    },
     shipment: order.shipment,
     timeline: order.events.map((e) => ({
       id: e.id,
@@ -131,7 +164,7 @@ const transition: AppFunction = async ({ request, env, params, data, waitUntil }
     // or unreachable UltraMsg cannot turn a successful confirmation into a
     // failed one in the dashboard.
     if (target === "CONFIRMED") {
-      waitUntil(notifyCustomerConfirmed(prisma, env, reqId, id));
+      waitUntil(sendConfirmationWhatsApp(prisma, env, id, { reqId }));
     }
 
     const detail = await loadDetail(prisma, id);
@@ -141,83 +174,3 @@ const transition: AppFunction = async ({ request, env, params, data, waitUntil }
     return json({ ok: false, error: "server_error" }, 500);
   }
 };
-
-/**
- * Send the confirmation WhatsApp, at most once per order.
- *
- * The flag is claimed with a conditional update before anything is sent: the
- * write only matches while it is still false, so of two admins confirming the
- * same order at the same instant exactly one wins the claim and only one
- * message goes out. Reading the flag and then writing it would let both pass
- * the check before either had written.
- *
- * If the send then fails the claim is released, leaving the flag false so the
- * order can be retried — which is what the shop asked for, and why the flag is
- * not simply set after a successful send.
- *
- * The order itself is never touched. It has already been confirmed and
- * committed; WhatsApp being down is not a reason to undo that.
- */
-async function notifyCustomerConfirmed(
-  prisma: ReturnType<typeof getPrisma>,
-  env: { ULTRAMSG_INSTANCE_ID?: string; ULTRAMSG_TOKEN?: string },
-  reqId: string | undefined,
-  orderId: string,
-): Promise<void> {
-  try {
-    const claim = await prisma.order.updateMany({
-      where: { id: orderId, whatsappConfirmationSent: false },
-      data: { whatsappConfirmationSent: true },
-    });
-    if (claim.count === 0) {
-      log("info", { reqId, msg: "whatsapp_already_sent", orderId });
-      return;
-    }
-
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      select: { orderNumber: true, customer: { select: { phone: true } } },
-    });
-    if (!order) return;
-
-    const result = await sendWhatsApp(
-      env.ULTRAMSG_INSTANCE_ID,
-      env.ULTRAMSG_TOKEN,
-      order.customer.phone,
-      CONFIRMATION_MESSAGE,
-      reqId,
-    );
-
-    if (!result.ok) {
-      // Release the claim so a later confirmation, or a manual retry, can send.
-      await prisma.order.updateMany({
-        where: { id: orderId },
-        data: { whatsappConfirmationSent: false },
-      });
-      log("warn", {
-        reqId,
-        msg: "whatsapp_confirmation_failed",
-        orderId,
-        orderNumber: order.orderNumber,
-        skipped: result.skipped ?? null,
-        status: result.status ?? null,
-        detail: result.detail ?? null,
-      });
-      return;
-    }
-
-    log("info", { reqId, msg: "whatsapp_confirmation_sent", orderId, orderNumber: order.orderNumber });
-  } catch (err) {
-    // Anything unexpected must also leave the flag false rather than stranding
-    // an order as "sent" when nothing was.
-    try {
-      await prisma.order.updateMany({ where: { id: orderId }, data: { whatsappConfirmationSent: false } });
-    } catch { /* the release is best-effort too */ }
-    log("error", {
-      reqId,
-      msg: "whatsapp_confirmation_error",
-      orderId,
-      error: err instanceof Error ? err.message : String(err),
-    });
-  }
-}
