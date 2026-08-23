@@ -204,29 +204,22 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* Two real packs, shown as they are. Nothing is recoloured or relabelled — the
    files are the same ones the product pages ship. */
-/* Two matched tiles rather than two loose images. The anti-lice pack is a
-   cut-out and the Raha pack was photographed on a background — floating one
-   beside the other reads as a mistake, so both get the same rounded frame and
-   only the fill differs. Neither image is altered. */
-.hero-art {
-  position: relative;
-  display: grid; grid-template-columns: 1fr 1fr; gap: .75rem;
-  align-items: stretch;
-}
+/* One frame holding the brand banner.
+
+   No aspect-ratio and no object-fit here on purpose: width:100% with height:auto
+   renders the file at its own 1024x572, so nothing is cropped and nothing is
+   stretched. Forcing a ratio would do both. The frame keeps the treatment the
+   hero already used — same radius, same border, same shadow — so only the
+   picture inside it changed. */
+.hero-art { position: relative; }
 .hero-art figure {
   margin: 0; position: relative;
-  aspect-ratio: 4 / 5;
   border-radius: var(--r-lg);
   overflow: hidden;
-  background: linear-gradient(165deg, #fff, var(--g-50));
   border: 1px solid var(--line);
   box-shadow: var(--sh-2);
 }
-.hero-art img { width: 100%; height: 100%; }
-/* Cut-out: sits on the wash with room to breathe. */
-.hero-art .art-cut img { object-fit: contain; padding: 12px 10px; }
-/* Photographed: fills its frame. */
-.hero-art .art-photo img { object-fit: cover; }
+.hero-art img { width: 100%; height: auto; display: block; }
 
 .hero-trust {
   display: flex; flex-wrap: wrap; gap: .5rem .9rem;
