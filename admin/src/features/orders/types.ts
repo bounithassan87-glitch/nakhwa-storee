@@ -1,3 +1,4 @@
+import type { SpaceSellerBlock } from "@shared/spaceseller-view.js";
 export type OrderStatus =
   | "PENDING"
   | "CONFIRMED"
@@ -54,19 +55,15 @@ export type WhatsAppStatus =
 
 
 /** Space Seller fulfilment, as the dashboard shows it. */
-export interface OrderSpaceSeller {
-  /** PENDING | SYNCED | FAILED | SKIPPED — null before any attempt. */
-  syncStatus: string | null;
-  orderId: string | null;
-  uuid: string | null;
-  /** Space Seller order status, e.g. NEW / CONFIRMED / PAID / CANCELED. */
-  status: string | null;
-  /** Delivery status, e.g. P_UNPACKED / P_DELIVERED. */
-  deliveryStatus: string | null;
-  trackingNumber: string | null;
-  syncedAt: string | null;
-  error?: string | null;
-}
+/**
+ * The Space Seller block, as both order endpoints return it.
+ *
+ * Aliased to the shared definition rather than restated: the local copy had
+ * drifted (`error` optional here, required there), and a client type that
+ * disagrees with the server is how a SYNCED order ends up rendering as never
+ * attempted.
+ */
+export type OrderSpaceSeller = SpaceSellerBlock;
 
 export interface OrderWhatsApp {
   sent: boolean;

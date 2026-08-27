@@ -10,6 +10,7 @@ import { resolveDatabaseUrl } from "../../../_lib/env";
 import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
 import { ORDER_STATUSES } from "../_lib/orderWorkflow";
+import { toSpaceSellerBlock } from "../../../../shared/spaceseller-view.js";
 
 const STATUSES = ORDER_STATUSES;
 const SORT_FIELDS = ["createdAt", "totalPrice", "status"] as const;
@@ -122,6 +123,11 @@ const listOrders: AppFunction = async ({ request, env, data }) => {
         status: o.whatsappConfirmationStatus,
         error: o.whatsappConfirmationError,
       },
+      // Space Seller fulfilment, for the same reason as the WhatsApp block: the
+      // drawer reads the order straight out of this list and makes no second
+      // request, so anything missing here is invisible in the dashboard. A
+      // SYNCED order used to render as "never attempted" purely because of that.
+      spaceseller: toSpaceSellerBlock(o),
       customer: {
         fullName: o.customer.fullName,
         phone: o.customer.phone,

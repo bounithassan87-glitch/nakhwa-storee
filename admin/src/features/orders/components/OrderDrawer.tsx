@@ -5,7 +5,9 @@ import { Select } from "@/components/ui/Select";
 import { OrderActions } from "./OrderActions";
 import { STATUS_META, nextStatuses } from "../status";
 import { formatMoney, formatDate } from "@/lib/format";
-import type { Order, OrderSpaceSeller, OrderStatus } from "../types";
+import type { Order, OrderStatus } from "../types";
+// Shared with the server so the badge cannot disagree with the API shape.
+import { spacesellerView } from "@shared/spaceseller-view.js";
 
 function Row({ label, value, ltr }: { label: string; value: ReactNode; ltr?: boolean }) {
   return (
@@ -25,68 +27,6 @@ function Row({ label, value, ltr }: { label: string; value: ReactNode; ltr?: boo
  * shop WhatsApp credentials yet, which is a different problem from a message
  * that was attempted and rejected, and it must not read as a failure.
  */
-/**
- * How the fulfilment sync went, in one badge.
- *
- * PENDING is amber rather than red on purpose: it means the result is not
- * known, which is a prompt to go and look at Space Seller — not a failure.
- */
-const SPACESELLER_META: Record<string, { label: string; tone: "success" | "warning" | "danger" | "neutral" }> = {
-  SYNCED: { label: "تم الإرسال", tone: "success" },
-  PENDING: { label: "غير مؤكد — تحقق", tone: "warning" },
-  FAILED: { label: "فشل", tone: "danger" },
-  SKIPPED: { label: "ما تصيفطش", tone: "neutral" },
-};
-
-/**
- * How to present the fulfilment state.
- *
- * The distinction worth drawing is between an order Space Seller *should* have
- * received and didn't, and one it was never meant to receive. Only the first is
- * a problem, so only the first gets a retry button or a red line — a product
- * fulfilled elsewhere reads as ordinary, because it is.
- */
-function spacesellerView(ss: OrderSpaceSeller | null | undefined): {
-  label: string;
-  tone: "success" | "warning" | "danger" | "neutral";
-  retryable: boolean;
-  note?: string;
-  noteTone: "muted" | "danger";
-} {
-  if (ss?.error === "out_of_scope") {
-    return {
-      label: "خارج نطاق Space Seller",
-      tone: "neutral",
-      retryable: false,
-      note: "هاد المنتج كيتسيفط من جهة أخرى.",
-      noteTone: "muted",
-    };
-  }
-  // No sync status at all means nothing was ever attempted — an order placed
-  // before the integration existed, or one whose attempt never ran. That is a
-  // different thing from "attempted and not sent", and saying so in the same
-  // words sends an admin looking for a failure that did not happen.
-  if (!ss?.syncStatus) {
-    return {
-      label: "ما تجرباتش بعد",
-      tone: "neutral",
-      retryable: true,
-      note: "هاد الطلب مازال ما تصيفطش لـ Space Seller. ضغط «إعادة المحاولة» باش تصيفطو.",
-      noteTone: "muted",
-    };
-  }
-
-  const meta = SPACESELLER_META[ss.syncStatus];
-  return {
-    label: meta?.label ?? ss.syncStatus,
-    tone: meta?.tone ?? "neutral",
-    retryable: true,
-    note: ss.error ?? undefined,
-    // Contention is not a failure: another attempt is already in flight.
-    noteTone: ss.error === "claim_lost" || ss.error === "already_pending" ? "muted" : "danger",
-  };
-}
-
 const WHATSAPP_META: Record<string, { label: string; tone: "success" | "danger" | "neutral" | "warning" }> = {
   sent: { label: "✓ تم الإرسال", tone: "success" },
   failed: { label: "⚠ فشل الإرسال", tone: "danger" },

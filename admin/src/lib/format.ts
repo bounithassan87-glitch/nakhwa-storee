@@ -4,13 +4,15 @@ export function formatMoney(centimes: number): string {
   return new Intl.NumberFormat("ar-MA", { maximumFractionDigits: 0 }).format(value) + " درهم";
 }
 
-export function formatDate(iso: string): string {
+// Accepts a Date as well as an ISO string: server-shaped values carry Date,
+// and the same value arrives as a string once it has been through JSON.
+export function formatDate(iso: string | Date): string {
   try {
     return new Intl.DateTimeFormat("ar-MA", { dateStyle: "medium", timeStyle: "short" }).format(
       new Date(iso),
     );
   } catch {
-    return iso;
+    return String(iso);
   }
 }
 

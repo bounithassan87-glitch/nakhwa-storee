@@ -9,6 +9,7 @@ import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
 import { canTransition, isOrderStatus, ORDER_STATUSES, type OrderStatus } from "../_lib/orderWorkflow";
 import { sendConfirmationWhatsApp } from "../_lib/whatsappConfirm";
+import { toSpaceSellerBlock } from "../../../../shared/spaceseller-view.js";
 
 const bodySchema = z.object({
   status: z.enum(ORDER_STATUSES),
@@ -83,16 +84,9 @@ async function loadDetail(prisma: ReturnType<typeof getPrisma>, id: string) {
       error: order.whatsappConfirmationError,
     },
     // Space Seller fulfilment, for the badge, the ids and the Retry button.
-    spaceseller: {
-      syncStatus: order.spacesellerSyncStatus,
-      orderId: order.spacesellerOrderId,
-      uuid: order.spacesellerUuid,
-      status: order.spacesellerStatus,
-      deliveryStatus: order.spacesellerDeliveryStatus,
-      trackingNumber: order.spacesellerTrackingNumber,
-      syncedAt: order.spacesellerSyncedAt,
-      error: order.spacesellerLastError,
-    },
+    // Built by the same helper the list uses, so the drawer sees an identical
+    // shape whichever endpoint loaded the order.
+    spaceseller: toSpaceSellerBlock(order),
     shipment: order.shipment,
     timeline: order.events.map((e) => ({
       id: e.id,

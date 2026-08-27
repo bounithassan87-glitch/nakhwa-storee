@@ -9,6 +9,7 @@ import { useDebouncedValue } from "@/lib/useDebounce";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { useOrders } from "@/features/orders/useOrders";
 import { resendWhatsApp, spacesellerAction } from "@/features/orders/api";
+import { mergeSpaceSellerResult } from "@shared/spaceseller-view.js";
 import { roleCan } from "@/features/settings/permissions";
 import { useAuth } from "@/auth/AuthContext";
 import { OrdersToolbar } from "@/features/orders/components/OrdersToolbar";
@@ -160,20 +161,12 @@ export default function Orders() {
     try {
       const res = await spacesellerAction(id, action);
       // Take the server's word for the new state rather than guessing it here.
+      // The merge tolerates an order that arrived without a spaceseller block at
+      // all — guarding on its presence is what previously made a successful
+      // retry appear to do nothing.
       setSelected((sel) =>
-        sel && sel.id === id && sel.spaceseller
-          ? {
-              ...sel,
-              spaceseller: {
-                ...sel.spaceseller,
-                syncStatus: res.status ?? sel.spaceseller.syncStatus,
-                orderId: res.spacesellerOrderId ?? sel.spaceseller.orderId,
-                uuid: res.spacesellerUuid ?? sel.spaceseller.uuid,
-                deliveryStatus: res.deliveryStatus ?? sel.spaceseller.deliveryStatus,
-                trackingNumber: res.trackingNumber ?? sel.spaceseller.trackingNumber,
-                error: res.error,
-              },
-            }
+        sel && sel.id === id
+          ? { ...sel, spaceseller: mergeSpaceSellerResult(sel.spaceseller, res) }
           : sel,
       );
       if (action === "refresh") {
