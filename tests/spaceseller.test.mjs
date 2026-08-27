@@ -171,9 +171,60 @@ test("the mapper never throws, whatever it is handed", () => {
 
 /* ── 4. The once-only claim ───────────────────────────────────────────── */
 
+/* SQL three-valued logic.
+
+   The previous version of this mock evaluated the WHERE in plain JavaScript,
+   where `null !== "PENDING"` is simply true. PostgreSQL says otherwise: any
+   comparison against NULL is UNKNOWN, only TRUE matches a row, and NOT UNKNOWN
+   is still UNKNOWN. That difference let a claim which matched 0 of 92
+   production rows pass its test. So the mock now models SQL, not JavaScript. */
+const TRUE = true;
+const FALSE = false;
+const UNKNOWN = null;
+
+const and3 = (a, b) => (a === FALSE || b === FALSE ? FALSE : a === UNKNOWN || b === UNKNOWN ? UNKNOWN : TRUE);
+const or3 = (a, b) => (a === TRUE || b === TRUE ? TRUE : a === UNKNOWN || b === UNKNOWN ? UNKNOWN : FALSE);
+const not3 = (a) => (a === UNKNOWN ? UNKNOWN : !a);
+
+/** One `field: condition` pair, with NULL handled the way Postgres handles it. */
+function evalCond(value, cond) {
+  const isNull = value === null || value === undefined;
+  // `field: null` compiles to IS NULL, which is a real true/false test.
+  if (cond === null) return isNull ? TRUE : FALSE;
+  // `field: { not: v }` compiles to `field <> v` — UNKNOWN when field is NULL.
+  if (cond && typeof cond === "object" && "not" in cond) {
+    return isNull ? UNKNOWN : value !== cond.not ? TRUE : FALSE;
+  }
+  return isNull ? UNKNOWN : value === cond ? TRUE : FALSE;
+}
+
+function matchesWhere(row, where) {
+  let acc = TRUE;
+  for (const [key, cond] of Object.entries(where)) {
+    if (key === "OR") {
+      let any = FALSE;
+      for (const c of cond) any = or3(any, matchesWhere(row, c));
+      acc = and3(acc, any);
+    } else if (key === "NOT") {
+      acc = and3(acc, not3(matchesWhere(row, cond)));
+    } else {
+      acc = and3(acc, evalCond(row[key], cond));
+    }
+  }
+  return acc;
+}
+
+/** The claim predicate exactly as spacesellerSync.ts issues it. */
+const claimWhere = (id) => ({
+  id,
+  spacesellerOrderId: null,
+  spacesellerUuid: null,
+  OR: [{ spacesellerSyncStatus: null }, { spacesellerSyncStatus: { not: "PENDING" } }],
+});
+
 /* An in-memory stand-in for Prisma, reproducing the one behaviour that makes
    the claim atomic: updateMany reports how many rows its WHERE actually
-   matched. */
+   matched — and only rows where the predicate is TRUE, never UNKNOWN. */
 function mockDb(order) {
   const row = { ...order };
   return {
@@ -185,13 +236,7 @@ function mockDb(order) {
         return { ...row };
       },
       updateMany: async ({ where, data }) => {
-        const matches =
-          where.id === row.id &&
-          (where.spacesellerOrderId !== null || row.spacesellerOrderId === null) &&
-          row.spacesellerOrderId === null &&
-          row.spacesellerUuid === null &&
-          row.spacesellerSyncStatus !== "PENDING";
-        if (!matches) return { count: 0 };
+        if (matchesWhere(row, where) !== TRUE) return { count: 0 };
         for (const [k, v] of Object.entries(data)) row[k] = v;
         return { count: 1 };
       },
@@ -199,13 +244,39 @@ function mockDb(order) {
   };
 }
 
+test("a NULL sync status IS claimable — the regression that broke every order", async () => {
+  // Every order that has never been attempted carries NULL here. When the
+  // predicate excluded NULL, 0 of 92 production orders could be claimed and the
+  // sync could not fire for anything, ever.
+  const db = mockDb(anOrder());
+  assert.equal(db.row.spacesellerSyncStatus, null, "precondition: never attempted");
+  const res = await db.order.updateMany({
+    where: claimWhere("ord_1"),
+    data: { spacesellerSyncStatus: "PENDING" },
+  });
+  assert.equal(res.count, 1, "a never-attempted order must be claimable");
+  assert.equal(db.row.spacesellerSyncStatus, "PENDING", "and the row must actually flip");
+});
+
+test("the OLD predicate is still proven broken, so it cannot quietly come back", async () => {
+  const db = mockDb(anOrder());
+  const res = await db.order.updateMany({
+    // The shape that shipped. Under SQL semantics it matches nothing.
+    where: {
+      id: "ord_1",
+      spacesellerOrderId: null,
+      spacesellerUuid: null,
+      NOT: { spacesellerSyncStatus: "PENDING" },
+    },
+    data: { spacesellerSyncStatus: "PENDING" },
+  });
+  assert.equal(res.count, 0, "NOT status = 'PENDING' is UNKNOWN for NULL — this was the defect");
+});
+
 test("two concurrent claims produce exactly one winner", async () => {
   const db = mockDb(anOrder());
   const claim = () =>
-    db.order.updateMany({
-      where: { id: "ord_1", spacesellerOrderId: null, spacesellerUuid: null, NOT: { spacesellerSyncStatus: "PENDING" } },
-      data: { spacesellerSyncStatus: "PENDING" },
-    });
+    db.order.updateMany({ where: claimWhere("ord_1"), data: { spacesellerSyncStatus: "PENDING" } });
   const [a, b] = await Promise.all([claim(), claim()]);
   assert.equal([a.count, b.count].filter((c) => c === 1).length, 1, "exactly one caller may send");
 });
@@ -213,19 +284,51 @@ test("two concurrent claims produce exactly one winner", async () => {
 test("an order that already carries an upstream id can never claim again", async () => {
   const db = mockDb(anOrder({ spacesellerOrderId: "SS-1001", spacesellerSyncStatus: "SYNCED" }));
   const res = await db.order.updateMany({
-    where: { id: "ord_1", spacesellerOrderId: null, spacesellerUuid: null, NOT: { spacesellerSyncStatus: "PENDING" } },
+    where: claimWhere("ord_1"),
     data: { spacesellerSyncStatus: "PENDING" },
   });
   assert.equal(res.count, 0, "a synced order must never be re-sent");
 });
 
+test("an order carrying only an upstream uuid can never claim again", async () => {
+  const db = mockDb(anOrder({ spacesellerUuid: "u-2002", spacesellerSyncStatus: "SYNCED" }));
+  const res = await db.order.updateMany({
+    where: claimWhere("ord_1"),
+    data: { spacesellerSyncStatus: "PENDING" },
+  });
+  assert.equal(res.count, 0, "the uuid alone also proves it exists upstream");
+});
+
 test("a held PENDING claim blocks another attempt", async () => {
   const db = mockDb(anOrder({ spacesellerSyncStatus: "PENDING" }));
   const res = await db.order.updateMany({
-    where: { id: "ord_1", spacesellerOrderId: null, spacesellerUuid: null, NOT: { spacesellerSyncStatus: "PENDING" } },
+    where: claimWhere("ord_1"),
     data: { spacesellerSyncStatus: "PENDING" },
   });
   assert.equal(res.count, 0, "an unresolved attempt is never piled on top of");
+});
+
+test("FAILED and SKIPPED orders stay claimable, so a human retry can work", async () => {
+  for (const status of ["FAILED", "SKIPPED"]) {
+    const db = mockDb(anOrder({ spacesellerSyncStatus: status }));
+    const res = await db.order.updateMany({
+      where: claimWhere("ord_1"),
+      data: { spacesellerSyncStatus: "PENDING" },
+    });
+    assert.equal(res.count, 1, `${status} must be retryable`);
+  }
+});
+
+test("the mock now models SQL's three-valued logic, not JavaScript's", async () => {
+  // Guards the guard: if this ever reverts to JS truthiness, the claim bug
+  // becomes invisible again.
+  assert.equal(evalCond(null, { not: "PENDING" }), UNKNOWN, "NULL <> 'PENDING' is UNKNOWN in SQL");
+  assert.equal(evalCond(null, null), TRUE, "field: null compiles to IS NULL");
+  assert.equal(evalCond("FAILED", { not: "PENDING" }), TRUE);
+  assert.equal(evalCond("PENDING", { not: "PENDING" }), FALSE);
+  assert.equal(not3(UNKNOWN), UNKNOWN, "NOT UNKNOWN stays UNKNOWN");
+  assert.equal(and3(TRUE, UNKNOWN), UNKNOWN);
+  assert.equal(or3(TRUE, UNKNOWN), TRUE);
 });
 
 /* ── 5. Opportunistic refresh threshold ───────────────────────────────── */

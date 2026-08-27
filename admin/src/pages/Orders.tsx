@@ -181,7 +181,15 @@ export default function Orders() {
       } else if (res.status === "SYNCED") {
         setToast(res.alreadySynced ? "الطلب راه مصيفط من قبل" : "تصيفط الطلب لـ Space Seller");
       } else if (res.status === "PENDING") {
-        setToast("النتيجة ماشي مؤكدة — تحقق من Space Seller");
+        // Contention and a genuinely ambiguous upstream result both leave the
+        // order PENDING, but only one of them means something may exist at
+        // Space Seller. Telling an admin to go and check when nothing was sent
+        // wastes their time and teaches them to ignore the warning.
+        setToast(
+          res.error === "claim_lost" || res.error === "already_pending"
+            ? "كاينة محاولة أخرى جارية دابا — عاود شوف من بعد"
+            : "النتيجة ماشي مؤكدة — تحقق من Space Seller قبل ما تعاود",
+        );
       } else {
         setToast("ما تصيفطش الطلب لـ Space Seller");
       }

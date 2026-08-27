@@ -141,16 +141,34 @@ export async function syncOrderToSpaceSeller(
 
     // 2 — claim. Only the row still un-synced and not already in flight flips,
     // so of two simultaneous callers exactly one proceeds.
+    //
+    // The status branch is spelled out rather than written as
+    // `NOT: { spacesellerSyncStatus: "PENDING" }`, because Prisma compiles that
+    // to a bare `NOT "spaceseller_sync_status" = $1`. For a NULL column SQL
+    // evaluates that to UNKNOWN, not TRUE, so the row is excluded — and NULL is
+    // exactly the state of every order that has never been attempted. Written
+    // the short way, this predicate matched 0 of 92 production orders and the
+    // sync could never fire for anything.
     const claim = await prisma.order.updateMany({
       where: {
         id: orderId,
         spacesellerOrderId: null,
         spacesellerUuid: null,
-        NOT: { spacesellerSyncStatus: "PENDING" },
+        OR: [
+          // never attempted
+          { spacesellerSyncStatus: null },
+          // attempted before and resolved (SYNCED is unreachable here, since the
+          // id guards above already excluded it)
+          { spacesellerSyncStatus: { not: "PENDING" } },
+        ],
       },
       data: { spacesellerSyncStatus: "PENDING", spacesellerLastError: null },
     });
     if (claim.count === 0) {
+      // Another caller holds the claim. Nothing was sent by THIS call, so this
+      // is contention, not an ambiguous upstream result — the two must not be
+      // reported the same way, or an admin goes hunting for an order that was
+      // never created.
       return { attempted: false, status: "PENDING", error: "claim_lost" };
     }
 

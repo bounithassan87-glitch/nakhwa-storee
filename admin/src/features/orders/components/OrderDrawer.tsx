@@ -62,13 +62,28 @@ function spacesellerView(ss: OrderSpaceSeller | null | undefined): {
       noteTone: "muted",
     };
   }
-  const meta = SPACESELLER_META[ss?.syncStatus ?? ""];
+  // No sync status at all means nothing was ever attempted — an order placed
+  // before the integration existed, or one whose attempt never ran. That is a
+  // different thing from "attempted and not sent", and saying so in the same
+  // words sends an admin looking for a failure that did not happen.
+  if (!ss?.syncStatus) {
+    return {
+      label: "ما تجرباتش بعد",
+      tone: "neutral",
+      retryable: true,
+      note: "هاد الطلب مازال ما تصيفطش لـ Space Seller. ضغط «إعادة المحاولة» باش تصيفطو.",
+      noteTone: "muted",
+    };
+  }
+
+  const meta = SPACESELLER_META[ss.syncStatus];
   return {
-    label: meta?.label ?? "— ما تصيفطش",
+    label: meta?.label ?? ss.syncStatus,
     tone: meta?.tone ?? "neutral",
     retryable: true,
-    note: ss?.error ?? undefined,
-    noteTone: "danger",
+    note: ss.error ?? undefined,
+    // Contention is not a failure: another attempt is already in flight.
+    noteTone: ss.error === "claim_lost" || ss.error === "already_pending" ? "muted" : "danger",
   };
 }
 
