@@ -5,7 +5,7 @@ import { Select } from "@/components/ui/Select";
 import { OrderActions } from "./OrderActions";
 import { STATUS_META, nextStatuses } from "../status";
 import { formatMoney, formatDate } from "@/lib/format";
-import type { Order, OrderStatus } from "../types";
+import type { Order, OrderSpaceSeller, OrderStatus } from "../types";
 
 function Row({ label, value, ltr }: { label: string; value: ReactNode; ltr?: boolean }) {
   return (
@@ -25,6 +25,53 @@ function Row({ label, value, ltr }: { label: string; value: ReactNode; ltr?: boo
  * shop WhatsApp credentials yet, which is a different problem from a message
  * that was attempted and rejected, and it must not read as a failure.
  */
+/**
+ * How the fulfilment sync went, in one badge.
+ *
+ * PENDING is amber rather than red on purpose: it means the result is not
+ * known, which is a prompt to go and look at Space Seller — not a failure.
+ */
+const SPACESELLER_META: Record<string, { label: string; tone: "success" | "warning" | "danger" | "neutral" }> = {
+  SYNCED: { label: "تم الإرسال", tone: "success" },
+  PENDING: { label: "غير مؤكد — تحقق", tone: "warning" },
+  FAILED: { label: "فشل", tone: "danger" },
+  SKIPPED: { label: "ما تصيفطش", tone: "neutral" },
+};
+
+/**
+ * How to present the fulfilment state.
+ *
+ * The distinction worth drawing is between an order Space Seller *should* have
+ * received and didn't, and one it was never meant to receive. Only the first is
+ * a problem, so only the first gets a retry button or a red line — a product
+ * fulfilled elsewhere reads as ordinary, because it is.
+ */
+function spacesellerView(ss: OrderSpaceSeller | null | undefined): {
+  label: string;
+  tone: "success" | "warning" | "danger" | "neutral";
+  retryable: boolean;
+  note?: string;
+  noteTone: "muted" | "danger";
+} {
+  if (ss?.error === "out_of_scope") {
+    return {
+      label: "خارج نطاق Space Seller",
+      tone: "neutral",
+      retryable: false,
+      note: "هاد المنتج كيتسيفط من جهة أخرى.",
+      noteTone: "muted",
+    };
+  }
+  const meta = SPACESELLER_META[ss?.syncStatus ?? ""];
+  return {
+    label: meta?.label ?? "— ما تصيفطش",
+    tone: meta?.tone ?? "neutral",
+    retryable: true,
+    note: ss?.error ?? undefined,
+    noteTone: "danger",
+  };
+}
+
 const WHATSAPP_META: Record<string, { label: string; tone: "success" | "danger" | "neutral" | "warning" }> = {
   sent: { label: "✓ تم الإرسال", tone: "success" },
   failed: { label: "⚠ فشل الإرسال", tone: "danger" },
@@ -41,6 +88,9 @@ export function OrderDrawer({
   onChangeStatus,
   statusBusy,
   onResendWhatsApp,
+  onRetrySpaceSeller,
+  spacesellerBusy,
+  canRetrySpaceSeller,
   whatsappBusy,
   canResendWhatsApp,
 }: {
@@ -51,6 +101,9 @@ export function OrderDrawer({
   statusBusy: boolean;
   /** Explicit resend. Absent when the signed-in admin may not send messages. */
   onResendWhatsApp?: (id: string) => void;
+  onRetrySpaceSeller?: (id: string, action: "retry" | "refresh") => void;
+  spacesellerBusy?: boolean;
+  canRetrySpaceSeller?: boolean;
   whatsappBusy?: boolean;
   canResendWhatsApp?: boolean;
 }) {
@@ -135,6 +188,55 @@ export function OrderDrawer({
               )}
             </section>
           )}
+
+          {/* Space Seller fulfilment. Shown for every order, because an order
+              that was never sent is exactly the one an admin needs to see. */}
+          <section>
+            <h3 className="mb-2 text-xs font-bold text-faint">Space Seller</h3>
+            <div className="flex items-center justify-between gap-3">
+              <Badge tone={spacesellerView(order.spaceseller).tone}>
+                {spacesellerView(order.spaceseller).label}
+              </Badge>
+              {spacesellerView(order.spaceseller).retryable && canRetrySpaceSeller && onRetrySpaceSeller && (
+                <button
+                  type="button"
+                  className="rounded-lg border border-line px-3 py-1.5 text-xs font-bold text-ink disabled:opacity-50"
+                  disabled={spacesellerBusy}
+                  onClick={() => onRetrySpaceSeller(order.id, order.spaceseller?.orderId ? "refresh" : "retry")}
+                >
+                  {spacesellerBusy
+                    ? "كيخدم…"
+                    : order.spaceseller?.orderId
+                      ? "تحديث الحالة"
+                      : "إعادة المحاولة"}
+                </button>
+              )}
+            </div>
+            {order.spaceseller?.orderId && (
+              <Row label="رقم Space Seller" value={order.spaceseller.orderId} ltr />
+            )}
+            {order.spaceseller?.status && (
+              <Row label="حالة الطلب" value={order.spaceseller.status} ltr />
+            )}
+            {order.spaceseller?.deliveryStatus && (
+              <Row label="حالة التوصيل" value={order.spaceseller.deliveryStatus} ltr />
+            )}
+            {order.spaceseller?.trackingNumber && (
+              <Row label="رقم التتبع" value={order.spaceseller.trackingNumber} ltr />
+            )}
+            {order.spaceseller?.syncedAt && (
+              <p className="mt-1 text-xs text-muted">{formatDate(order.spaceseller.syncedAt)}</p>
+            )}
+            {spacesellerView(order.spaceseller).note && (
+              <p
+                className={`mt-1 text-xs ${
+                  spacesellerView(order.spaceseller).noteTone === "danger" ? "text-danger" : "text-muted"
+                }`}
+              >
+                {spacesellerView(order.spaceseller).note}
+              </p>
+            )}
+          </section>
 
           <section>
             <h3 className="mb-2 text-xs font-bold text-faint">تغيير الحالة</h3>

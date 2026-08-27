@@ -45,6 +45,31 @@ model Product {
   sizes          Size[]
   media          ProductMedia[]
   orderItems     OrderItem[]
+
+  // Added by the storefront-platform migrations, which were applied to
+  // production but never merged. Declared here so the schema matches the
+  // live database; main's code does not read these yet.
+  /// Structured category, used by the storefront for browsing and URLs.
+  /// SetNull so deleting a category never deletes products.
+  categoryId String?
+  categoryRef Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  /// Promoted on the storefront home page. Previously a JSON array in
+  /// `Setting.featured_product_ids`, which capped the set at 60 and could not be
+  /// filtered or sorted in SQL — both of which server-rendered listings need.
+  isFeatured Boolean @default(false)
+  lowStockThreshold Int?
+  metaDescription String?
+  // Per-product SEO overrides; fall back to name/description when null.
+  metaTitle       String?
+  reviews        Review[]
+  /// Units on hand. NULL means "not tracked" — the pre-existing behaviour for
+  /// every product created before stock existed, which must keep selling freely.
+  /// A tracked product at 0 is out of stock and cannot be ordered.
+  stock             Int?
+
+  @@index([categoryId])
+  @@index([isFeatured])
+  @@index([status])
 }
 
 /// Product media (main image, gallery, video). URL-based so it works without
@@ -98,6 +123,15 @@ model Customer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   orders    Order[]
+
+  // Added by the storefront-platform migrations, which were applied to
+  // production but never merged. Declared here so the schema matches the
+  // live database; main's code does not read these yet.
+  /// Optional, and deliberately not unique: phone is the identity in this
+  /// market, most shoppers never give an email, and a household can share one.
+  /// Stored so order-status emails have somewhere to go — the checkout already
+  /// accepted an address for Meta matching and then discarded it.
+  email     String?
 }
 
 // Order fulfillment lifecycle. PENDING is the initial "new" state (kept for
@@ -145,6 +179,23 @@ model Order {
   /// sent | failed | not_configured | disabled | invalid_phone
   whatsappConfirmationStatus    String?   @map("whatsapp_confirmation_status")
   whatsappConfirmationError     String?   @map("whatsapp_confirmation_error")
+  // ── Space Seller fulfilment ──────────────────────────────────────────────
+  // `spacesellerSyncStatus` is the *claim*: flipped to PENDING by a conditional
+  // update before anything is sent, so two callers cannot both create an order
+  // upstream. The rest is the outcome, for the dashboard and for support.
+  //
+  // PENDING  a send is in flight, or its result is unknown
+  // SYNCED   Space Seller accepted it and returned an id
+  // FAILED   it answered and said no — safe to retry
+  // SKIPPED  nothing was attempted (no token, or no SKU to send)
+  spacesellerSyncStatus     String?   @map("spaceseller_sync_status")
+  spacesellerOrderId        String?   @map("spaceseller_order_id")
+  spacesellerUuid           String?   @map("spaceseller_uuid")
+  spacesellerStatus         String?   @map("spaceseller_status")
+  spacesellerDeliveryStatus String?   @map("spaceseller_delivery_status")
+  spacesellerTrackingNumber String?   @map("spaceseller_tracking_number")
+  spacesellerSyncedAt       DateTime? @map("spaceseller_synced_at")
+  spacesellerLastError      String?   @map("spaceseller_last_error")
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   items         OrderItem[]
@@ -159,6 +210,38 @@ model Order {
   @@index([status])
   @@index([createdAt])
   @@index([campaignId])
+  @@index([spacesellerSyncStatus])
+
+  // Added by the storefront-platform migrations, which were applied to
+  // production but never merged. Declared here so the schema matches the
+  // live database; main's code does not read these yet.
+  affiliate   Affiliate?  @relation(fields: [affiliateId], references: [id], onDelete: SetNull)
+  /// Which affiliate referred this sale. Nullable and SetNull for the same
+  /// reasons as campaignId: most orders have none, and removing an affiliate
+  /// must never delete order history. Recorded even when no Commission is
+  /// created (a suspended referrer still gets credit for the traffic).
+  affiliateId String?
+  commission  Commission?
+  couponCode     String?
+  couponRedemption CouponRedemption?
+  discountAmount Int     @default(0)
+  shippingCost   Int     @default(0)
+  /// Whether this order took units out of tracked stock.
+  ///
+  /// False for every order placed before deduction existed, which is exactly
+  /// why it is recorded: restoring stock for an order that never removed any
+  /// would invent inventory the shop does not have.
+  stockDeducted Boolean @default(false)
+  /// Whether those units have since been put back, after a return or a
+  /// cancellation. Claimed with a conditional update so a second failure
+  /// transition cannot restock the same order twice.
+  stockRestored Boolean @default(false)
+  /// Breakdown behind totalPrice. Added with the cart and coupons; every order
+  /// placed before them has a null subtotal, which readers treat as "the total
+  /// is the whole story". totalPrice is never recomputed from these.
+  subtotal       Int? // centimes, before discount and shipping
+
+  @@index([affiliateId])
 }
 
 /// Append-only fulfillment timeline. One row per status transition (or note).
@@ -207,6 +290,22 @@ model OrderItem {
   createdAt DateTime @default(now())
 
   @@index([orderId])
+
+  // Added by the storefront-platform migrations, which were applied to
+  // production but never merged. Declared here so the schema matches the
+  // live database; main's code does not read these yet.
+  /// Name and slug as they were when the order was placed. Snapshotted for the
+  /// same reason colour and size are: renaming or deleting a product must not
+  /// rewrite what a customer actually bought. Nullable so existing rows, which
+  /// have only the relation, keep working — readers fall back to `product.name`.
+  productName String?
+  productSlug String?
+  /// Units on this line. Defaults to 1 because every row written before the cart
+  /// existed represents exactly one unit — the old flow emitted one row per unit,
+  /// so historic data reads back identically under `unitPrice * quantity`.
+  quantity Int @default(1)
+
+  @@index([productId])
 }
 
 // ── Settings & System Administration (Phase 2.8) ─────────────────────────
@@ -360,3 +459,281 @@ model PushToken {
 
   @@index([adminEmail])
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Storefront platform: categories, coupons, reviews and affiliates.
+
+   These tables are LIVE in production. They were created by the five
+   migrations under 20260807* and hold real data, but the feature branch that
+   introduced them was never merged, so this schema described a database that
+   no longer existed. Anything generating a migration from it — migrate dev,
+   db push — would have produced DROP statements for all of them.
+
+   Declared here to close that gap. No application code on main reads them.
+   ───────────────────────────────────────────────────────────────────────── */
+
+enum CouponType {
+  PERCENT
+  FIXED
+  FREE_SHIPPING
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AffiliateStatus {
+  PENDING // applied, awaiting approval — earns nothing yet
+  ACTIVE
+  SUSPENDED
+  REJECTED
+}
+
+/// Lifecycle of one affiliate's earnings on one order.
+///
+/// A COD sale is not revenue until the courier hands it over, so a commission
+/// starts PENDING and is only APPROVED when the order reaches DELIVERED. An
+/// order that is returned, cancelled or rejected takes its commission to
+/// CANCELLED. This is what stops the store paying out on parcels that came back.
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+/// A catalog category, e.g. "بوركيني" or "ملابس السباحة".
+///
+/// Self-referencing so a category may nest one or more levels deep; `parentId`
+/// is SetNull on delete so removing a parent orphans its children rather than
+/// cascading a whole branch of the catalog away.
+///
+/// This does NOT replace `Product.category` (a free-text string). That column is
+/// still read and written by the admin products API and SPA, so both coexist:
+/// the string stays authoritative for the existing admin filter UI, and this
+/// model backs storefront browsing, URLs and per-category SEO.
+model Category {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String // Arabic display name
+  description String?
+  imageUrl    String?
+  position    Int     @default(0)
+  isActive    Boolean @default(true)
+
+  // Per-category SEO overrides; fall back to name/description when null.
+  metaTitle       String?
+  metaDescription String?
+
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@index([isActive])
+}
+
+/// A discount code. Every limit is nullable, meaning "no limit", so the simplest
+/// useful coupon is a code and a value.
+model Coupon {
+  id          String     @id @default(cuid())
+  /// Stored uppercase and matched case-insensitively — customers type these.
+  code        String     @unique
+  description String?
+  type        CouponType @default(PERCENT)
+
+  /// Basis points when PERCENT (1500 = 15%), centimes when FIXED, ignored for
+  /// FREE_SHIPPING. Basis points for the same reason commission rates are:
+  /// a percentage of centimes must not go through a float.
+  value Int @default(0)
+
+  /// Order subtotal required before the code applies (centimes).
+  minSubtotal Int?
+  /// Ceiling on a PERCENT discount (centimes), so "20% off" cannot run away on
+  /// a large basket.
+  maxDiscount Int?
+
+  maxRedemptions Int? // total, across everyone
+  maxPerCustomer Int? // per phone number — the identity this market uses
+  usedCount      Int  @default(0)
+
+  startsAt DateTime?
+  endsAt   DateTime?
+  isActive Boolean   @default(true)
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  redemptions CouponRedemption[]
+
+  @@index([isActive])
+}
+
+/// One row per order that used a coupon. This is what makes the per-customer cap
+/// enforceable and gives usedCount something to be checked against, rather than
+/// trusting a counter that a failed order could leave overstated.
+model CouponRedemption {
+  id       String @id @default(cuid())
+  couponId String
+  coupon   Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  /// Unique — a coupon applies to an order once, and the write is idempotent.
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Snapshotted so the cap survives the customer record changing.
+  phone  String
+  /// Discount actually granted (centimes), not the coupon's nominal value.
+  amount Int
+
+  createdAt DateTime @default(now())
+
+  @@index([couponId])
+  @@index([phone])
+}
+
+/// A customer review. Defaults to PENDING and only APPROVED rows are ever shown
+/// or counted — an unmoderated public write path on a store this size is a spam
+/// vector, and ratings that include unverified rows are not worth displaying.
+model Review {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  authorName String
+  /// Used to match the review against real orders; never shown publicly.
+  phone      String?
+
+  /// 1–5. Enforced in the API, not the database, so the constraint lives with
+  /// the validation for every other field.
+  rating Int
+  title  String?
+  body   String?
+
+  status ReviewStatus @default(PENDING)
+  /// Set when the phone matches a delivered order for this product.
+  isVerifiedPurchase Boolean @default(false)
+  /// Optional public reply from the store.
+  adminReply String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, status])
+  @@index([phone])
+}
+
+/// Someone who refers customers in exchange for a share of the sale.
+model Affiliate {
+  id String @id @default(cuid())
+
+  /// Public referral code, used as `?ref=CODE`. Stored uppercase and matched
+  /// case-insensitively, because it gets typed by hand and shared in WhatsApp.
+  code String @unique
+
+  name  String
+  /// Phone is the identity in this market, exactly as it is for Customer.
+  phone String  @unique
+  email String? @unique
+
+  /// Portal login. Null until they set a password, so an affiliate can be
+  /// created by an admin and start referring before ever signing in.
+  passwordHash String?
+
+  /// Share of the order total in basis points — 1000 = 10%. An integer for the
+  /// same reason money is: a float share of centimes rounds unpredictably.
+  commissionRate Int @default(1000)
+
+  status AffiliateStatus @default(PENDING)
+  notes  String?
+
+  /// How they want to be paid (bank, cash, transfer service) and the details for
+  /// it. Free text: payout rails here are informal and vary per person.
+  payoutMethod  String?
+  payoutDetails String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  orders      Order[]
+  clicks      AffiliateClick[]
+  commissions Commission[]
+  payouts     Payout[]
+
+  @@index([status])
+}
+
+/// One row per referral-link visit, so conversion rate is measurable rather than
+/// guessed. Deliberately not tied to a Customer: a click happens long before
+/// anyone identifies themselves, and most never convert.
+model AffiliateClick {
+  id          String    @id @default(cuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  landingPath String?
+  referer     String?
+  userAgent   String?
+  /// Kept only to damp obvious refresh spam when counting.
+  ip          String?
+  createdAt   DateTime @default(now())
+
+  @@index([affiliateId, createdAt])
+}
+
+/// What one affiliate earned on one order. At most one per order.
+model Commission {
+  id          String    @id @default(cuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  /// Unique: an order can generate a commission exactly once, which also makes
+  /// the write idempotent if the order flow is ever retried.
+  orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Snapshots of the rate and the order total as they stood when the sale
+  /// happened. Re-deriving either later would silently rewrite what was owed
+  /// after an admin edits a rate — the same reasoning the Order model already
+  /// applies to its own financial fields.
+  rate       Int
+  orderTotal Int
+  amount     Int
+
+  status CommissionStatus @default(PENDING)
+
+  payoutId String?
+  payout   Payout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([affiliateId, status])
+  @@index([payoutId])
+}
+
+/// One settlement to an affiliate, covering a set of approved commissions.
+model Payout {
+  id          String    @id @default(cuid())
+  affiliateId String
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+
+  amount    Int // centimes
+  method    String?
+  reference String?
+  note      String?
+  /// Admin email who recorded it.
+  actor     String?
+  createdAt DateTime @default(now())
+
+  commissions Commission[]
+
+  @@index([affiliateId])
+}
+

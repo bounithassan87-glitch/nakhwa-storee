@@ -1,0 +1,1 @@
+import{j as e}from"./index-BE19UUb-.js";function r({title:s,subtitle:t,action:x}){return e.jsxs("div",{className:"mb-6 flex flex-wrap items-center justify-between gap-3",children:[e.jsxs("div",{children:[e.jsx("h1",{className:"text-xl font-black text-ink md:text-2xl",children:s}),t&&e.jsx("p",{className:"mt-1 text-sm text-muted",children:t})]}),x]})}export{r as P};

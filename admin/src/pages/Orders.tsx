@@ -8,7 +8,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { useDebouncedValue } from "@/lib/useDebounce";
 import { useNotifications } from "@/features/notifications/NotificationsContext";
 import { useOrders } from "@/features/orders/useOrders";
-import { resendWhatsApp } from "@/features/orders/api";
+import { resendWhatsApp, spacesellerAction } from "@/features/orders/api";
 import { roleCan } from "@/features/settings/permissions";
 import { useAuth } from "@/auth/AuthContext";
 import { OrdersToolbar } from "@/features/orders/components/OrdersToolbar";
@@ -33,10 +33,13 @@ export default function Orders() {
   const [selected, setSelected] = useState<Order | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
   const [whatsappBusy, setWhatsappBusy] = useState(false);
+  const [spacesellerBusy, setSpacesellerBusy] = useState(false);
   const { user } = useAuth();
   // The server enforces this too; hiding the control just avoids offering an
   // action that would come back 403.
   const canResendWhatsApp = roleCan(user?.role, "manage_orders");
+  // The same permission the server enforces on the endpoint.
+  const canRetrySpaceSeller = roleCan(user?.role, "manage_orders");
   const [toast, setToast] = useState<string | null>(null);
   const [highlightIds, setHighlightIds] = useState<Set<string>>(new Set());
 
@@ -143,6 +146,55 @@ export default function Orders() {
     }
   }
 
+  /**
+   * Retry the Space Seller sync, or refresh the status of an order already
+   * sent. Both are explicit admin actions; nothing here runs on its own.
+   *
+   * The drawer decides which of the two it is asking for — refresh once the
+   * order carries an upstream id, retry before that. A retry that comes back
+   * PENDING is not a success: it means the result is still unknown and somebody
+   * has to look at Space Seller before trying again.
+   */
+  async function onRetrySpaceSeller(id: string, action: "retry" | "refresh") {
+    setSpacesellerBusy(true);
+    try {
+      const res = await spacesellerAction(id, action);
+      // Take the server's word for the new state rather than guessing it here.
+      setSelected((sel) =>
+        sel && sel.id === id && sel.spaceseller
+          ? {
+              ...sel,
+              spaceseller: {
+                ...sel.spaceseller,
+                syncStatus: res.status ?? sel.spaceseller.syncStatus,
+                orderId: res.spacesellerOrderId ?? sel.spaceseller.orderId,
+                uuid: res.spacesellerUuid ?? sel.spaceseller.uuid,
+                deliveryStatus: res.deliveryStatus ?? sel.spaceseller.deliveryStatus,
+                trackingNumber: res.trackingNumber ?? sel.spaceseller.trackingNumber,
+                error: res.error,
+              },
+            }
+          : sel,
+      );
+      if (action === "refresh") {
+        setToast(res.ok ? "تحدّثات حالة Space Seller" : "ما تحدّثاتش الحالة");
+      } else if (res.status === "SYNCED") {
+        setToast(res.alreadySynced ? "الطلب راه مصيفط من قبل" : "تصيفط الطلب لـ Space Seller");
+      } else if (res.status === "PENDING") {
+        setToast("النتيجة ماشي مؤكدة — تحقق من Space Seller");
+      } else {
+        setToast("ما تصيفطش الطلب لـ Space Seller");
+      }
+      // The list shows sync state too, so bring it back in step.
+      void refetch({ silent: true });
+    } catch {
+      setToast("ما تصيفطش الطلب لـ Space Seller");
+    } finally {
+      setSpacesellerBusy(false);
+      setTimeout(() => setToast(null), 2800);
+    }
+  }
+
   return (
     <>
       <PageHeader title="الطلبات" subtitle={total ? `${total} طلب` : "إدارة طلبات الزبناء"} />
@@ -201,6 +253,9 @@ export default function Orders() {
         onResendWhatsApp={onResendWhatsApp}
         whatsappBusy={whatsappBusy}
         canResendWhatsApp={canResendWhatsApp}
+        onRetrySpaceSeller={onRetrySpaceSeller}
+        spacesellerBusy={spacesellerBusy}
+        canRetrySpaceSeller={canRetrySpaceSeller}
       />
 
       {toast && (

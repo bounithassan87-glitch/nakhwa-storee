@@ -49,6 +49,13 @@ export interface Env {
   // skipped and the browser pixel carries on alone, so marketing degrades
   // rather than checkout. Never hardcoded — a leaked token lets anyone write
   // events into the ad account.
+  // ── Space Seller ─────────────────────────────────────────────────────────
+  // Fulfilment partner. Server-side only: sent in an Authorization header and
+  // nowhere else — never a query string, a log line, a response or a bundle.
+  // Absent, order sync reports not_configured and the checkout is unaffected.
+  SPACESELLER_TOKEN?: string;
+  /** Test seam only, mirroring WHATSAPP_API_BASE. Never set in production. */
+  SPACESELLER_API_BASE?: string;
   META_ACCESS_TOKEN?: string;
   // Optional. Set it to route events to Events Manager → Test Events instead of
   // production, for verifying an integration without polluting real data.

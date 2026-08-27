@@ -15,7 +15,9 @@ import { json, log } from "../_lib/http";
 import { sendPush, DASHBOARD_ORDERS_URL, PUSH_ICON_URL } from "./_lib/fcm";
 import { sendCapiEvent, clientSignals } from "./_lib/capi";
 import { createRateLimiter } from "./_lib/ratelimit";
+import { syncOrderToSpaceSeller } from "./admin/_lib/spacesellerSync";
 import type { WhatsAppEnv } from "./_lib/whatsapp";
+import type { SpaceSellerEnv } from "./_lib/spaceseller";
 import { sendConfirmationWhatsApp } from "./admin/_lib/whatsappConfirm";
 
 // When a product's confirmation fires — at order time or on the admin's
@@ -208,6 +210,10 @@ const handleCreateOrder: AppFunction = async ({ request, env, data, waitUntil })
       ULTRAMSG_INSTANCE_ID: env.ULTRAMSG_INSTANCE_ID,
       ULTRAMSG_TOKEN: env.ULTRAMSG_TOKEN,
     },
+    spaceseller: {
+      SPACESELLER_TOKEN: env.SPACESELLER_TOKEN,
+      SPACESELLER_API_BASE: env.SPACESELLER_API_BASE,
+    },
     ...clientSignals(request),
     referer: request.headers.get("referer") ?? undefined,
     waitUntil: (p) => waitUntil(p),
@@ -310,6 +316,12 @@ interface DeferredContext {
    * provider; nothing here is logged.
    */
   whatsapp?: WhatsAppEnv;
+  /**
+   * Space Seller credentials, passed through untouched so the fulfilment order
+   * can be created from `waitUntil` after the sale is committed. Read only by
+   * the transport; the token is never logged.
+   */
+  spaceseller?: SpaceSellerEnv;
   /** Read from the edge request, never from the body. */
   clientIpAddress?: string;
   clientUserAgent?: string;
@@ -741,6 +753,15 @@ async function persist(
     push.waitUntil(notifyDevices(prisma, push, reqId, o, created.id));
     push.waitUntil(reportLead(prisma, push, reqId, o, created.orderNumber));
     push.waitUntil(reportPurchase(prisma, push, reqId, o, created.orderNumber));
+
+    // Space Seller fulfilment. Deferred like the other four, and for the same
+    // reason: the sale is already committed and the customer already told it
+    // succeeded, so a slow or unreachable partner must not turn a saved order
+    // into a 500. A failure here leaves the order FAILED and retryable from
+    // the dashboard; it never reaches the customer.
+    push.waitUntil(
+      syncOrderToSpaceSeller(prisma, push.spaceseller ?? {}, created.id, { reqId }).then(() => undefined),
+    );
 
     // The customer's "we received your order" WhatsApp.
     //

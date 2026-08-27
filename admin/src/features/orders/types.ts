@@ -52,6 +52,22 @@ export type WhatsAppStatus =
   /** Meta is the gateway but this product has no approved template yet. */
   | "no_template";
 
+
+/** Space Seller fulfilment, as the dashboard shows it. */
+export interface OrderSpaceSeller {
+  /** PENDING | SYNCED | FAILED | SKIPPED — null before any attempt. */
+  syncStatus: string | null;
+  orderId: string | null;
+  uuid: string | null;
+  /** Space Seller order status, e.g. NEW / CONFIRMED / PAID / CANCELED. */
+  status: string | null;
+  /** Delivery status, e.g. P_UNPACKED / P_DELIVERED. */
+  deliveryStatus: string | null;
+  trackingNumber: string | null;
+  syncedAt: string | null;
+  error?: string | null;
+}
+
 export interface OrderWhatsApp {
   sent: boolean;
   sentAt: string | null;
@@ -74,6 +90,7 @@ export interface Order {
   items: OrderItem[];
   product: OrderProduct | null;
   whatsapp?: OrderWhatsApp | null;
+  spaceseller?: OrderSpaceSeller | null;
 }
 
 export type SortField = "createdAt" | "totalPrice" | "status";

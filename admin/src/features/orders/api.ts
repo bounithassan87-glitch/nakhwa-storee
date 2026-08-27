@@ -23,3 +23,29 @@ export function updateOrderStatus(
 export function resendWhatsApp(id: string): Promise<{ ok: true; data: { status: string; messageId: string | null } }> {
   return apiPost(`/api/admin/orders/${encodeURIComponent(id)}/whatsapp`);
 }
+
+export interface SpaceSellerActionResult {
+  ok: boolean;
+  action: "retry" | "refresh";
+  status: string | null;
+  alreadySynced?: boolean;
+  spacesellerOrderId?: string | null;
+  spacesellerUuid?: string | null;
+  deliveryStatus?: string | null;
+  trackingNumber?: string | null;
+  error: string | null;
+}
+
+/**
+ * Retry the fulfilment sync, or refresh the status of an order already sent.
+ *
+ * `retry` may create an order upstream, so the server refuses it outright when
+ * one already exists and while a previous attempt is unresolved. `refresh` is
+ * read-only upstream and always safe.
+ */
+export function spacesellerAction(
+  id: string,
+  action: "retry" | "refresh",
+): Promise<SpaceSellerActionResult> {
+  return apiPost(`/api/admin/orders/${encodeURIComponent(id)}/spaceseller`, { action });
+}

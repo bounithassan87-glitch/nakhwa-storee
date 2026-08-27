@@ -82,6 +82,17 @@ async function loadDetail(prisma: ReturnType<typeof getPrisma>, id: string) {
       messageId: order.whatsappConfirmationMessageId,
       error: order.whatsappConfirmationError,
     },
+    // Space Seller fulfilment, for the badge, the ids and the Retry button.
+    spaceseller: {
+      syncStatus: order.spacesellerSyncStatus,
+      orderId: order.spacesellerOrderId,
+      uuid: order.spacesellerUuid,
+      status: order.spacesellerStatus,
+      deliveryStatus: order.spacesellerDeliveryStatus,
+      trackingNumber: order.spacesellerTrackingNumber,
+      syncedAt: order.spacesellerSyncedAt,
+      error: order.spacesellerLastError,
+    },
     shipment: order.shipment,
     timeline: order.events.map((e) => ({
       id: e.id,
