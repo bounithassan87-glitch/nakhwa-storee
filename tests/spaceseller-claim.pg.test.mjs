@@ -22,12 +22,33 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
-const PORT = 5436; // deliberately not 5434 — never touch a running dev database
 const USER = "postgres";
 const PASSWORD = "postgres";
 const DB = "claimtest";
-const URL = `postgresql://${USER}:${PASSWORD}@127.0.0.1:${PORT}/${DB}?schema=public`;
 
+/**
+ * Pick a free port above the dev database's 5434, which must never be touched.
+ *
+ * A fixed port made this suite flaky: a run killed before its cleanup hook
+ * leaves a listening socket behind, and on Windows that socket can outlive its
+ * process — after which every later run skipped instead of testing anything.
+ */
+async function freePort() {
+  const net = await import("node:net");
+  for (const candidate of [5436, 5437, 5438, 5439, 5440, 5441]) {
+    const free = await new Promise((resolve) => {
+      const s = net.createServer();
+      s.once("error", () => resolve(false));
+      s.once("listening", () => s.close(() => resolve(true)));
+      s.listen(candidate, "127.0.0.1");
+    });
+    if (free) return candidate;
+  }
+  throw new Error("no free port in 5436-5441 for the test database");
+}
+
+let PORT = null;
+let URL = null;
 let server = null;
 let dataDir = null;
 let prisma = null;
@@ -44,6 +65,8 @@ const guard = (t) => {
 
 before(async () => {
   try {
+    PORT = await freePort();
+    URL = `postgresql://${USER}:${PASSWORD}@127.0.0.1:${PORT}/${DB}?schema=public`;
     const { default: EmbeddedPostgres } = await import("embedded-postgres");
     dataDir = await mkdtemp(path.join(tmpdir(), "ss-claim-pg-"));
     server = new EmbeddedPostgres({

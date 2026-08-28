@@ -66,10 +66,90 @@ test("id_city is never sent — no verified mapping exists", () => {
   assert.ok(!("id_city" in r.body), "id_city must be absent rather than guessed");
 });
 
-test("the city is preserved by appending it to the address", () => {
+/* ── Customer destination fields ─────────────────────────────────────────
+   The city used to be appended to the address, which produced
+   "olad brhil، taroudant" upstream: a corrupted street field, and still no
+   destination. They are separate fields now, and these tests keep them apart. */
+
+test("address carries the street ONLY — the city is never folded into it", () => {
   const r = buildSpaceSellerOrder(anOrder());
-  assert.match(r.body.address, /123 شارع مثال/);
-  assert.match(r.body.address, /الدار البيضاء/);
+  assert.equal(r.body.address, "123 شارع مثال");
+  assert.ok(!r.body.address.includes("الدار البيضاء"), "the city must not appear in address");
+  assert.ok(!r.body.address.includes("،"), "no concatenation separator survives");
+});
+
+test("city is sent as its own field", () => {
+  const r = buildSpaceSellerOrder(anOrder());
+  assert.equal(r.body.city, "الدار البيضاء");
+});
+
+test("the real failing order maps to clean, separated fields", () => {
+  // The production case: NK-MTBIK6Y0-7L3Q, where address arrived upstream as
+  // "olad brhil، taroudant" — a corrupted street and still no destination.
+  // Every condition that case must satisfy is pinned here in one place.
+  const r = buildSpaceSellerOrder(
+    anOrder({
+      customer: { fullName: "hada ghi test", phone: "0624273714", city: "taroudant", address: "olad brhil" },
+    }),
+  );
+
+  assert.equal(r.body.fullname, "hada ghi test", "fullname unchanged");
+  assert.equal(r.body.phone, "0624273714", "phone unchanged, still the local 06… form");
+  assert.equal(r.body.city, "taroudant", "city is its own field");
+  assert.equal(r.body.address, "olad brhil", "address is the street alone");
+
+  // Separate, not concatenated — the specific regression.
+  assert.ok(!r.body.address.includes("taroudant"), "the city must not be inside address");
+  assert.ok(!r.body.city.includes("olad brhil"), "the address must not be inside city");
+  assert.ok(!r.body.address.includes("،"), "no concatenation separator remains");
+
+  // id_city stays absent: it is an integer "provided by Mediaplus" and no
+  // mapping from a free-text city name to that integer exists. Guessing one
+  // would address a real parcel to the wrong province.
+  assert.ok(!("id_city" in r.body), "id_city must be absent, never guessed");
+
+  // Space Seller assigns its own order id; we add nothing id-shaped.
+  for (const k of ["order_no", "orderNo", "order_id", "orderId", "order_number", "orderNumber"]) {
+    assert.ok(!(k in r.body), `${k} must not be sent`);
+  }
+
+  // And the parts this change must not disturb.
+  assert.equal(r.body.total_price, 299);
+  assert.deepEqual(r.body.products, [{ sku: "BEL-WG-001", quantity: 1, unit_price: 299 }]);
+});
+
+test("a missing city or address omits the field rather than sending an empty one", () => {
+  const base = anOrder().customer;
+  const noCity = buildSpaceSellerOrder(anOrder({ customer: { ...base, city: "  " } }));
+  assert.ok(!("city" in noCity.body), "an empty city is omitted, not sent blank");
+  assert.equal(noCity.body.address, "123 شارع مثال", "and the address is unaffected");
+
+  const noAddr = buildSpaceSellerOrder(anOrder({ customer: { ...base, address: "" } }));
+  assert.ok(!("address" in noAddr.body), "an empty address is omitted");
+  assert.equal(noAddr.body.city, "الدار البيضاء", "and the city is unaffected");
+});
+
+test("no Order No / Order ID field is ever sent", () => {
+  const r = buildSpaceSellerOrder(anOrder());
+  for (const k of ["order_no", "orderNo", "order_id", "orderId", "order_number", "orderNumber", "reference", "ref"]) {
+    assert.ok(!(k in r.body), `${k} must not be sent — Space Seller assigns its own order id`);
+  }
+  // The documented POST contract is exactly these keys; nothing else is invented.
+  assert.deepEqual(
+    Object.keys(r.body).sort(),
+    ["address", "city", "fullname", "note", "phone", "products", "total_price"].sort(),
+  );
+});
+
+test("the local order reference never reaches an id-shaped field", () => {
+  const r = buildSpaceSellerOrder(anOrder());
+  for (const [key, value] of Object.entries(r.body)) {
+    if (key === "note") continue; // the note is the one documented place for it
+    assert.ok(
+      !String(JSON.stringify(value)).includes("NK-TEST-0001"),
+      `the local order number leaked into "${key}"`,
+    );
+  }
 });
 
 test("the local order number travels in the note, for human tracing", () => {

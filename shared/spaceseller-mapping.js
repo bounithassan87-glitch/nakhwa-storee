@@ -212,14 +212,28 @@ export function buildSpaceSellerOrder(order) {
     products,
   };
 
-  // id_city is deliberately absent: the store holds free-text city names with no
-  // verified mapping to Space Seller's numeric ids, and the field is optional.
-  // The city is appended to the address instead, so the information reaches the
-  // courier rather than being dropped.
+  // address carries the street and nothing else.
+  //
+  // It used to have the city appended — "olad brhil، taroudant" — to compensate
+  // for the missing id_city. That was a mistake: it corrupted the street field
+  // without making the destination appear, so the two are separate again.
   const address = String(customer.address ?? "").trim();
+  if (address) body.address = address;
+
+  // The city, as its own field.
+  //
+  // Worth being honest about what this is: the integration guide's POST contract
+  // lists `id_city` (integer, "provided by Mediaplus") and NOT a `city` string.
+  // A plain `city` appears only in the GET response, beside `id_city`, where it
+  // reads as the name looked up from that id. So this field may well be ignored
+  // on create.
+  //
+  // It is sent anyway because the city has to travel somewhere, and this is the
+  // only honest place for it while no id_city mapping exists — the store holds
+  // 46 distinct free-text city names and there is no endpoint to resolve them.
+  // Guessing an integer would address a real parcel to the wrong province.
   const city = String(customer.city ?? "").trim();
-  const composed = [address, city].filter(Boolean).join("، ");
-  if (composed) body.address = composed;
+  if (city) body.city = city;
 
   const note = String(order.note ?? "").trim();
   // The local order number travels in the note so a Space Seller order can be
