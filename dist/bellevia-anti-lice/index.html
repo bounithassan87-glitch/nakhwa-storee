@@ -103,7 +103,14 @@
       <p class="offer-line">
         <span>Pack Bellevia</span>
         <span class="offer-line__sep" aria-hidden="true">·</span>
-        <b data-price-main>—</b>
+        <!-- Current and struck-through reference price travel together in one
+             flex item, so the pill's 10px gap cannot space them apart into two
+             unrelated numbers. `hidden` until script.js confirms config.js
+             carries an old price higher than the current one. -->
+        <span class="offer-line__price">
+          <b data-price-main>—</b>
+          <s data-old-price hidden></s>
+        </span>
         <span class="offer-line__sep" aria-hidden="true">·</span>
         <span>التوصيل فابور 🚚</span>
       </p>
@@ -541,7 +548,9 @@
   <div class="wrap final__in">
     <h2>واجدة تجربي Pack BelleVia؟</h2>
     <p class="final__pack">PACK COMPLET — سيروم + شامبو</p>
-    <p class="final__price"><b data-price-main>—</b></p>
+    <!-- Same pairing as the hero. A struck price in one place and a bare one
+         in the other reads as a bug, not as two different offers. -->
+    <p class="final__price"><b data-price-main>—</b> <s data-old-price hidden></s></p>
     <ul class="final__trust">
       <li data-cod>الدفع عند الاستلام</li>
       <li>تأكيد الطلب عبر التيليفون</li>

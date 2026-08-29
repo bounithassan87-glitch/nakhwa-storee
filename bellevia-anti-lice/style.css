@@ -313,6 +313,22 @@ a { color: inherit; }
 }
 .offer-line__sep { color: rgba(255, 255, 255, .38); }
 
+/* Reference price. Deliberately quieter than the live one — about half the
+   size, dimmer and struck — so the eye lands on 299 and reads 350 as what the
+   pack used to cost. Kept a sibling of the <b> rather than a separate line so
+   the two always wrap together. */
+.offer-line__price { display: inline-flex; align-items: baseline; gap: 8px; }
+.offer-line s,
+.final__price s {
+  font-weight: 700;
+  color: rgba(255, 255, 255, .74);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: rgba(255, 255, 255, .6);
+}
+.offer-line s { font-size: clamp(14px, 3.4vw, 16px); }
+.final__price s { font-size: clamp(18px, 5vw, 24px); }
+
 .hero__note {
   margin-top: 10px; font-size: 13px; font-weight: 700;
   color: rgba(255, 255, 255, .86);
