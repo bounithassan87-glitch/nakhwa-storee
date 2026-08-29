@@ -108,6 +108,18 @@ const BEFORE_AFTER = (() => {
   return existsSync(p) ? p : null;
 })();
 
+/**
+ * The family hero, supplied finished by the client (1536×1024): two children,
+ * the real shampoo and serum, and the brand's own captions. Re-encoded and
+ * nothing else — no crop, no retouch, no recolour. Rendered with
+ * `object-fit: contain`, so no face and no bottle is ever cut.
+ */
+const HERO_KIDS = (() => {
+  if (process.env.BELLEVIA_LICE_HERO_KIDS) return process.env.BELLEVIA_LICE_HERO_KIDS;
+  const p = 'C:/Users/ADmiN/Downloads/9a70a398-3ea5-47b4-8901-d0cca39ea93a.png';
+  return existsSync(p) ? p : null;
+})();
+
 const MOCK_DIR = (() => {
   if (process.env.BELLEVIA_LICE_MOCKUP_DIR) return process.env.BELLEVIA_LICE_MOCKUP_DIR;
   const probe = 'mockup-white-champo-150ml-main.png';
@@ -212,6 +224,21 @@ const STEPS = [
 ];
 
 await mkdir(OUT, { recursive: true });
+
+/* ── The family hero, whole ────────────────────────────────────────────── */
+if (HERO_KIDS) {
+  const meta = await sharp(HERO_KIDS).metadata();
+  for (const w of [400, 768, 1536]) {
+    if (w > meta.width) continue; // never enlarge past the source
+    await sharp(HERO_KIDS)
+      .resize({ width: w, kernel: 'lanczos3' })
+      .webp({ quality: 90, effort: 6 })
+      .toFile(join(OUT, `hero-kids-${w}.webp`));
+  }
+  console.log(`hero-kids-{400,768,1536}.webp   (supplied frame ${meta.width}×${meta.height}, uncropped)`);
+} else {
+  console.warn('! family hero not found — hero-kids-* not rebuilt. Set BELLEVIA_LICE_HERO_KIDS.');
+}
 
 /* ── The AVANT / APRÈS comparison, whole ───────────────────────────────── */
 if (BEFORE_AFTER) {

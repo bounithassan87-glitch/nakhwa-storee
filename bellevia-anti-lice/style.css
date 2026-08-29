@@ -264,6 +264,11 @@ a { color: inherit; }
   font-size: clamp(22px, 6.4vw, 44px); line-height: 1.38; letter-spacing: -0.01em;
   text-wrap: balance; color: #fff; text-shadow: 0 1px 2px rgba(20, 48, 26, .28);
 }
+/* «كتبدأ من هنا» lifted out of the headline. Warm gold on the green field, the
+   same accent the price already uses — a shift in colour, not in size or
+   weight, so the line still reads as one sentence. */
+.hero__h1-em { color: var(--gold-ink); }
+
 .hero__lede { margin-top: 10px; color: rgba(255, 255, 255, .92); font-size: clamp(14px, 3.7vw, 17px); }
 .hero__lede b { color: var(--gold-ink); font-weight: 800; }
 
@@ -290,13 +295,27 @@ a { color: inherit; }
 
 .price { display: flex; align-items: baseline; gap: 10px; justify-content: center; }
 .hero__offer { text-align: center; }
-.hero__offer .price {
-  display: inline-flex; align-items: baseline; gap: 12px;
-  padding: 6px 26px 10px;
+.offer-line {
+  display: inline-flex; flex-wrap: wrap; align-items: baseline;
+  justify-content: center; gap: 4px 10px;
+  padding: 8px 20px 10px;
+  /* The plate is what makes gold legible on green — inline gold text measured
+     2.08:1 against the lit part of the gradient. On this ground it reads 8:1. */
   background: linear-gradient(160deg, #1E4422, #122C17);
   border: 1px solid rgba(255, 255, 255, .16);
-  border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(10, 26, 14, .42);
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(10, 26, 14, .38);
+  font-size: 14.5px; font-weight: 700; color: rgba(255, 255, 255, .92);
+}
+.offer-line b {
+  font-size: clamp(24px, 6vw, 30px); font-weight: 800; color: var(--gold-2);
+  line-height: 1.1;
+}
+.offer-line__sep { color: rgba(255, 255, 255, .38); }
+
+.hero__note {
+  margin-top: 10px; font-size: 13px; font-weight: 700;
+  color: rgba(255, 255, 255, .86);
 }
 .price b { font-size: clamp(32px, 9vw, 46px); font-weight: 800; color: var(--gold-2); line-height: 1.1; text-shadow: 0 2px 6px rgba(20, 48, 26, .3); }
 .price s { color: rgba(255, 255, 255, .62); font-size: 17px; }
@@ -310,14 +329,6 @@ a { color: inherit; }
   box-shadow: 0 10px 26px rgba(232, 169, 0, .38);
 }
 .hero__offer .btn--primary:hover { background: var(--gold-2); }
-.hero__trust {
-  display: grid; gap: 4px; margin-top: 12px;
-  font-size: 13.5px; font-weight: 700; color: rgba(255, 255, 255, .94);
-}
-.hero__trust li { position: relative; padding-inline-start: 22px; }
-.hero__trust li::before {
-  content: '✓'; position: absolute; inset-inline-start: 0; color: var(--gold-2); font-weight: 800;
-}
 
 @media (min-width: 720px) {
   .hero { padding-block: 28px 34px; }
@@ -353,7 +364,6 @@ a { color: inherit; }
   .hero__offer { margin-top: 22px; }
   .price { justify-content: flex-start; }
   .hero__offer .btn { width: auto; }
-  .hero__trust { grid-template-columns: repeat(2, auto); justify-content: start; gap: 4px 22px; }
 }
 
 /* On a short phone the artwork gives back a few pixels so the CTA keeps clear

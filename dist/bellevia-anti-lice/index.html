@@ -30,8 +30,8 @@
 
 <link rel="preload" href="./assets/fonts/tajawal-800-ar.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="./assets/fonts/tajawal-400-ar.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" as="image" href="./assets/images/hero-art-768.webp"
-      imagesrcset="./assets/images/hero-art-400.webp 400w, ./assets/images/hero-art-768.webp 768w, ./assets/images/hero-art-1537.webp 1537w"
+<link rel="preload" as="image" href="./assets/images/hero-kids-768.webp"
+      imagesrcset="./assets/images/hero-kids-400.webp 400w, ./assets/images/hero-kids-768.webp 768w, ./assets/images/hero-kids-1536.webp 1536w"
       imagesizes="(min-width: 720px) 58vw, 90vw" fetchpriority="high">
 
 <link rel="stylesheet" href="./style.css">
@@ -45,7 +45,7 @@
   "category": "العناية بالشعر",
   "brand": { "@type": "Brand", "name": "BelleVia" },
   "description": "باك من منتجين للعناية بالشعر: سيروم ضد القمل 30ml وشامبو ضد القمل 150ml.",
-  "image": ["./assets/images/og-cover.jpg", "./assets/images/hero-art-1537.webp"]
+  "image": ["./assets/images/og-cover.jpg", "./assets/images/hero-kids-1536.webp"]
 }
 </script>
 </head>
@@ -76,46 +76,44 @@
 <section class="hero">
   <div class="wrap hero__in">
     <div class="hero__copy">
-      <p class="eyebrow">BELLEVIA HAIR CARE</p>
-      <h1 class="hero__h1">واش ولدك كيعاني من القمل و الصيبان ؟</h1>
+      <h1 class="hero__h1">راحة ولدك وابتسامتو… <span class="hero__h1-em">كتبدأ من هنا</span> ❤️</h1>
       <p class="hero__lede">
-        Pack BelleVia فيه <b>سيروم</b> و<b>شامبو</b> — روتين واحد كامل
-        للعناية بالشعر ديال ولادك.
+        روتين Bellevia للعناية بشعر وفروة رأس أطفالك، باش تبقى العناية اليومية
+        سهلة ومريحة.
       </p>
-
-      <ul class="hero__pills">
-        <li><span class="ltr">30ml</span> سيروم ضد القمل</li>
-        <li><span class="ltr">150ml</span> شامبو ضد القمل</li>
-      </ul>
     </div>
 
-    <!-- The artwork the client supplied, whole: 1537×1023, re-encoded and
-         nothing else. `object-fit: contain` in the stylesheet keeps every edge
-         visible at every viewport — if the box is tighter than the frame the
-         image shrinks rather than losing any of itself. `sizes` matches the
-         preload's `imagesizes`, or the hero would download twice. 768 is the
-         displayed cap because 768 × 2 = the file's own 1537px width. -->
+    <!-- The family hero the client supplied, whole: 1536×1024, re-encoded and
+         nothing else. `object-fit: contain` keeps every edge visible at every
+         viewport, so no face and no bottle is ever cut — a tight box scales the
+         frame down instead. Nothing is drawn on top of it. `sizes` must match
+         the preload's `imagesizes`, or the hero downloads twice; 768 is the
+         displayed cap because 768 × 2 = the file's own 1536px width. -->
     <figure class="hero__shot">
-      <img src="./assets/images/hero-art-768.webp"
-           srcset="./assets/images/hero-art-400.webp 400w, ./assets/images/hero-art-768.webp 768w, ./assets/images/hero-art-1537.webp 1537w"
+      <img src="./assets/images/hero-kids-768.webp"
+           srcset="./assets/images/hero-kids-400.webp 400w, ./assets/images/hero-kids-768.webp 768w, ./assets/images/hero-kids-1536.webp 1536w"
            sizes="(min-width: 720px) 58vw, 90vw"
-           width="1537" height="1023" fetchpriority="high" decoding="async"
-           alt="Pack BelleVia ضد القمل: شامبو 150ml وسيروم 30ml">
+           width="1536" height="1024" fetchpriority="high" decoding="async"
+           alt="طفل وطفلة مبتسمين مع Pack Bellevia: سيروم 30ml وشامبو 150ml">
     </figure>
 
     <div class="hero__offer">
-      <p class="price">
+      <!-- One line instead of a stacked label, plate and three bullets. The
+           price still comes from config.js, never from this markup. -->
+      <p class="offer-line">
+        <span>Pack Bellevia</span>
+        <span class="offer-line__sep" aria-hidden="true">·</span>
         <b data-price-main>—</b>
-        <s data-old-price hidden></s>
+        <span class="offer-line__sep" aria-hidden="true">·</span>
+        <span>التوصيل فابور 🚚</span>
       </p>
+      <!-- Same href, same data-goto, same order flow. -->
       <a class="btn btn--primary btn--block" href="#commander" data-goto>
-        طلبي الباك دابا — <span data-price-short>—</span>
+        طلبي Pack Bellevia دابا
       </a>
-      <ul class="hero__trust">
-        <li data-cod>الدفع عند الاستلام</li>
-        <li data-delivery hidden></li>
-        <li>كنتاصلو بيك باش نأكدو الطلب</li>
-      </ul>
+      <!-- The separator lives inside the COD span, so switching cash on
+           delivery off leaves a clean sentence rather than a dangling dot. -->
+      <p class="hero__note"><span data-cod>الدفع عند الاستلام · </span>كنتاصلو بيك باش نأكدو الطلب</p>
     </div>
   </div>
 </section>
@@ -254,26 +252,26 @@
     <header class="sec__head">
       <h2>علاش الباك كامل وماشي غير منتوج واحد؟</h2>
       <p class="rule" aria-hidden="true"></p>
-      <p class="sec__lede">حيت الواحد كيكمّل الآخر. كل واحد فيهم عندو دور فالروتين.</p>
+      <p class="sec__lede">لأن كل منتج في الباك له دوره الخاص ويكمل الآخر.</p>
     </header>
 
     <ol class="flow">
       <li class="flow__step">
         <span class="flow__n">1</span>
         <h3>السيروم</h3>
-        <p>كيتحط على الشعر الناشف وكيتخلا مدة قبل الغسيل.</p>
+        <p>السيروم يكمل روتين العناية، ويُستخدم بانتظام للمساعدة على الحفاظ على فروة رأس نظيفة وشعر صحي.</p>
       </li>
       <li class="flow__arrow" aria-hidden="true">↓</li>
       <li class="flow__step">
         <span class="flow__n">2</span>
         <h3>الشامبو</h3>
-        <p>كيغسل الشعر وفروة الرأس من بعد السيروم.</p>
+        <p>الشامبو يساعد على تنظيف الشعر وفروة الرأس ومحاربة القمل والصيبان أثناء الغسل.</p>
       </li>
       <li class="flow__arrow" aria-hidden="true">↓</li>
       <li class="flow__step flow__step--end">
         <span class="flow__n">3</span>
         <h3>روتين كامل</h3>
-        <p>جوج مرات فخطوة وحدة، بلا ما تخلطي حوايج من بلايص مختلفة.</p>
+        <p>لذلك، فـPack Anti-Poux يجمع بين مرحلتي التنظيف والعناية في روتين متكامل، بدل الاعتماد على منتج واحد فقط.</p>
       </li>
     </ol>
 
