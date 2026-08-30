@@ -192,12 +192,201 @@
     } catch (_) { /* ignore */ }
   }
 
+  /* ── First-party funnel ───────────────────────────────────────────────────
+     Meta tells us how a campaign performed. It cannot tell us how many people
+     opened the form and gave up, because that is not a Meta event and never
+     reaches our own data. These few functions do, and they store nothing about
+     the person: a random per-visit id, which page, and what happened. */
+
+  var SESSION_KEY = 'nk_sid';
+
+  /**
+   * An opaque id for this visit.
+   *
+   * sessionStorage, not localStorage: it should die with the tab. It exists
+   * only to join "started the form" to "placed the order", and identifies
+   * nobody — no name, no phone, no fingerprint, no IP.
+   */
+  function sessionId() {
+    try {
+      var existing = sessionStorage.getItem(SESSION_KEY);
+      if (existing && /^nks_[A-Za-z0-9_-]{16,48}$/.test(existing)) return existing;
+      var raw = uuid().replace(/-/g, '').slice(0, 24);
+      var fresh = 'nks_' + raw;
+      sessionStorage.setItem(SESSION_KEY, fresh);
+      return fresh;
+    } catch (_) {
+      return undefined; // private mode — the visit simply goes uncounted
+    }
+  }
+
+  /**
+   * Which storefront this is, taken from the first path segment.
+   *
+   * Deliberately derived from the URL rather than from a per-page config
+   * global, so a new landing page is counted the day it ships without touching
+   * this file. `/bellevia-anti-lice/` becomes "bellevia-anti-lice"; the root
+   * becomes "home".
+   */
+  function landingPage() {
+    try {
+      var seg = window.location.pathname.split('/').filter(Boolean)[0] || 'home';
+      seg = String(seg).toLowerCase().replace(/\.html?$/, '');
+      return /^[a-z0-9][a-z0-9-]{0,79}$/.test(seg) ? seg : 'home';
+    } catch (_) {
+      return 'home';
+    }
+  }
+
+  /** The product the page sells, when it advertises one. Optional. */
+  function productSlug() {
+    try {
+      var keys = Object.keys(window);
+      for (var i = 0; i < keys.length; i++) {
+        if (!/_CONFIG$/.test(keys[i])) continue;
+        var cfg = window[keys[i]];
+        if (cfg && typeof cfg.productSlug === 'string') return cfg.productSlug;
+      }
+    } catch (_) { /* ignore */ }
+    return undefined;
+  }
+
+  /** Send one funnel event. Fire-and-forget, like every other call here. */
+  function funnel(type, opts) {
+    try {
+      var sid = sessionId();
+      if (!sid) return;
+      var body = {
+        analytics: {
+          event: type,
+          sessionId: sid,
+          landingPage: landingPage(),
+          productSlug: productSlug(),
+        },
+      };
+      if (opts && opts.outcome) body.analytics.outcome = opts.outcome;
+      if (opts && opts.detail) body.analytics.detail = String(opts.detail).slice(0, 120);
+      fetch(API_BASE + '/api/track', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+        keepalive: true,
+        mode: 'cors',
+        credentials: 'omit',
+        referrerPolicy: 'strict-origin',
+        cache: 'no-store',
+      }).catch(function () { /* not the page's problem */ });
+    } catch (_) { /* ignore */ }
+  }
+
+  /**
+   * Send at most once per session per page.
+   *
+   * Guarded in sessionStorage rather than a variable, so a reload or a
+   * re-render cannot inflate the count — which would quietly make the funnel
+   * look wider at the top than it really was.
+   */
+  function funnelOnce(type, opts) {
+    try {
+      var key = 'nk_f_' + type + '_' + landingPage();
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch (_) { /* storage unavailable — fall through and still send once */ }
+    funnel(type, opts);
+  }
+
+  /** The order form, found generically across storefronts. */
+  function orderForm() {
+    try {
+      var byId = document.querySelector('form#order-form, form#orderForm, form[data-nk-form]');
+      if (byId) return byId;
+      // Fallback: the first form carrying a telephone field is the order form
+      // on every storefront here, and on any plausible future one.
+      var forms = document.querySelectorAll('form');
+      for (var i = 0; i < forms.length; i++) {
+        if (forms[i].querySelector('input[type="tel"], input[name="phone"]')) return forms[i];
+      }
+    } catch (_) { /* ignore */ }
+    return null;
+  }
+
+  /**
+   * Watch the form: seen, and then actually used.
+   *
+   * form_view fires when the form reaches the viewport — not on page load,
+   * because a form nobody scrolled to was never offered. form_start fires on
+   * the first real interaction with a field, which is the only honest signal
+   * that someone began filling it in, and the number abandonment is measured
+   * against.
+   */
+  function watchForm() {
+    var form = orderForm();
+    if (!form) return;
+
+    try {
+      if (typeof IntersectionObserver === 'function') {
+        var io = new IntersectionObserver(function (entries) {
+          for (var i = 0; i < entries.length; i++) {
+            if (entries[i].isIntersecting) {
+              funnelOnce('form_view');
+              io.disconnect();
+              return;
+            }
+          }
+        }, { threshold: 0.25 });
+        io.observe(form);
+      } else {
+        // No observer: count it as seen rather than never.
+        funnelOnce('form_view');
+      }
+    } catch (_) { /* ignore */ }
+
+    try {
+      var started = false;
+      var onStart = function () {
+        if (started) return;
+        started = true;
+        funnelOnce('form_start');
+        // One signal is all we need; stop listening rather than re-checking on
+        // every keystroke.
+        form.removeEventListener('focusin', onStart, true);
+        form.removeEventListener('input', onStart, true);
+        form.removeEventListener('change', onStart, true);
+      };
+      // focusin rather than focus: it bubbles, so one listener covers every
+      // field including any added later.
+      form.addEventListener('focusin', onStart, true);
+      form.addEventListener('input', onStart, true);
+      form.addEventListener('change', onStart, true);
+    } catch (_) { /* ignore */ }
+
+    try {
+      // Every real submit, including one the page's own validation will reject
+      // — a customer who tried and was turned away did attempt to order, and
+      // counting only the clean attempts would hide exactly the friction worth
+      // finding. Capture phase, so it is recorded before the page's handler
+      // can preventDefault.
+      //
+      // NOT deduplicated: a second attempt after fixing a typo is a second
+      // attempt. The outcome of each is decided server-side.
+      form.addEventListener('submit', function () {
+        funnel('form_submit', { outcome: 'attempt' });
+      }, true);
+    } catch (_) { /* ignore */ }
+  }
+
   var fired = {};
 
   window.nkTrack = {
     id: uuid,
     userData: userData,
     pixel: pixel,
+
+    /** First-party funnel. Separate from Meta on purpose. */
+    sessionId: sessionId,
+    landingPage: landingPage,
+    funnel: funnel,
+    funnelOnce: funnelOnce,
 
     /** Both copies, sharing one event_id so Meta deduplicates them. */
     track: function (name, params, eventId) {
@@ -220,4 +409,18 @@
 
   // PageView, as soon as this file runs. Once per page load by construction.
   window.nkTrack.trackOnce('PageView');
+
+  // The same arrival, recorded first-party. Sent separately from the Meta call
+  // above so neither can affect the other: this is the visitor count the
+  // dashboard reads, and Meta cannot be queried for it.
+  funnel('page_view');
+
+  // Wire the form once the document has one to wire.
+  try {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', watchForm);
+    } else {
+      watchForm();
+    }
+  } catch (_) { /* ignore */ }
 })();

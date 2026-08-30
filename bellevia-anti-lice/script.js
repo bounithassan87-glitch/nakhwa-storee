@@ -271,6 +271,10 @@
     function payload() {
       return {
         productSlug: CFG.productSlug,
+        // Joins this order to the funnel events from the same visit, so the
+        // server can record order_success against the session that started
+        // the form. Opaque and anonymous; absent if storage is unavailable.
+        sessionId: (window.nkTrack && window.nkTrack.sessionId && window.nkTrack.sessionId()) || undefined,
         customerName: $('#fullname').value.trim(),
         phone: normalizePhone($('#phone').value),
         city: $('#city').value.trim(),

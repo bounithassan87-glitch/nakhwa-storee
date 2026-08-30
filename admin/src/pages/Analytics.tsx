@@ -59,6 +59,50 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+/**
+ * A percentage, or an em dash.
+ *
+ * The API sends null when there was nothing to divide by. Rendering that as
+ * "0%" would claim nobody converted on a day nobody visited, so the absence is
+ * shown as an absence.
+ */
+function funnelPct(v: number | null | undefined): string {
+  return v === null || v === undefined ? "—" : `${v}٪`;
+}
+
+/** One rung of the funnel, with the drop-off into it. */
+function FunnelStep({
+  label,
+  value,
+  rate,
+  width,
+  tone,
+}: {
+  label: string;
+  value: number;
+  rate?: number | null;
+  width: number;
+  tone?: string;
+}) {
+  return (
+    <div className="mb-2">
+      <div className="mb-1 flex items-baseline justify-between gap-3">
+        <span className="text-sm text-muted">{label}</span>
+        <span className="text-sm font-bold text-ink">
+          {value.toLocaleString("ar-MA")}
+          {rate !== undefined && <span className="ms-2 text-xs text-faint">{funnelPct(rate)}</span>}
+        </span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-line/50">
+        <div
+          className="h-full rounded-full transition-[width] duration-500"
+          style={{ width: `${Math.max(width, value > 0 ? 2 : 0)}%`, background: tone ?? "var(--color-brand)" }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ChartCard({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Card className="p-5">
@@ -251,6 +295,86 @@ export default function Analytics() {
           </Section>
 
           {/* Products */}
+          {/* Landing-page funnel. Only rendered once tracking has produced
+              something: an empty funnel of zeroes reads as "nobody came"
+              rather than "this started collecting yesterday". */}
+          {data.funnel && data.funnel.visitors + data.funnel.formStarts + data.funnel.orders > 0 && (
+            <Section title="مسار الزيارة (Landing Page Funnel)">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <ChartCard title="من الزيارة إلى الطلب">
+                  <FunnelStep label="الزوار" value={data.funnel.visitors} width={100} />
+                  <FunnelStep
+                    label="وصلو للفورم"
+                    value={data.funnel.formViews}
+                    rate={data.funnel.rates.visitorsToFormViews}
+                    width={data.funnel.rates.visitorsToFormViews ?? 0}
+                  />
+                  <FunnelStep
+                    label="بداو يعمّرو"
+                    value={data.funnel.formStarts}
+                    rate={data.funnel.rates.formViewsToStarts}
+                    width={data.funnel.rates.conversion === null ? 0 : (data.funnel.formStarts / Math.max(data.funnel.visitors, 1)) * 100}
+                  />
+                  <FunnelStep
+                    label="حاولو يصيفطو"
+                    value={data.funnel.submitAttempts}
+                    rate={data.funnel.rates.startsToSubmits}
+                    width={(data.funnel.submitAttempts / Math.max(data.funnel.visitors, 1)) * 100}
+                  />
+                  <FunnelStep
+                    label="طلبات ناجحة"
+                    value={data.funnel.orders}
+                    rate={data.funnel.rates.submitsToOrders}
+                    width={(data.funnel.orders / Math.max(data.funnel.visitors, 1)) * 100}
+                    tone="var(--color-success, #16a34a)"
+                  />
+                </ChartCard>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <StatCard label="نسبة التحويل" value={funnelPct(data.funnel.rates.conversion)} icon={Percent} />
+                  <StatCard label="كملو الفورم" value={funnelPct(data.funnel.rates.formCompletion)} icon={TrendingUp} />
+                  <StatCard label="خلاو الفورم" value={funnelPct(data.funnel.rates.abandonment)} icon={AlertTriangle} />
+                  <StatCard label="فورم مخلّي" value={data.funnel.abandoned.toLocaleString("ar-MA")} icon={AlertCircle} />
+                  <StatCard label="محاولات فاشلة" value={data.funnel.failedSubmissions.toLocaleString("ar-MA")} icon={AlertCircle} />
+                  <StatCard label="بداو يعمّرو" value={data.funnel.formStarts.toLocaleString("ar-MA")} icon={Users} />
+                </div>
+              </div>
+
+              {data.funnelByPage && data.funnelByPage.length > 1 && (
+                <div className="mt-4">
+                  <ChartCard title="حسب الصفحة">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[520px] text-sm">
+                        <thead>
+                          <tr className="border-b border-line text-start text-xs text-faint">
+                            <th className="py-2 text-start font-bold">الصفحة</th>
+                            <th className="py-2 text-start font-bold">الزوار</th>
+                            <th className="py-2 text-start font-bold">بداو</th>
+                            <th className="py-2 text-start font-bold">طلبات</th>
+                            <th className="py-2 text-start font-bold">مخلّي</th>
+                            <th className="py-2 text-start font-bold">التحويل</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.funnelByPage.map((p) => (
+                            <tr key={p.landingPage} className="border-b border-line/50 last:border-0">
+                              <td className="py-2 font-medium text-ink" dir="ltr">{p.landingPage}</td>
+                              <td className="py-2 text-muted">{p.visitors.toLocaleString("ar-MA")}</td>
+                              <td className="py-2 text-muted">{p.formStarts.toLocaleString("ar-MA")}</td>
+                              <td className="py-2 font-bold text-ink">{p.orders.toLocaleString("ar-MA")}</td>
+                              <td className="py-2 text-muted">{p.abandoned.toLocaleString("ar-MA")}</td>
+                              <td className="py-2 text-muted">{funnelPct(p.rates.conversion)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </ChartCard>
+                </div>
+              )}
+            </Section>
+          )}
+
           <Section title="المنتجات">
             <div className="grid gap-4 lg:grid-cols-3">
               <ChartCard title="الأكثر مبيعاً (منتجات)">

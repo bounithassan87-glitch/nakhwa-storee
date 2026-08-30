@@ -12,9 +12,12 @@
 // failing Meta never delays the page.
 import { z } from "zod";
 import type { AppFunction } from "../_lib/context";
+import { resolveDatabaseUrl } from "../_lib/env";
+import { getPrisma } from "../_lib/db";
 import { json, log } from "../_lib/http";
 import { createRateLimiter } from "./_lib/ratelimit";
 import { sendCapiEvent, clientSignals } from "./_lib/capi";
+import { validateAnalyticsEvent } from "../../shared/analytics-events.js";
 
 // Generous for a real visitor — a page view plus a checkout, times a few tabs
 // and reloads — and low enough that a script cannot flood the ad account.
@@ -27,11 +30,33 @@ const CORS: Record<string, string> = {
   "access-control-max-age": "86400",
 };
 
+/**
+ * The first-party funnel event, if this request carries one.
+ *
+ * Entirely separate from the Meta fields below, because the two vocabularies do
+ * not line up: `form_start` has no Meta counterpart and must not invent one,
+ * and `PageView` must keep reaching Meta exactly as before. A request may carry
+ * either, or both — a page view is naturally both.
+ *
+ * Shapes are re-checked by validateAnalyticsEvent; the bounds here exist so an
+ * oversized body is rejected before it is parsed at all.
+ */
+const analyticsSchema = z.object({
+  event: z.string().trim().min(1).max(40),
+  sessionId: z.string().trim().min(1).max(64),
+  landingPage: z.string().trim().min(1).max(80),
+  productSlug: z.string().trim().max(80).optional(),
+  outcome: z.string().trim().max(20).optional(),
+  detail: z.string().trim().max(120).optional(),
+});
+
 const bodySchema = z.object({
   // Lead is absent on purpose; see the note above.
-  eventName: z.enum(["PageView", "ViewContent", "InitiateCheckout"]),
+  // Optional since the funnel added events that are ours alone and have no Meta
+  // equivalent. When present it behaves exactly as it always has.
+  eventName: z.enum(["PageView", "ViewContent", "InitiateCheckout"]).optional(),
   /** Must match the `eventID` the browser passed to fbq, or Meta counts twice. */
-  eventId: z.string().trim().min(8).max(100),
+  eventId: z.string().trim().min(8).max(100).optional(),
   eventSourceUrl: z.string().trim().url().max(500).optional(),
   fbp: z.string().trim().max(200).optional(),
   fbc: z.string().trim().max(400).optional(),
@@ -44,6 +69,7 @@ const bodySchema = z.object({
   contentName: z.string().trim().max(150).optional(),
   contentType: z.string().trim().max(40).optional(),
   contentIds: z.array(z.string().trim().min(1).max(100)).max(10).optional(),
+  analytics: analyticsSchema.optional(),
 });
 
 /**
@@ -97,11 +123,64 @@ export const onRequest: AppFunction = async (ctx) => {
   if (!parsed.success) return json({ ok: false, error: "validation_error" }, 422, CORS);
   const b = parsed.data;
 
+  // A Meta event needs its id to deduplicate against the pixel copy; without
+  // one the server copy would be counted twice.
+  const hasMeta = Boolean(b.eventName && b.eventId);
+  const analytics = b.analytics ? validateAnalyticsEvent(b.analytics) : null;
+
+  // Something must be asked for. An empty body is a bug in a caller, not a
+  // no-op worth accepting.
+  if (!hasMeta && !analytics) {
+    return json({ ok: false, error: "nothing_to_track" }, 422, CORS);
+  }
+  if (analytics && !analytics.ok) {
+    return json({ ok: false, error: analytics.error }, 422, CORS);
+  }
+
+  /* ── Path 1: the first-party funnel row ────────────────────────────────
+     Deliberately independent of Meta. A database hiccup must not stop an
+     event reaching the ad account, and a Meta outage must not lose the row
+     we can still count ourselves. Both run in waitUntil, both swallow their
+     own failures, and neither awaits the other. */
+  if (analytics?.ok) {
+    const dbUrl = resolveDatabaseUrl(ctx.env);
+    if (dbUrl) {
+      const v = analytics.value;
+      const write = (async () => {
+        try {
+          const prisma = getPrisma(dbUrl);
+          await prisma.trackingEvent.create({
+            data: {
+              type: v.type,
+              sessionId: v.sessionId,
+              landingPage: v.landingPage,
+              productSlug: v.productSlug,
+              outcome: v.outcome,
+              detail: v.detail,
+            },
+          });
+        } catch (err) {
+          // Never surfaced to the caller: analytics is not worth a failed page.
+          log("warn", {
+            reqId: ctx.data.reqId,
+            msg: "tracking_write_failed",
+            event: v.type,
+            error: err instanceof Error ? err.message.slice(0, 200) : String(err),
+          });
+        }
+      })();
+      ctx.waitUntil(write);
+    }
+  }
+
+  /* ── Path 2: Meta, exactly as before ──────────────────────────────────── */
+  if (!hasMeta) return json({ ok: true }, 202, CORS);
+
   const send = sendCapiEvent(
     ctx.env.META_ACCESS_TOKEN,
     {
-      eventName: b.eventName,
-      eventId: b.eventId,
+      eventName: b.eventName as "PageView" | "ViewContent" | "InitiateCheckout",
+      eventId: b.eventId as string,
       eventSourceUrl: b.eventSourceUrl,
       user: {
         // From the edge, not the body — otherwise a caller could attribute

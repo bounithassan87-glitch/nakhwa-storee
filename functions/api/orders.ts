@@ -16,6 +16,7 @@ import { sendPush, DASHBOARD_ORDERS_URL, PUSH_ICON_URL } from "./_lib/fcm";
 import { sendCapiEvent, clientSignals } from "./_lib/capi";
 import { createRateLimiter } from "./_lib/ratelimit";
 import { syncOrderToSpaceSeller } from "./admin/_lib/spacesellerSync";
+import { isValidSessionId } from "../../shared/analytics-events.js";
 import type { WhatsAppEnv } from "./_lib/whatsapp";
 import type { SpaceSellerEnv } from "./_lib/spaceseller";
 import { sendConfirmationWhatsApp } from "./admin/_lib/whatsappConfirm";
@@ -67,6 +68,11 @@ const customerFields = {
   note: z.string().trim().max(500).optional(),
   /** Which landing page this came from; shown as "المصدر" in the dashboard. */
   source: z.string().trim().min(1).max(60).optional(),
+
+  /** Opaque funnel session id, so the order can be joined to the page events
+   *  from the same visit. Anonymous and optional: a page that does not send it
+   *  orders exactly as before, it simply goes uncounted in the funnel. */
+  sessionId: z.string().trim().max(64).optional(),
 
   // Meta attribution. All optional, and shared by every payload shape, so a
   // landing page that sends them gets deduplicated server-side conversions and
@@ -274,6 +280,8 @@ interface PersistInput {
   items: { size: string; color: string }[];
   /** Meta attribution passed through from the request; absent is normal. */
   meta?: MetaFields;
+  /** Opaque funnel session id, when the page reported one. Anonymous. */
+  sessionId?: string;
 }
 
 interface MetaFields {
@@ -366,6 +374,7 @@ async function createLegacyOrder(
     unitPrice: product.basePrice,
     items: order.items,
     meta: metaFrom(order),
+    sessionId: order.sessionId,
   }, push);
 }
 
@@ -463,6 +472,7 @@ async function createCatalogOrder(
     unitPrice,
     items,
     meta: metaFrom(order),
+    sessionId: order.sessionId,
   }, push);
 }
 
@@ -745,6 +755,34 @@ async function persist(
     quantity: created.quantity,
     source: o.source,
   });
+
+  // The funnel's source of truth for a completed sale.
+  //
+  // Written here and only here — after the row exists, never from the browser,
+  // where a click could claim an order that was refused. The unique index on
+  // (type, order_id) makes a duplicate impossible even if this path ran twice,
+  // and the whole thing is wrapped because an analytics row is never worth
+  // failing a committed order over.
+  if (o.sessionId && isValidSessionId(o.sessionId)) {
+    try {
+      await prisma.trackingEvent.create({
+        data: {
+          type: "order_success",
+          sessionId: o.sessionId,
+          landingPage: o.source,
+          productSlug: o.productSlug,
+          orderId: created.id,
+        },
+      });
+    } catch (err) {
+      log("warn", {
+        reqId,
+        msg: "tracking_order_success_failed",
+        orderNumber: created.orderNumber,
+        error: err instanceof Error ? err.message.slice(0, 200) : String(err),
+      });
+    }
+  }
 
   // Both handed to the runtime: the customer's confirmation waits on neither
   // FCM nor Meta, and a failure in either cannot reach a sale that is already

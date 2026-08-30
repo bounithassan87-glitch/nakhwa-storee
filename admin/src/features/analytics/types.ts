@@ -13,6 +13,37 @@ export interface CityStat {
   revenue: number;
 }
 
+/**
+ * Landing-page funnel.
+ *
+ * Every rate is nullable: a percentage with nothing to divide by is not zero,
+ * it is unknown, and the UI shows "—" rather than inventing a 0%.
+ */
+export interface FunnelRates {
+  visitorsToFormViews: number | null;
+  formViewsToStarts: number | null;
+  startsToSubmits: number | null;
+  submitsToOrders: number | null;
+  conversion: number | null;
+  formCompletion: number | null;
+  abandonment: number | null;
+}
+
+export interface Funnel {
+  visitors: number;
+  formViews: number;
+  formStarts: number;
+  submitAttempts: number;
+  failedSubmissions: number;
+  orders: number;
+  abandoned: number;
+  rates: FunnelRates;
+}
+
+export interface FunnelByPage extends Funnel {
+  landingPage: string;
+}
+
 export interface Analytics {
   range: { key: RangeKey; from: string; to: string };
   revenue: { today: number; yesterday: number; last7: number; last30: number; total: number };
@@ -28,6 +59,12 @@ export interface Analytics {
   geography: { cities: CityStat[]; top: CityStat[] };
   products: { products: NameCount[]; colors: NameCount[]; sizes: NameCount[] };
   timeseries: { date: string; revenue: number; orders: number }[];
+  /** IANA zone the day boundaries were drawn on, e.g. "Africa/Casablanca". */
+  timezone?: string;
+  /** Landing-page funnel for the selected range. Null when unavailable. */
+  funnel?: Funnel | null;
+  /** The same funnel, split by landing page. Empty when unavailable. */
+  funnelByPage?: FunnelByPage[];
 }
 
 export interface AnalyticsResponse {
@@ -39,5 +76,8 @@ export interface AnalyticsResponse {
   performance: Analytics["performance"];
   geography: Analytics["geography"];
   products: Analytics["products"];
+  timezone?: Analytics["timezone"];
+  funnel?: Analytics["funnel"];
+  funnelByPage?: Analytics["funnelByPage"];
   timeseries: Analytics["timeseries"];
 }

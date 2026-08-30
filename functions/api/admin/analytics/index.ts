@@ -16,39 +16,29 @@ import { getPrisma } from "../../../_lib/db";
 import { json, log } from "../../../_lib/http";
 import { statsFromOrders, computeTag, type CustomerTag } from "../_lib/customers";
 import { ORDER_STATUSES } from "../_lib/orderWorkflow";
+import { funnelByLandingPage } from "../_lib/funnel";
+import {
+  STORE_TIMEZONE,
+  startOfStoreDay,
+  storeDayKey,
+  resolveStoreRange,
+} from "../../../../shared/store-time.js";
 
 const DAY = 86_400_000;
 const STATUSES = ORDER_STATUSES;
 
+// Day boundaries follow the shop's own clock, not UTC. Under UTC a sale made
+// at 00:30 in Casablanca was reported against the previous day, which is the
+// wrong answer to "how did today go" for every evening order.
 function startOfUTCDay(d: Date): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  return startOfStoreDay(d);
 }
 function dayKey(d: Date): string {
-  return startOfUTCDay(d).toISOString().slice(0, 10);
+  return storeDayKey(d);
 }
 
 function resolveRange(key: string, fromStr: string | null, toStr: string | null) {
-  const now = new Date();
-  const todayStart = startOfUTCDay(now);
-  const endToday = new Date(todayStart.getTime() + DAY - 1);
-  switch (key) {
-    case "today":
-      return { key, from: todayStart, to: endToday };
-    case "yesterday":
-      return { key, from: new Date(todayStart.getTime() - DAY), to: new Date(todayStart.getTime() - 1) };
-    case "last30":
-      return { key, from: new Date(todayStart.getTime() - 29 * DAY), to: endToday };
-    case "thisMonth":
-      return { key, from: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)), to: endToday };
-    case "custom": {
-      const f = fromStr && !Number.isNaN(Date.parse(fromStr)) ? startOfUTCDay(new Date(fromStr)) : new Date(todayStart.getTime() - 6 * DAY);
-      const t = toStr && !Number.isNaN(Date.parse(toStr)) ? new Date(startOfUTCDay(new Date(toStr)).getTime() + DAY - 1) : endToday;
-      return { key: "custom", from: f, to: t };
-    }
-    case "last7":
-    default:
-      return { key: "last7", from: new Date(todayStart.getTime() - 6 * DAY), to: endToday };
-  }
+  return resolveStoreRange(key, fromStr, toStr, new Date());
 }
 
 export const onRequest: AppFunction = async (ctx) => {
@@ -196,6 +186,20 @@ const analytics: AppFunction = async ({ request, env, data }) => {
     }
     const timeseries = [...buckets.values()];
 
+    // Landing-page funnel. Isolated: this reads a table that did not exist
+    // until recently, and an empty or unavailable one must not take the rest of
+    // the dashboard down with it.
+    let funnel: Awaited<ReturnType<typeof funnelByLandingPage>> | null = null;
+    try {
+      funnel = await funnelByLandingPage(prisma, range.from, range.to);
+    } catch (err) {
+      log("warn", {
+        reqId,
+        msg: "funnel_unavailable",
+        error: err instanceof Error ? err.message.slice(0, 200) : String(err),
+      });
+    }
+
     return json({
       ok: true,
       range: { key: range.key, from: range.from.toISOString(), to: range.to.toISOString() },
@@ -206,6 +210,11 @@ const analytics: AppFunction = async ({ request, env, data }) => {
       geography,
       products,
       timeseries,
+      /** Which clock the day boundaries above were drawn on. */
+      timezone: STORE_TIMEZONE,
+      /** Landing-page funnel for the selected range; null if unavailable. */
+      funnel: funnel ? funnel.overall : null,
+      funnelByPage: funnel ? funnel.byPage : [],
     });
   } catch (err) {
     log("error", {

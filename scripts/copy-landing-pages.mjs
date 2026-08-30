@@ -79,3 +79,20 @@ for (const name of PAGES) {
 
   console.log(`[copy-landing-pages] ${name}/ → dist/${name}/  (canonical ${base}/)`);
 }
+
+// The shared tracking script, served at /nk-track.js and included by every
+// landing page.
+//
+// It had no copy step: dist/nk-track.js was a tracked file updated by hand, so
+// an edit to the source shipped nothing and the deployed copy silently drifted
+// — which is exactly how a whole funnel could have gone live doing nothing.
+// Copied here so the served file is always the source file.
+{
+  const src = join(root, "nk-track.js");
+  if (existsSync(src)) {
+    cpSync(src, join(dist, "nk-track.js"));
+    console.log("[copy-landing-pages] nk-track.js → dist/nk-track.js");
+  } else {
+    console.warn("[copy-landing-pages] nk-track.js missing at the repo root — tracking will not ship");
+  }
+}

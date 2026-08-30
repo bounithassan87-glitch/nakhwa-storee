@@ -737,3 +737,49 @@ model Payout {
   @@index([affiliateId])
 }
 
+/// Landing-page funnel events.
+///
+/// Deliberately holds no personal data: an opaque per-visit id, which page, and
+/// what happened. No name, phone, address, email, IP or user agent — none of it
+/// is needed to count a funnel, and storing it would turn an analytics table
+/// into a breach waiting to happen.
+///
+/// Not related to Order by a foreign key on purpose. Analytics is a historical
+/// record; deleting an order should not erase the fact that a sale happened,
+/// and an analytics write must never be able to block the order path.
+model TrackingEvent {
+  id String @id @default(cuid())
+
+  /// page_view | form_view | form_start | form_submit | order_success
+  type String
+
+  /// Opaque id from sessionStorage, scoped to one visit. Identifies nobody, and
+  /// is what makes abandonment answerable: a session that started a form and
+  /// produced no order.
+  sessionId String @map("session_id")
+
+  /// Which storefront the event came from, e.g. "bellevia-anti-lice".
+  landingPage String @map("landing_page")
+
+  /// The product the page was selling, when the page knows it.
+  productSlug String? @map("product_slug")
+
+  /// attempt | success | failure — only ever set on form_submit.
+  outcome String?
+
+  /// Set on order_success only, written server-side once the order has
+  /// committed. The unique index below makes a duplicate impossible.
+  orderId String? @map("order_id")
+
+  /// Short bounded note, e.g. a validation error code. Never customer text.
+  detail String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([type, orderId], name: "tracking_one_event_per_order")
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@index([landingPage, createdAt])
+  @@index([sessionId])
+  @@map("TrackingEvent")
+}
