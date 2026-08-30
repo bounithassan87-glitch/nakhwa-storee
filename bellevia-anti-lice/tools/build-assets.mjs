@@ -120,6 +120,21 @@ const HERO_KIDS = (() => {
   return existsSync(p) ? p : null;
 })();
 
+/**
+ * The problem section's photograph, supplied by the client (1086×1448): a
+ * mother combing her daughter's hair. Re-encoded and nothing else — no crop,
+ * no retouch, no recolour.
+ *
+ * It replaces `problem-girl`, which was a crop out of «المشكلة». The slot is
+ * `width: 100%; max-width: 360px` with no height and no `object-fit`, so a
+ * taller frame simply renders taller — the picture is never cut.
+ */
+const PROBLEM_CARE = (() => {
+  if (process.env.BELLEVIA_LICE_PROBLEM_CARE) return process.env.BELLEVIA_LICE_PROBLEM_CARE;
+  const p = 'C:/Users/ADmiN/Downloads/68cae827-a7c3-43ee-9454-e09a7fcba377.png';
+  return existsSync(p) ? p : null;
+})();
+
 const MOCK_DIR = (() => {
   if (process.env.BELLEVIA_LICE_MOCKUP_DIR) return process.env.BELLEVIA_LICE_MOCKUP_DIR;
   const probe = 'mockup-white-champo-150ml-main.png';
@@ -176,17 +191,9 @@ const FRAMED = [
     crop: { left: 105, top: 720, width: 320, height: 270 },
     widths: [320, 600],
   },
-  {
-    // The problem, on a face — cropped from «المشكلة», where the child is shot at
-    // full resolution, rather than from the 320px thumbnail of the same idea in
-    // the six-card grid. The clinical scalp close-up two tiles along is left out
-    // on purpose: a lice page has to stay readable by someone eating lunch.
-    name: 'problem-girl',
-    from: PROBLEM,
-    crop: { left: 30, top: 330, width: 600, height: 720 },
-    widths: [360, 720],
-  },
 ];
+// The problem section no longer uses a crop out of «المشكلة». The client
+// supplied a photograph for that slot, built whole as `problem-care` above.
 
 /**
  * ── 3 · BENEFIT MEDALLIONS ──────────────────────────────────────────────────
@@ -253,6 +260,22 @@ if (BEFORE_AFTER) {
   console.log(`before-after-{480,960,1402}.webp   (supplied frame ${meta.width}×${meta.height}, uncropped)`);
 } else {
   console.warn('! before/after image not found — before-after-* not rebuilt. Set BELLEVIA_LICE_BEFORE_AFTER.');
+}
+
+/* ── The problem section's photograph, whole ───────────────────────────────
+   360 is the displayed cap, so 720 is exactly 2× on a retina screen. */
+if (PROBLEM_CARE) {
+  const meta = await sharp(PROBLEM_CARE).metadata();
+  for (const w of [360, 720]) {
+    if (w > meta.width) continue; // never enlarge past the source
+    await sharp(PROBLEM_CARE)
+      .resize({ width: w, kernel: 'lanczos3' })
+      .webp({ quality: 86, effort: 6 })
+      .toFile(join(OUT, `problem-care-${w}.webp`));
+  }
+  console.log(`problem-care-{360,720}.webp   (supplied frame ${meta.width}×${meta.height}, uncropped)`);
+} else {
+  console.warn('! problem photo not found — problem-care-* not rebuilt. Set BELLEVIA_LICE_PROBLEM_CARE.');
 }
 
 /* ── The supplied hero artwork, whole ──────────────────────────────────── */
