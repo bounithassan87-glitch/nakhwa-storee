@@ -287,3 +287,142 @@ test("[pg] the table holds no personal data at all", async (t) => {
     "created_at", "detail", "id", "landing_page", "order_id", "outcome", "product_slug", "session_id", "type",
   ]);
 });
+
+/* ── Global unique abandoned visitors ─────────────────────────────────────
+   The overall figure counts PEOPLE, not page-visits. Summing the per-page
+   numbers reports one person twice the moment they open the form on two
+   landing pages, which is exactly what production data showed: four per-page
+   against three real visitors. These pin the difference. */
+
+/** The overall query as functions/api/admin/_lib/funnel.ts issues it. */
+async function globalAbandoned() {
+  const rows = await prisma.$queryRawUnsafe(
+    `WITH started AS (
+       SELECT DISTINCT session_id FROM "TrackingEvent" WHERE type = 'form_start'
+     ),
+     succeeded AS (
+       SELECT DISTINCT session_id FROM "TrackingEvent" WHERE type = 'order_success'
+     )
+     SELECT COUNT(*)::int AS n FROM started s
+      WHERE NOT EXISTS (SELECT 1 FROM succeeded x WHERE x.session_id = s.session_id)`,
+  );
+  return rows[0].n;
+}
+
+/** The old behaviour: the sum of the per-page counts. */
+async function summedPerPage() {
+  const rows = await prisma.$queryRawUnsafe(
+    `WITH started AS (
+       SELECT DISTINCT landing_page, session_id FROM "TrackingEvent" WHERE type = 'form_start'
+     ),
+     succeeded AS (
+       SELECT DISTINCT landing_page, session_id FROM "TrackingEvent" WHERE type = 'order_success'
+     )
+     SELECT COUNT(*)::int AS n FROM started s
+      WHERE NOT EXISTS (
+        SELECT 1 FROM succeeded x
+         WHERE x.landing_page = s.landing_page AND x.session_id = s.session_id
+      )`,
+  );
+  return rows[0].n;
+}
+
+/** Wipe the table between these scenarios so each count stands alone. */
+async function reset() {
+  await prisma.trackingEvent.deleteMany({});
+}
+
+test("[pg] one visitor who starts the form on TWO pages counts once, not twice", async (t) => {
+  if (guard(t)) return;
+  await reset();
+  const s = sid();
+  await ev("page_view", s, "page-one");
+  await ev("form_start", s, "page-one");
+  await ev("page_view", s, "page-two");
+  await ev("form_start", s, "page-two");
+
+  assert.equal(await summedPerPage(), 2, "the per-page sum reports two — this was the bug");
+  assert.equal(await globalAbandoned(), 1, "but it is ONE visitor who gave up");
+});
+
+test("[pg] scenario A — form_start then a failed submit is one abandoned visitor", async (t) => {
+  if (guard(t)) return;
+  await reset();
+  const s = sid();
+  await ev("form_start", s, "page-a");
+  await ev("form_submit", s, "page-a", { outcome: "failure", detail: "invalid_phone" });
+  assert.equal(await globalAbandoned(), 1);
+});
+
+test("[pg] scenario B — repeated failures are still one abandoned visitor", async (t) => {
+  if (guard(t)) return;
+  await reset();
+  const s = sid();
+  await ev("form_start", s, "page-b");
+  await ev("form_submit", s, "page-b", { outcome: "failure" });
+  await ev("form_submit", s, "page-b", { outcome: "failure" });
+  await ev("form_submit", s, "page-b", { outcome: "failure" });
+  assert.equal(await globalAbandoned(), 1, "three failures, one person");
+});
+
+test("[pg] scenario C — form_start then order_success is not abandoned", async (t) => {
+  if (guard(t)) return;
+  await reset();
+  const s = sid();
+  await ev("form_start", s, "page-c");
+  await ev("order_success", s, "page-c", { orderId: `ord_c_${seq}` });
+  assert.equal(await globalAbandoned(), 0);
+});
+
+test("[pg] scenario D — a failure before a successful order is not abandoned", async (t) => {
+  if (guard(t)) return;
+  await reset();
+  const s = sid();
+  await ev("form_start", s, "page-d");
+  await ev("form_submit", s, "page-d", { outcome: "failure" });
+  await ev("order_success", s, "page-d", { orderId: `ord_d_${seq}` });
+  assert.equal(await globalAbandoned(), 0, "they got there in the end");
+});
+
+test("[pg] scenario E — a page_view alone is not abandoned", async (t) => {
+  if (guard(t)) return;
+  await reset();
+  const s = sid();
+  await ev("page_view", s, "page-e");
+  assert.equal(await globalAbandoned(), 0, "never opened the form, so never abandoned it");
+});
+
+test("[pg] all five scenarios together sum to the right number of people", async (t) => {
+  if (guard(t)) return;
+  await reset();
+  const a = sid(), b = sid(), cc = sid(), d = sid(), e = sid();
+  // A: start + failure                        → abandoned
+  await ev("form_start", a, "p1");
+  await ev("form_submit", a, "p1", { outcome: "failure" });
+  // B: start + three failures                 → abandoned (once)
+  await ev("form_start", b, "p1");
+  for (let i = 0; i < 3; i++) await ev("form_submit", b, "p1", { outcome: "failure" });
+  // C: start + order                          → not abandoned
+  await ev("form_start", cc, "p1");
+  await ev("order_success", cc, "p1", { orderId: `ord_all_c_${seq}` });
+  // D: start + failure + order                → not abandoned
+  await ev("form_start", d, "p2");
+  await ev("form_submit", d, "p2", { outcome: "failure" });
+  await ev("order_success", d, "p2", { orderId: `ord_all_d_${seq}` });
+  // E: page_view only                         → not abandoned
+  await ev("page_view", e, "p2");
+
+  assert.equal(await globalAbandoned(), 2, "only A and B gave up");
+});
+
+test("[pg] a session that starts on one page and orders on ANOTHER is not abandoned", async (t) => {
+  if (guard(t)) return;
+  await reset();
+  const s = sid();
+  await ev("form_start", s, "page-x");
+  await ev("order_success", s, "page-y", { orderId: `ord_cross_${seq}` });
+  // Per-page still flags page-x, which is a fair statement about that page.
+  assert.equal(await summedPerPage(), 1, "page-x did lose them");
+  // Globally the person bought, so they did not abandon.
+  assert.equal(await globalAbandoned(), 0, "the visitor completed a purchase");
+});

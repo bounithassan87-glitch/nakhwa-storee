@@ -108,9 +108,35 @@ export async function funnelByLandingPage(
     }),
   }));
 
-  // The overall figures are summed from the per-page rows for every count
-  // EXCEPT the rates, which are recomputed — averaging percentages would weight
-  // a page with three visitors the same as one with three thousand.
+  // Abandoned visitors across the whole range, counted once each.
+  //
+  // Deliberately its own query rather than a sum of the per-page numbers. One
+  // person who opens the form on two landing pages and buys on neither is ONE
+  // visitor who gave up, but appears in two per-page rows; adding those rows
+  // reports two. The information needed to spot that — which session was on
+  // which page — is exactly what the GROUP BY throws away, so no arithmetic on
+  // the per-page results can recover it.
+  //
+  // Still a set difference, never `form_starts - orders`: someone can start
+  // twice, return the next day, or order from a session that began before the
+  // range, and subtraction gets all three wrong.
+  const uniqueAbandoned = await prisma.$queryRaw<{ n: bigint }[]>`
+    WITH started AS (
+      SELECT DISTINCT session_id FROM "TrackingEvent"
+       WHERE type = 'form_start' AND created_at >= ${from} AND created_at <= ${to}
+    ),
+    succeeded AS (
+      SELECT DISTINCT session_id FROM "TrackingEvent"
+       WHERE type = 'order_success' AND created_at >= ${from} AND created_at <= ${to}
+    )
+    SELECT COUNT(*)::bigint AS n
+      FROM started s
+     WHERE NOT EXISTS (SELECT 1 FROM succeeded x WHERE x.session_id = s.session_id)
+  `;
+
+  // Every other overall figure is summed from the per-page rows. Rates are
+  // recomputed rather than averaged — averaging percentages would weight a page
+  // with three visitors the same as one with three thousand.
   const totals = byPage.reduce<Counts>(
     (acc, p) => ({
       visitors: acc.visitors + p.visitors,
@@ -119,10 +145,14 @@ export async function funnelByLandingPage(
       submitAttempts: acc.submitAttempts + p.submitAttempts,
       failedSubmissions: acc.failedSubmissions + p.failedSubmissions,
       orders: acc.orders + p.orders,
-      abandoned: acc.abandoned + p.abandoned,
+      abandoned: acc.abandoned, // replaced below, never summed
     }),
     { ...EMPTY },
   );
+
+  // Assigned outside the reduce so it still holds when there are no pages at
+  // all — an empty range must report 0, not skip the assignment.
+  totals.abandoned = Number(uniqueAbandoned[0]?.n ?? 0);
 
   return { overall: buildFunnel(totals), byPage };
 }

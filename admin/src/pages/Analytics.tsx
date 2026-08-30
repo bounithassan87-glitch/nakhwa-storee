@@ -334,7 +334,7 @@ export default function Analytics() {
                   <StatCard label="نسبة التحويل" value={funnelPct(data.funnel.rates.conversion)} icon={Percent} />
                   <StatCard label="كملو الفورم" value={funnelPct(data.funnel.rates.formCompletion)} icon={TrendingUp} />
                   <StatCard label="خلاو الفورم" value={funnelPct(data.funnel.rates.abandonment)} icon={AlertTriangle} />
-                  <StatCard label="فورم مخلّي" value={data.funnel.abandoned.toLocaleString("ar-MA")} icon={AlertCircle} />
+                  <StatCard label="زوار بداو وما كمّلوش" value={data.funnel.abandoned.toLocaleString("ar-MA")} icon={AlertCircle} />
                   <StatCard label="محاولات فاشلة" value={data.funnel.failedSubmissions.toLocaleString("ar-MA")} icon={AlertCircle} />
                   <StatCard label="بداو يعمّرو" value={data.funnel.formStarts.toLocaleString("ar-MA")} icon={Users} />
                 </div>
