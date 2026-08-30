@@ -23,7 +23,7 @@
     "build:site": "node scripts/set-site-url.mjs && node scripts/copy-landing-pages.mjs",
     "build": "npm run build:admin && npm run build:site",
     "deploy": "wrangler pages deploy dist --project-name nakhwa-store --branch main",
-    "test": "node --test \"tests/**/*.test.mjs\""
+    "test": "node --test --test-concurrency=1 \"tests/**/*.test.mjs\""
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

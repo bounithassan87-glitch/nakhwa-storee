@@ -238,17 +238,33 @@
     }
   }
 
-  /** The product the page sells, when it advertises one. Optional. */
+  /**
+   * The product the page sells.
+   *
+   * The page's own config is authoritative and is preferred whenever it is
+   * there. It is not always there yet: on a storefront whose config.js is
+   * itself deferred, this file runs first and page_view — the very first event
+   * — went out with no product at all, while every later event carried one.
+   *
+   * So the URL slug is the fallback. On every storefront here the path segment
+   * and the product slug are the same string, and reporting the page a visit
+   * landed on is closer to the truth than reporting nothing. Neither branch
+   * hard-codes a product name.
+   */
   function productSlug() {
     try {
       var keys = Object.keys(window);
       for (var i = 0; i < keys.length; i++) {
         if (!/_CONFIG$/.test(keys[i])) continue;
         var cfg = window[keys[i]];
-        if (cfg && typeof cfg.productSlug === 'string') return cfg.productSlug;
+        if (cfg && typeof cfg.productSlug === 'string' && cfg.productSlug) return cfg.productSlug;
       }
     } catch (_) { /* ignore */ }
-    return undefined;
+    // Fallback: the landing page slug. 'home' means the root storefront, which
+    // sells nothing in particular, so that reports no product rather than a
+    // made-up one.
+    var fromUrl = landingPage();
+    return fromUrl && fromUrl !== 'home' ? fromUrl : undefined;
   }
 
   /** Send one funnel event. Fire-and-forget, like every other call here. */
