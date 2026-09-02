@@ -89,8 +89,46 @@ const WASH = src('7934e9f4-84a3-4d6b-80ce-51b5c169e8a8.png');     // 1254²
 const OFFER_OLD = src('84cef62e-15c7-478a-a4f8-4e53f7484b57.png'); // superseded; unisex icon only
 /** The hair-fall photograph for the agitation section. A person, no packaging. */
 const HAIRLOSS_MAN = src('hairloss-man-reference.jpg');           // 2816×1536
+/**
+ * The official hero creative, with the «مكونات طبيعية 100%» badge removed.
+ *
+ * The badge was a composition claim the page cannot stand behind: the
+ * ingredients section names مينوكسيديل, a synthetic pharmaceutical. Removed on
+ * 2026-09-02 at the client's instruction by filling its footprint
+ * (x 62-232, y 700-885) with the out-of-focus foliage it sat on, so the logo,
+ * both models, all three bottles, the headline and the tagline are untouched.
+ *
+ * hero-creative-official.png is kept beside it as the unmodified original.
+ */
+//  · 2026-09-02, second pass: «حماية فعالة وطويلة المدى» (x 780-975, y 698-897)
+//    removed the same way. It sits on the diagonal where the model's hair meets
+//    the foliage, so the fill is built the same way — foliage base, hair laid
+//    over it through a diagonal gradient — rather than one texture stretched
+//    across both, which read as a smudge.
+const HERO_CREATIVE = src('hero-creative-final.png');              // 1024×1536
+/**
+ * The three bottles, supplied already isolated on real alpha (1536×1024).
+ * Occupancy measured at alpha >= 200 so the soft halo does not widen the box:
+ *   oil     x 286-453   y 242-980   168x739  ratio 0.227
+ *   shampoo x 626-899   y  27-989   274x963  ratio 0.285
+ *   spray   x 1060-1282 y 106-984   223x879  ratio 0.254
+ * Those ratios sit in the same 0.22-0.30 band as the assets they replace, so
+ * the existing slot takes them with no CSS change.
+ */
+const BOTTLES = src('bottles-isolated.png');                       // 1536x1024, alpha
 
 const webp = { quality: 82, effort: 6 };
+/**
+ * The alpha cut-outs, near-losslessly.
+ *
+ * Plain lossy webp subsamples chroma, which on this artwork's hard orange and
+ * green type edges left 4.4% of pixels off by more than 16/255 — and raising
+ * quality from 92 to 98 barely moved it (max delta stayed ~90), because the
+ * error is subsampling, not quantisation. nearLossless keeps chroma intact:
+ * measured max delta 2/255, mean 0.43, nothing above 8. Still 58% lighter than
+ * the PNG it replaces.
+ */
+const PACKSHOT_WEBP = { nearLossless: true, quality: 60, alphaQuality: 100, effort: 6 };
 
 /**
  * ── 1 · PRODUCT ─────────────────────────────────────────────────────────────
@@ -126,6 +164,29 @@ const CARRIED = [
   // the whole point of the frame, and any crop tight enough to change the
   // shape would drop one of them. Emitted at the wrap width and 1.5x.
   { name: 'hairloss-man', from: HAIRLOSS_MAN, widths: [540, 1080, 1620] },
+  /**
+   * The official creative, cut ABOVE its price band.
+   *
+   * The band at the foot carries «349 عوض 449», a trust row and a closing line.
+   * 449 contradicts the catalogue's own compare-at price and the page states its
+   * price as live HTML anyway, so the crop stops at y 1072 — the plinth's lower
+   * edge, eight pixels above the band. Keeps the logo, both models, the headline
+   * and all three bottles whole.
+   */
+  { name: 'hero-creative', from: HERO_CREATIVE, rect: { left: 0, top: 0, width: 1024, height: 1072 }, widths: [420, 760, 1120, 1400] },
+
+  // Section 07 only — the three bottles cut from the supplied alpha artwork.
+  // Deliberately NOT named product-* : product-oil-199 and product-spray-258 are
+  // still referenced by section 10 and must survive this build untouched.
+  // Each rect adds ~6px of transparent margin so no anti-aliased edge is clipped.
+  //
+  // Emitted as webp only. A PNG pair was produced first and verified against
+  // these (max delta 2/255, nothing above 8), then dropped: nothing referenced
+  // it and it was 1.16 MB of dead weight in the deploy. The cut-outs are
+  // reproducible at any time from bottles-isolated.png with the rects below.
+  { name: 'packshot-oil',     from: BOTTLES, rect: { left: 280, top: 236, width: 180, height: 751 }, widths: [98, 195], webpOpts: PACKSHOT_WEBP },
+  { name: 'packshot-shampoo', from: BOTTLES, rect: { left: 620, top:  21, width: 286, height: 975 }, widths: [122, 245], webpOpts: PACKSHOT_WEBP },
+  { name: 'packshot-spray',   from: BOTTLES, rect: { left: 1054, top: 100, width: 235, height: 891 }, widths: [109, 218], webpOpts: PACKSHOT_WEBP },
   { name: 'use-woman', from: WASH, rect: { left: 272, top: 175, width: 300, height: 300 }, widths: [150, 300] },
   { name: 'botanical-aloe', from: INGREDIENTS, rect: { left: 20, top: 760, width: 440, height: 400 }, widths: [220, 440] },
   { name: 'botanical-argan', from: INGREDIENTS, rect: { left: 480, top: 830, width: 400, height: 330 }, widths: [200, 400] },
@@ -203,11 +264,14 @@ const written = new Set();
  */
 const manifest = {};
 
-async function emit({ name, from, rect, widths }) {
+async function emit({ name, from, rect, widths, format = 'webp', webpOpts }) {
   const buf = await (rect ? sharp(from).extract(rect) : sharp(from)).toBuffer();
   for (const w of widths) {
-    const file = `${name}-${w}.webp`;
-    const out = await sharp(buf).resize({ width: w }).webp(webp).toBuffer();
+    const file = `${name}-${w}.${format}`;
+    const pipe = sharp(buf).resize({ width: w });
+    const out = await (format === 'png'
+      ? pipe.png({ compressionLevel: 9 })
+      : pipe.webp(webpOpts ?? webp)).toBuffer();
     await writeFile(join(OUT, file), out);
     written.add(file);
     manifest[file] = {

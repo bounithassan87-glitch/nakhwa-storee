@@ -321,16 +321,28 @@ a { color: inherit; }
     radial-gradient(78% 62% at 50% 42%, rgba(255,255,255,.95), rgba(255,255,255,.62) 48%, rgba(255,255,255,.10) 82%),
     linear-gradient(180deg, rgba(255,255,255,.34), rgba(247,244,233,.55) 70%, var(--g-50));
 }
+/* Kept in the document, off the screen: the creative states the headline in
+   its own type, but a page still needs one H1 for search and for a screen
+   reader. Not display:none, which would hide it from both. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+/* MOBILE FIRST — the creative leads.
+   Traffic arrives from a Facebook ad showing this exact artwork, so it is the
+   first thing on the screen: the visitor recognises what they clicked before
+   they read anything. Price and button follow immediately; the spec pills sit
+   under them as supporting detail. */
 .hero__in {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-areas: 'copy' 'shot' 'offer';
-  align-items: center;
-  row-gap: 10px;
+  grid-template-areas: 'shot' 'offer' 'copy';
+  justify-items: center;
+  row-gap: 8px;
 }
 .hero__copy { grid-area: copy; }
-.hero__shot { grid-area: shot; display: grid; justify-items: center; }
-.hero__offer { grid-area: offer; margin-top: 14px; }
+.hero__shot { grid-area: shot; display: grid; justify-items: center; width: 100%; }
+.hero__offer { grid-area: offer; margin-top: 10px; width: 100%; }
 
 .hero__h1 {
   font-size: clamp(22px, 6.4vw, 44px); line-height: 1.24; letter-spacing: -0.01em;
@@ -370,6 +382,9 @@ a { color: inherit; }
 
 .hero__shot img {
   width: 100%;
+  /* The creative IS the hero now, so it takes the full column instead of the
+     narrow product slot the bottle cut-out used. */
+  max-width: 100%;
   height: auto;
   /* CONTAIN, never cover: the cluster is shown whole — every cap, every base,
      the plinth and the foliage. If the box is tighter than the frame the image
@@ -397,6 +412,18 @@ a { color: inherit; }
 .hero__offer .price b { color: var(--orange); }
 
 .hero__offer .btn { margin-top: 12px; }
+/* One of these three lines starts hidden and is revealed by config.js. Without
+   a reservation that reveal moves everything under it — measured as the largest
+   single shift on the first screen. Sized to the settled height per breakpoint. */
+.hero__trust { min-height: 77px; }
+/* The hero CTA carries a price that JS writes in, and its label sits one line
+   deep with very little slack. While the webfont swaps in, the wider glyphs
+   push it onto a second line and then back — measured at 360px: 52 -> 80 -> 52,
+   which moved the trust list and the pills twice and was the whole of the
+   0.13 CLS on that screen. It fits on one line in every tested width, so it is
+   simply told not to wrap. */
+.hero__offer .btn { white-space: nowrap; }
+@media (min-width: 1000px) { .hero__trust { min-height: 50px; } }
 .hero__trust {
   display: grid; gap: 4px; margin-top: 12px;
   font-size: 13.5px; font-weight: 700; color: var(--g-800);
@@ -408,29 +435,48 @@ a { color: inherit; }
 
 @media (min-width: 720px) {
   .hero { padding-block: 28px 34px; }
+  .hero__shot img {
+    height: auto;
+    max-height: 78vh;
+    object-fit: contain;
+  }
+}
+
+/* Two columns only from 900px up.
+   Between 720 and 900 the offer column was narrow enough that the injected
+   price and the button both wrapped onto a second line the moment config.js
+   filled them — measured at 768: the offer block grew 213 -> 319px, which is a
+   visible jump on the first screen. At 900 the offer column was still only
+   360px and the button wrapped the same way, so the split waits for 1000px.
+   Below that the creative keeps the full width and the offer sits under it,
+   which is also the better read on a tablet held upright. */
+@media (min-width: 1000px) {
   .hero__in {
     max-width: 1240px;
-    grid-template-columns: minmax(0, 1fr) minmax(400px, 50%);
-    grid-template-areas: 'copy shot' 'offer shot';
-    align-items: center; column-gap: 28px;
+    /* The creative gets the larger half: it is the thing the visitor clicked.
+       The text column now holds only the offer and the spec pills, so it needs
+       less room than when it carried a headline and a lede. */
+    grid-template-columns: minmax(360px, 1fr) minmax(440px, 56%);
+    grid-template-areas: 'offer shot' 'copy shot';
+    align-items: center; column-gap: 36px;
+    justify-items: stretch;
   }
   .hero__shot { align-self: center; }
   .hero__shot img {
     width: 100%;
-    /* 560 is the cap because the crop is 760px of real pixels: displayed wider
-       than this it would be an upscale on a retina screen. */
-    max-width: 560px;
-    height: auto;
-    max-height: 78vh;
-    object-fit: contain;
+    /* 680 displayed against a 1400px source is still a downscale at 2x, so the
+       creative stays sharp while being the dominant object on the screen. */
+    max-width: 680px;
     margin-inline-start: auto;
   }
 
-  /* The copy and the offer ride higher, so the headline and the price sit level
-     with the middle of the artwork instead of below it. Transform only — no
-     text, spacing or hierarchy is altered. */
-  .hero__copy, .hero__offer { transform: translateY(-32px); }
-  .hero__offer { margin-top: 22px; }
+  /* The artwork spans both rows, so those rows split its height and the offer
+     and the pills drift to opposite ends of the column. Pulling one to the end
+     of its row and the other to the start of the next makes them meet in the
+     middle: price, button, reassurance and specs read as one block beside the
+     creative rather than as two stranded pieces. */
+  .hero__offer { align-self: end; margin-top: 0; }
+  .hero__copy  { align-self: start; margin-top: 18px; }
   .price { justify-content: flex-start; }
   .hero__offer .btn { width: auto; }
   .hero__trust { grid-template-columns: repeat(2, auto); justify-content: start; gap: 4px 22px; }
@@ -446,8 +492,11 @@ a { color: inherit; }
 @media (max-width: 719px) {
   .hero__in { row-gap: 6px; }
   .hero__shot img {
-    width: auto; max-width: 88vw;
-    height: min(46vh, 340px);
+    width: auto; max-width: 94vw;
+    /* Raised from 46vh/340px: the headline and lede that used to sit above the
+       artwork are gone, so the creative can take the space they were using and
+       still leave the price and the button on the first screen. */
+    height: min(56vh, 430px);
     margin-inline: auto;
   }
 }
@@ -465,10 +514,8 @@ a { color: inherit; }
 @media (max-width: 719px) and (max-height: 700px) {
   .hero { padding-block: 0 12px; }
   .hero__in { row-gap: 2px; }
-  .hero__shot img { height: 190px; max-width: 92vw; }
-  .hero__lede { margin-top: 7px; }
-  .hero__lede-more { display: none; }
-  .hero__pills { margin-top: 8px; gap: 5px; }
+  .hero__shot img { height: min(44vh, 290px); max-width: 94vw; }
+  .hero__pills { margin-top: 6px; gap: 5px; }
   .hero__pills li { font-size: 11.5px; padding: 3px 9px; }
   .hero__offer { margin-top: 6px; }
   .hero__offer .price { padding: 4px 22px 8px; }

@@ -1,5 +1,5 @@
 {
-  "builtAt": "2026-08-22T18:05:11.377Z",
+  "builtAt": "2026-09-02T02:36:44.525Z",
   "approvedCreative": "pack-raha-background-reference.png.png",
   "productAssets": [
     "hero-pack-380.webp",
@@ -196,6 +196,116 @@
       "rect": null,
       "width": 1620,
       "sha256": "2f1c9d25ee91a21ecd075050455ab8965b2cd879530bfd282aa8df9f12e3a8e6"
+    },
+    "hero-creative-420.webp": {
+      "source": "hero-creative-final.png",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 1024,
+        "height": 1072
+      },
+      "width": 420,
+      "sha256": "171fd122cda932da5ac9f8017aad5b9751d44c40e8fe337530cd9063ac4eda81"
+    },
+    "hero-creative-760.webp": {
+      "source": "hero-creative-final.png",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 1024,
+        "height": 1072
+      },
+      "width": 760,
+      "sha256": "b670517374c093adbbf2b01ea3c0e7173b7e95dbad0ec16b277314b765c7e41c"
+    },
+    "hero-creative-1120.webp": {
+      "source": "hero-creative-final.png",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 1024,
+        "height": 1072
+      },
+      "width": 1120,
+      "sha256": "dcb6e082e1da1238acce85487576d332bf4cac4240297d61899e54ddf3e85dec"
+    },
+    "hero-creative-1400.webp": {
+      "source": "hero-creative-final.png",
+      "rect": {
+        "left": 0,
+        "top": 0,
+        "width": 1024,
+        "height": 1072
+      },
+      "width": 1400,
+      "sha256": "0103bd15b4266f59499c579dba590ccff3ebcc6537b24b25f4cfe6afa88b1194"
+    },
+    "packshot-oil-98.webp": {
+      "source": "bottles-isolated.png",
+      "rect": {
+        "left": 280,
+        "top": 236,
+        "width": 180,
+        "height": 751
+      },
+      "width": 98,
+      "sha256": "2279e093bdbf213d3587fc9285a076e1d800d5be73a52c0044aca026edf13582"
+    },
+    "packshot-oil-195.webp": {
+      "source": "bottles-isolated.png",
+      "rect": {
+        "left": 280,
+        "top": 236,
+        "width": 180,
+        "height": 751
+      },
+      "width": 195,
+      "sha256": "bd5dcd410a8e7869a150363aab76ed80a27941ae1540ea5baa6abf48143a5cf3"
+    },
+    "packshot-shampoo-122.webp": {
+      "source": "bottles-isolated.png",
+      "rect": {
+        "left": 620,
+        "top": 21,
+        "width": 286,
+        "height": 975
+      },
+      "width": 122,
+      "sha256": "f85e1e581d28c92508d1d12da48698d930f50979c46acf3aab539bd5b552c084"
+    },
+    "packshot-shampoo-245.webp": {
+      "source": "bottles-isolated.png",
+      "rect": {
+        "left": 620,
+        "top": 21,
+        "width": 286,
+        "height": 975
+      },
+      "width": 245,
+      "sha256": "35f8165f7984944d646251567332c42cb3b3f06c13e1302baaef23469739ed74"
+    },
+    "packshot-spray-109.webp": {
+      "source": "bottles-isolated.png",
+      "rect": {
+        "left": 1054,
+        "top": 100,
+        "width": 235,
+        "height": 891
+      },
+      "width": 109,
+      "sha256": "be3d860fb8449fc32d75493e8f0c9865a00a1d60b7d1e14282bf04e941d5dd1c"
+    },
+    "packshot-spray-218.webp": {
+      "source": "bottles-isolated.png",
+      "rect": {
+        "left": 1054,
+        "top": 100,
+        "width": 235,
+        "height": 891
+      },
+      "width": 218,
+      "sha256": "16adc016f21b46aaa07cb1265f636c7fb411cfdffbabda96baf56752cfe92dd8"
     },
     "use-woman-150.webp": {
       "source": "7934e9f4-84a3-4d6b-80ce-51b5c169e8a8.png",
