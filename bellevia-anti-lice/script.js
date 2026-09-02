@@ -188,26 +188,26 @@
 
     var RULES = {
       fullname: function (v) {
-        if (!v) return 'أدخل الاسم الكامل.';
-        if (v.length < 3) return 'الاسم قصير جدًا.';
-        if (!/[؀-ۿa-zA-Z]/.test(v)) return 'اكتب الاسم بالحروف.';
+        if (!v) return 'عمّر الاسم ديالك.';
+        if (v.length < 3) return 'الاسم قصير بزاف.';
+        if (!/[؀-ۿa-zA-Z]/.test(v)) return 'كتب الاسم بالحروف.';
         return '';
       },
       phone: function (v) {
-        if (!v) return 'أدخل رقم الهاتف.';
+        if (!v) return 'عمّر رقم التيليفون.';
         if (!/^0[5-7]\d{8}$/.test(normalizePhone(v))) {
-          return 'رقم غير صحيح. يجب أن يبدأ بـ 06 أو 07 أو 05 وأن يتكون من 10 أرقام.';
+          return 'الرقم ماشي صحيح. خاصو يبدا بـ 06 ولا 07 ولا 05 ويكون فيه 10 أرقام.';
         }
         return '';
       },
       city: function (v) {
-        if (!v) return 'أدخل المدينة.';
-        if (v.length < 2) return 'اكتب اسم المدينة كاملًا.';
+        if (!v) return 'عمّر المدينة.';
+        if (v.length < 2) return 'كتب اسم المدينة كامل.';
         return '';
       },
       address: function (v) {
-        if (!v) return 'أدخل العنوان.';
-        if (v.length < 6) return 'أضف مزيدًا من التفاصيل ليصلك الطلب.';
+        if (!v) return 'عمّر العنوان.';
+        if (v.length < 6) return 'زيد شوية ديال التفاصيل باش يوصلك الطلب.';
         return '';
       },
     };
@@ -248,18 +248,18 @@
       busy = b;
       if (!submitBtn) return;
       submitBtn.disabled = b;
-      if (b) submitBtn.textContent = 'جارٍ تسجيل الطلب…';
+      if (b) submitBtn.textContent = 'كنسجلو الطلب…';
       else submitBtn.innerHTML = label;
       if (!b) renderTotal();
     }
 
     var SERVER_MESSAGES = {
-      product_unavailable: 'المنتج غير متوفر حاليًا. اتصل بنا وسنساعدك.',
-      invalid_payload: 'هناك بيانات ناقصة أو غير صحيحة. يرجى مراجعة النموذج.',
-      validation_error: 'هناك بيانات ناقصة أو غير صحيحة. يرجى مراجعة النموذج.',
-      invalid_quantity: 'هذه الكمية غير متاحة. غيّرها وأعد المحاولة.',
-      rate_limited: 'محاولات كثيرة في وقت قصير. انتظر قليلًا ثم أعد المحاولة.',
-      insufficient_stock: 'الكمية المتوفرة في المخزون غير كافية. قلّل الكمية أو اتصل بنا.',
+      product_unavailable: 'المنتوج ماشي متوفر دابا. عيط لينا وغادي نعاونوك.',
+      invalid_payload: 'كاينة شي معلومة ناقصة ولا ماشي صحيحة. عاود شوف الفورم عافاك.',
+      validation_error: 'كاينة شي معلومة ناقصة ولا ماشي صحيحة. عاود شوف الفورم عافاك.',
+      invalid_quantity: 'هاد الكمية ماشي متوفرة. بدلها وعاود.',
+      rate_limited: 'بزاف ديال المحاولات فوقت قصير. تسنى شوية وعاود.',
+      insufficient_stock: 'ما بقاش بزاف فالمخزون. نقّص الكمية ولا عيط لينا.',
     };
 
     // Minted once per page view, before anything is sent, so the browser copy
@@ -354,7 +354,7 @@
        refuses to claim an order was placed. */
     var DEMO = !CFG.orderApiEndpoint;
     if (DEMO && notice) {
-      notice.textContent = 'وضع التجربة: رابط الطلبات غير مضبوط في الإعدادات، لذلك لا تُسجَّل الطلبات.';
+      notice.textContent = 'وضع التجربة: رابط الطلبات ما تعمّرش فالإعدادات، فالطلبات ما كيتسجلوش.';
       notice.hidden = false;
     }
 
@@ -383,7 +383,7 @@
       });
 
       if (DEMO) {
-        showFormError('وضع التجربة: لم يُسجَّل الطلب. يجب ضبط رابط الطلبات في الإعدادات.');
+        showFormError('وضع التجربة: الطلب ما تسجّلش. خاص يتعمّر رابط الطلبات فالإعدادات.');
         return;
       }
 
@@ -408,10 +408,10 @@
           // the customer typed is left exactly as it was so they can retry.
           if (r.ok && r.body && r.body.ok) { showDone(r.body); return; }
           var code = r.body && r.body.error;
-          showFormError(SERVER_MESSAGES[code] || 'تعذّر تسجيل الطلب الآن. أعد المحاولة أو اتصل بنا.');
+          showFormError(SERVER_MESSAGES[code] || 'ما قدرناش نسجلو الطلب دابا. عاود حاول ولا عيط لينا.');
         })
         .catch(function () {
-          showFormError('توجد مشكلة في الاتصال. تحقق من الإنترنت وأعد المحاولة.');
+          showFormError('كاين مشكل فالكونيكسيون. تأكد من الأنترنيت وعاود حاول.');
         })
         .then(function () {
           clearTimeout(timer);
