@@ -382,6 +382,16 @@ a { color: inherit; }
   .hero__offer .btn { width: auto; }
 }
 
+/* Tablet band only. Above ~868px the 58% track is already wider than its own
+   480px floor and the floor never applies; below 720px the hero is a single
+   column. In between, the floor wins and takes 480 of the ~728px available,
+   leaving the headline a 220px column it has to break seven ways.
+   Only the track sizing changes — the areas, the gap, the artwork rules, the
+   -46px lift and every colour and font stay exactly as they are above. */
+@media (min-width: 720px) and (max-width: 867px) {
+  .hero__in { grid-template-columns: minmax(0, 1fr) minmax(340px, 50%); }
+}
+
 /* On a short phone the artwork gives back a few pixels so the CTA keeps clear
    air beneath it. The frame is scaled down, never cropped — every edge stays. */
 @media (max-width: 719px) {
