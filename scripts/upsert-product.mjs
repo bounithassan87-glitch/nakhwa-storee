@@ -9,10 +9,15 @@
  * is no second catalog and no second orders system.
  *
  * ── Safety ────────────────────────────────────────────────────────────────
- * `.env` in this repo points at the **production** Neon database. This script
- * therefore refuses to run unless you name the target explicitly:
+ * `.env` in this repo points at the **production** Neon database, and it is
+ * loaded whether you ask for it or not: importing `@prisma/client` runs dotenv,
+ * so `DATABASE_URL` and `DATABASE_URL_UNPOOLED` are populated from `.env` even
+ * from a completely clean shell. This script therefore refuses to run unless
+ * you name the target explicitly:
  *
- *   Local:
+ *   Local — BOTH variables, because `DATABASE_URL_UNPOOLED` is read first and
+ *   dotenv would otherwise fill it in from `.env` with the production host:
+ *     DATABASE_URL_UNPOOLED="postgresql://postgres:postgres@127.0.0.1:5434/nakhwa?schema=public" \
  *     DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5434/nakhwa?schema=public" \
  *       node scripts/upsert-product.mjs --slug bellevia-anti-joint-pain
  *
@@ -61,6 +66,25 @@ const PRESETS = {
     compareAt: 400,
     base: 400,
     offer: 349,
+    status: "ACTIVE",
+  },
+  // The figures bellevia-pack-bila-alam/config.js quotes: 329 DH, struck
+  // through from 450 DH. `offer` is the one that reaches a customer, so it must
+  // equal that file's `price`, and `base` must equal its `oldPrice`.
+  //
+  // No capsule count in the description on purpose: the client's own creatives
+  // disagree (30 on two renders, 60 on the studio shot and both ingredient
+  // sheets), and a count on the invoice that the parcel contradicts is a COD
+  // refusal at the door. See bellevia-pack-bila-alam/assets/images/CREDITS.md.
+  "bellevia-pack-bila-alam": {
+    name: "باك بلا ألم",
+    sku: "BVP-BILA-001",
+    category: "العناية بالمفاصل",
+    description:
+      "باك متكامل للعناية بالمفاصل من منتوجين: كبسولات ANTI-JOINT PAIN (مكمل غذائي) وكريم المفاصل CRÈME DOULEURS ARTICULAIRES 100ml.",
+    compareAt: 450,
+    base: 450,
+    offer: 329,
     status: "ACTIVE",
   },
 };

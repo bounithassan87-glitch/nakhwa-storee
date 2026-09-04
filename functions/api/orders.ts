@@ -126,6 +126,23 @@ const legacySchema = z
 const catalogSchema = z
   .object({
     ...customerFields,
+    /**
+     * Optional here, and still required in `legacySchema` above — the two
+     * paths differ deliberately.
+     *
+     * A storefront may legitimately not collect a street. `bellevia-pack-bila-alam`
+     * asks for three fields and takes the address on the confirmation call,
+     * because every extra field on a COD form costs orders. When the field is
+     * absent, `persist()` leaves any stored address untouched instead of
+     * overwriting it.
+     *
+     * When it IS sent — which is what every other storefront does — nothing
+     * about this request changes: same validation, same value, same write. And
+     * an empty string still fails `min(3)`, so a page that sends a blank
+     * address by mistake is rejected exactly as it is today. Only a genuinely
+     * omitted field takes the new path.
+     */
+    address: z.string().trim().min(3).max(200).optional(),
     productSlug: z.string().trim().min(1).max(150),
     productName: z.string().trim().max(150).optional(),
     fullname: z.string().trim().min(2).max(100).optional(),
@@ -264,7 +281,9 @@ interface PersistInput {
   fullname: string;
   phone: string;
   city: string;
-  address: string;
+  /** The street, when the storefront collected one. `undefined` means it does
+   *  not ask for an address — not that the customer has none. */
+  address?: string;
   note: string | null;
   source: string;
   quantity: number;
@@ -723,8 +742,32 @@ async function persist(
 ) {
   const customer = await prisma.customer.upsert({
     where: { phone: o.phone },
-    update: { fullName: o.fullname, city: o.city, address: o.address },
-    create: { fullName: o.fullname, phone: o.phone, city: o.city, address: o.address },
+    update: {
+      fullName: o.fullname,
+      city: o.city,
+      // Only a storefront that actually collected a street writes one.
+      //
+      // `Customer` is deduplicated by phone across every storefront, so an
+      // unconditional write lets a three-field page silently replace the
+      // address a four-field page stored for the same person — and nothing can
+      // put it back, because no admin endpoint writes this column. Absent means
+      // "not collected", never "erase what you have".
+      //
+      // A request that does send an address is unaffected: the spread produces
+      // the same object this line produced before.
+      ...(o.address === undefined ? {} : { address: o.address }),
+    },
+    create: {
+      fullName: o.fullname,
+      phone: o.phone,
+      city: o.city,
+      // The column is NOT NULL and this ships no migration. For a customer
+      // nobody has an address for yet, empty is the honest value — and it is
+      // the one the rest of the system already handles: the Space Seller
+      // mapping omits the field when it is falsy, so no parcel is ever
+      // addressed to a placeholder sentence.
+      address: o.address ?? "",
+    },
   });
 
   const created = await prisma.order.create({

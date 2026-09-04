@@ -18,6 +18,7 @@ export const LANDING_PAGES = [
   "bellevia-anti-joint-pain",
   "bellevia-anti-lice",
   "bellevia-pack-raha",
+  "bellevia-pack-bila-alam",
 ];
 
 /** The public path a landing page is served from, e.g. `/bellevia-weight-gain/`. */

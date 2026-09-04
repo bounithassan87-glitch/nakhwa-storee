@@ -1,0 +1,17 @@
+{
+  "name": "BelleVia — باك بلا ألم",
+  "short_name": "BelleVia",
+  "description": "باك فيه كبسولات ANTI-JOINT PAIN وكريم المفاصل 100ml للعناية اليومية بالمفاصل.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F8F4EC",
+  "theme_color": "#0E3A12",
+  "icons": [
+    { "src": "./assets/favicon/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./assets/favicon/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./assets/favicon/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
