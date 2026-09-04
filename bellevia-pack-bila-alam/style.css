@@ -6,11 +6,12 @@
    The three colours are the product's own, taken by counting the saturated
    pixels of the studio pack shot: the leaf green of the wordmark and the
    bottle's band (#467B03), the deep green under it, and the orange of «Via»,
-   of «DOULEURS» and of the brand's price plate (#F56B06). The ground is the
-   warm ivory of the advert's desert and of the salon in the day section, so a
-   white bottle photographed on white has somewhere to sit.
+   of «DOULEURS» and of the brand's price plate (#F56B06). The ground is that
+   same leaf green pulled almost all the way to white (--sage, #F1F6EC): far
+   enough to belong to the palette, never far enough to tint a product
+   photographed on white.
 
-   Surfaces alternate ivory → white → deep green, and never a fourth, so the
+   Surfaces alternate sage → white → deep green, and never a fourth, so the
    page reads as one object rather than a stack of templates. Orange appears
    only where the brand puts it: an action, a price, a hairline.
 
@@ -54,40 +55,55 @@
   /* Greens — the brand's own, deep to fresh. */
   --g-900: #0E3A12;   /* headings, the announcement bar */
   --g-800: #14501A;
-  --g-700: #1F6B1B;   /* small green text on ivory — 6.0:1 */
+  --g-700: #1F6B1B;   /* small green text on the light ground — 6.0:1 */
   --g-500: #467B03;   /* the wordmark's leaf green — hairlines, decoration */
   --g-100: #DDEBC6;
   --g-50:  #EFF5E4;
 
   /* Orange. `--accent` is the fill every action carries and clears 4.8:1 with
      white on it; `--accent-ink` is the same hue pushed dark enough to be read
-     as TEXT on ivory (5.2:1). `--accent-bright` is the brand's literal orange
-     and is used only where nothing has to be read off it: a rule, a plate, a
-     shadow. Never small type. */
+     as TEXT on the light ground (5.2:1). `--accent-bright` is the brand's
+     literal orange and is used only where nothing has to be read off it: a
+     rule, a plate, a shadow. Never small type. */
   --accent: #C24E00;
   --accent-ink: #B04400;
   --accent-bright: #F56B06;
   --accent-soft: #FDEADC;
-  /* Warm type on a deep green field — 8.9:1. */
+  /* Warm type on a deep green field — 8.6:1 at its lowest, on --deep-2. */
   --accent-on-dark: #FFD9B0;
 
   --paper: #FFFFFF;
-  --sand: #F8F4EC;    /* the page ground */
-  --sand-2: #F1EADC;
+  /* The light ground: white pulled a few degrees toward the wordmark's leaf,
+     never far enough to tint a product photographed on white. */
+  --sage: #F1F6EC;
+  --sage-2: #E4EEDC;
 
-  --ink: #1B2A18;
-  --ink-2: #3A4A36;
-  --muted: #55654F;
-  --line: #E4DED0;
-  --line-2: #DCE7CF;
+  /* The deep bands. Two stops of one hue, so a gradient between them reads as
+     depth rather than as a second colour. */
+  --deep-1: #0F3018;
+  --deep-2: #17421F;
+  --deep-0: #0A2411;   /* the announcement bar and the footer — the darkest note */
+
+  --ink: #16261A;      /* 14.4:1 on --sage */
+  --ink-2: #33452F;    /*  9.4:1 */
+  --muted: #4F6249;    /*  6.0:1 */
+  --line: #DCE7D2;
+  --line-2: #CFE0C3;
+
+  /* Type on the deep bands. */
+  --on-deep: #FFFFFF;      /* 14.4:1 on --deep-1 */
+  --on-deep-soft: #DCEBD3; /* 11.6:1 */
+  --on-deep-mute: #B8CFB0; /*  8.7:1 */
   --danger: #A81E15;
 
   --r-sm: 12px;
   --r: 16px;
   --r-lg: 24px;
 
-  --sh-1: 0 1px 2px rgba(14, 58, 18, .05), 0 4px 14px rgba(14, 58, 18, .06);
-  --sh-2: 0 2px 8px rgba(14, 58, 18, .07), 0 18px 40px rgba(14, 58, 18, .13);
+  --sh-1: 0 1px 2px rgba(14, 48, 22, .05), 0 4px 14px rgba(14, 48, 22, .07);
+  --sh-2: 0 2px 8px rgba(14, 48, 22, .08), 0 18px 40px rgba(14, 48, 22, .15);
+  /* On a deep band a shadow has to be darker than the band to read at all. */
+  --sh-deep: 0 8px 20px rgba(0, 0, 0, .22), 0 26px 60px rgba(0, 0, 0, .30);
 
   --pad: 16px;
   --sec-y: 48px;
@@ -113,7 +129,7 @@ body {
   font-size: 16px;
   line-height: 1.75;
   color: var(--ink);
-  background: var(--sand);
+  background: var(--sage);
   overflow-x: hidden; /* no horizontal scroll, ever */
 }
 
@@ -147,7 +163,7 @@ bdi { font-variant-numeric: tabular-nums; }
 .skip {
   position: absolute; inset-inline-start: 0; top: 0; z-index: 99;
   transform: translateY(-200%);
-  background: var(--g-900); color: #fff; padding: 10px 18px; border-radius: 0 0 var(--r-sm) 0;
+  background: var(--deep-0); color: #fff; padding: 10px 18px; border-radius: 0 0 var(--r-sm) 0;
 }
 .skip:focus { transform: none; }
 
@@ -203,9 +219,9 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .sec--paper { background: var(--paper); }
 .sec--green {
   background:
-    radial-gradient(78% 56% at 88% 0%, rgba(70, 123, 3, .40), transparent 64%),
-    linear-gradient(168deg, #17491D, #0E3A12);
-  color: #fff;
+    radial-gradient(80% 58% at 86% 0%, rgba(70, 123, 3, .32), transparent 66%),
+    linear-gradient(168deg, var(--deep-2), var(--deep-1));
+  color: var(--on-deep);
 }
 .sec--green h2, .sec--green h3 { color: #fff; }
 
@@ -219,11 +235,11 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 }
 .sec--green .sec__head h2::after { background: var(--accent-on-dark); }
 .sec__sub { margin-top: 12px; color: var(--muted); font-size: 15.5px; }
-.sec--green .sec__sub { color: #D9E8D2; }
+.sec--green .sec__sub { color: var(--on-deep-soft); }
 
 /* ── 05 · Announcement bar ──────────────────────────────────────────────── */
 .ann {
-  background: var(--g-900);
+  background: var(--deep-0);
   color: #fff;
   border-bottom: 3px solid var(--accent-bright);
   overflow: hidden;
@@ -270,7 +286,7 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 }
 
 /* ── 06 · Header ────────────────────────────────────────────────────────── */
-.head { background: var(--sand); border-bottom: 1px solid var(--line); }
+.head { background: var(--sage); border-bottom: 1px solid var(--line); }
 .head__in {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   min-height: 58px;
@@ -279,46 +295,60 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .head__note { font-size: 12.5px; color: var(--muted); font-weight: 700; }
 
 /* ── 07 · Hero ──────────────────────────────────────────────────────────── */
+/* The first screen carries the identity: a deep green field with the studio
+   pack shot floating on a white plate. Everything that must be READ inside it
+   is either white on the field or dark on a white card — the green is never
+   asked to hold small type. */
 .hero {
-  padding-block: 28px 40px;
+  padding-block: 30px 44px;
   background:
-    radial-gradient(120% 70% at 80% 0%, #FFFFFF 0%, rgba(255,255,255,0) 60%),
-    linear-gradient(180deg, var(--sand) 0%, var(--sand-2) 100%);
-  border-bottom: 1px solid var(--line);
+    radial-gradient(90% 60% at 82% 4%, rgba(70, 123, 3, .34), transparent 62%),
+    linear-gradient(170deg, var(--deep-2) 0%, var(--deep-1) 100%);
+  color: var(--on-deep);
 }
 .hero__in { display: grid; gap: 18px; }
 
 .hero__eyebrow {
   display: inline-block;
   font-size: 12.5px; font-weight: 800; letter-spacing: .02em;
-  color: var(--accent-ink); background: var(--accent-soft);
+  color: var(--accent-on-dark);
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .20);
   border-radius: 999px; padding: 5px 14px; margin-bottom: 12px;
 }
-.hero__h1 { font-size: clamp(30px, 9vw, 46px); letter-spacing: -.01em; }
+.hero__h1 { font-size: clamp(30px, 9vw, 46px); letter-spacing: -.01em; color: var(--on-deep); }
 .hero__h1-em {
   display: block; margin-top: 6px;
-  font-size: clamp(19px, 5.2vw, 27px); font-weight: 700; color: var(--accent-ink);
+  font-size: clamp(19px, 5.2vw, 27px); font-weight: 700; color: var(--accent-on-dark);
 }
-.hero__lede { margin-top: 14px; font-size: 16px; color: var(--ink-2); max-width: 44ch; }
-.hero__lede b { color: var(--g-800); font-weight: 800; }
+.hero__lede { margin-top: 14px; font-size: 16px; color: var(--on-deep-soft); max-width: 44ch; }
+.hero__lede b { color: #fff; font-weight: 800; }
+/* «ANTI-JOINT PAIN» is the product's name; a line break through the middle of
+   it reads as two things. The <bdi>s in the lede already isolate each Latin run
+   from the Arabic, so keeping them unbroken costs nothing — the longest is
+   ~150px, which still fits the 288px text column of a 320px phone. */
+.hero__lede bdi { white-space: nowrap; }
 
 .hero__shot { display: flex; justify-content: center; }
-/* The pack sits on a soft ivory disc rather than a hard card: the source is a
-   white product on white, and a border would draw a box around nothing. */
-/* The client photographs a white product on white. Rather than pretend
-   otherwise with a drop-shadow — which on an opaque file only outlines a
-   rectangle — the white becomes a deliberate studio plate, the same white as
-   the offer card directly beneath it, so the hero reads as two stacked cards
-   instead of one photo with a box around it. */
+/* A white plate on the green field. The pack shot is 836×815, so the plate
+   takes that ratio exactly: `aspect-ratio` + `object-fit: contain` means the
+   picture shrinks at narrow widths instead of cropping, and reserves its own
+   height so nothing below it jumps while it loads. */
 .hero__shot {
   background: var(--paper);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(255, 255, 255, .18);
   border-radius: var(--r-lg);
-  box-shadow: var(--sh-2);
-  padding: 6px;
-  width: max-content; max-width: 100%; margin-inline: auto;
+  box-shadow: var(--sh-deep);
+  padding: 8px;
+  width: 100%; max-width: 420px; margin-inline: auto;
 }
-.hero__shot img { width: min(74vw, 406px); height: auto; border-radius: 19px; }
+.hero__shot img {
+  width: 100%; height: auto;
+  aspect-ratio: 836 / 815;
+  object-fit: contain;
+  background: var(--paper);
+  border-radius: 16px;
+}
 
 .hero__offer {
   background: var(--paper); border: 1px solid var(--line);
@@ -344,10 +374,10 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   background: var(--g-50); border-radius: 999px; padding: 5px 13px;
 }
 .hero__offer .btn { margin-top: 16px; }
-.hero__note { margin-top: 12px; text-align: center; font-size: 13px; color: var(--muted); }
+.hero__note { margin-top: 12px; text-align: center; font-size: 13px; color: var(--on-deep-mute); }
 
 /* ── 08 · Order ─────────────────────────────────────────────────────────── */
-.order { padding-block: var(--sec-y); background: var(--sand); }
+.order { padding-block: var(--sec-y); background: var(--sage); }
 .order__card {
   background: var(--paper); border: 1px solid var(--line);
   border-radius: var(--r-lg); box-shadow: var(--sh-2);
@@ -434,23 +464,38 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .done__num b { color: var(--ink); font-size: 16px; }
 
 /* ── 09 · The day ───────────────────────────────────────────────────────── */
-.day__in { display: grid; gap: 22px; }
-.day__shot img {
-  width: 100%; border-radius: var(--r-lg);
-  box-shadow: var(--sh-1); border: 1px solid var(--line);
-}
+.day__in { display: grid; gap: 18px; max-width: 760px; margin-inline: auto; }
 .day__copy h2 { font-size: clamp(22px, 5.8vw, 30px); }
 .day__copy p { margin-top: 14px; color: var(--ink-2); }
 .day__copy b { color: var(--g-800); font-weight: 800; }
 .day__copy .link-arrow { margin-top: 18px; }
 
+/* The three moments the copy names, each with the scene the brand shot for
+   it. Photographs only — no product, no claim, no caption beyond the moment. */
+.life { margin-top: 26px; }
+.life__grid { display: grid; gap: 12px; }
+.life__item figure {
+  position: relative;
+  border-radius: var(--r); overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-1);
+}
+.life__item img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 5 / 4; }
+.life__item figcaption {
+  position: absolute; inset-inline-start: 12px; bottom: 10px;
+  font-size: 13px; font-weight: 800; color: #fff;
+  background: rgba(15, 48, 24, .72);
+  border-radius: 999px; padding: 4px 14px;
+  backdrop-filter: blur(4px);
+}
+
 /* ── 10 · What's in the pack ────────────────────────────────────────────── */
 .pack__grid { display: grid; gap: 16px; }
 .pcard {
   display: grid; grid-template-columns: 104px 1fr; gap: 14px; align-items: start;
-  /* White, on an ivory section: the product shots are white-on-white files, so
+  /* White, on a sage section: the product shots are white-on-white files, so
      against a white card their background simply disappears and the bottle
-     floats. An ivory card would have drawn a box around each one. */
+     floats. A sage card would have drawn a box around each one. */
   background: var(--paper); border: 1px solid var(--line);
   border-radius: var(--r-lg); padding: 16px; box-shadow: var(--sh-1);
 }
@@ -471,7 +516,7 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
    is: the page is repeating the tube, not making a claim of its own. */
 .quote {
   margin: 12px 0 0; padding: 11px 13px;
-  background: var(--sand); border: 1px solid var(--line);
+  background: var(--sage); border: 1px solid var(--line);
   border-inline-start: 3px solid var(--g-500); border-radius: var(--r-sm);
 }
 .quote p, .quote__list { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
@@ -502,12 +547,32 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 }
 .bcard p { font-size: 15.5px; font-weight: 700; color: #fff; line-height: 1.45; }
 
+/* The client's own sheet, one tap away, so a reader can check the six lines
+   above against the document they were copied from. */
+.orig { max-width: 780px; margin: 22px auto 0; }
+.orig summary {
+  cursor: pointer; list-style: none;
+  width: max-content; min-height: 44px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 800; color: var(--accent-on-dark);
+}
+.orig summary::-webkit-details-marker { display: none; }
+.orig summary::after { content: '+'; font-size: 19px; line-height: 1; }
+.orig[open] summary::after { content: '−'; }
+.orig__fig {
+  margin-top: 12px; padding: 10px;
+  background: rgba(255, 255, 255, .10);
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: var(--r);
+}
+.orig__fig img { width: 100%; border-radius: 8px; background: var(--paper); }
+
 .disclose {
-  margin-top: 22px; padding: 14px 16px;
+  margin-top: 18px; padding: 14px 16px;
   max-width: 780px; margin-inline: auto;
   background: rgba(0, 0, 0, .22); border-radius: var(--r);
   border-inline-start: 3px solid var(--accent-on-dark);
-  font-size: 13.5px; line-height: 1.65; color: #E4EFDE;
+  font-size: 13.5px; line-height: 1.65; color: var(--on-deep-soft);
 }
 .disclose b { color: #fff; }
 
@@ -516,14 +581,14 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .ing__panel + .ing__panel { margin-top: 34px; padding-top: 34px; border-top: 1px solid var(--line); }
 .ing__copy h3 { font-size: 20px; margin-bottom: 14px; }
 .ing__sheet {
-  background: var(--sand); border: 1px solid var(--line);
+  background: var(--sage); border: 1px solid var(--line);
   border-radius: var(--r); padding: 10px;
 }
 .ing__sheet img { width: 100%; border-radius: 8px; }
 
 .ilist { display: grid; gap: 10px; }
 .ilist li {
-  background: var(--sand); border: 1px solid var(--line);
+  background: var(--sage); border: 1px solid var(--line);
   border-radius: var(--r-sm); padding: 11px 14px;
 }
 .ilist b { display: block; color: var(--g-800); font-size: 15.5px; }
@@ -610,13 +675,6 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   border-radius: 999px; padding: 6px 14px;
 }
 
-/* ── 15 · Campaign ──────────────────────────────────────────────────────── */
-.camp__grid { display: grid; gap: 16px; }
-.camp__fig img {
-  width: 100%; border-radius: var(--r); border: 1px solid var(--line);
-  box-shadow: var(--sh-1);
-}
-
 /* ── 16 · FAQ ───────────────────────────────────────────────────────────── */
 .faq__list { display: grid; gap: 10px; max-width: 720px; margin-inline: auto; }
 .qa {
@@ -643,7 +701,7 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   padding-block: 52px;
   background:
     radial-gradient(80% 60% at 50% 0%, rgba(70, 123, 3, .16), transparent 62%),
-    var(--sand-2);
+    var(--sage-2);
   border-top: 1px solid var(--line);
   text-align: center;
 }
@@ -664,19 +722,19 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 }
 
 /* ── 18 · Footer ────────────────────────────────────────────────────────── */
-.foot { background: var(--g-900); color: #D9E8D2; padding-block: 30px; }
+.foot { background: var(--deep-0); color: var(--on-deep-soft); padding-block: 30px; }
 /* The wordmark is drawn in dark olive and gold for light backgrounds; on the
    deep-green footer it all but disappears. It gets a light plate rather than a
    filter — inverting a brand mark is recolouring it. */
 .foot__in > img {
-  background: var(--sand); border-radius: 10px;
+  background: var(--sage); border-radius: 10px;
   padding: 8px 12px; box-sizing: content-box;
 }
 .foot__in { display: grid; gap: 10px; justify-items: center; text-align: center; }
 .foot__prod { font-size: 14px; font-weight: 700; color: #fff; }
 .foot__contact { font-size: 14px; }
 .foot__contact a { color: var(--accent-on-dark); font-weight: 700; }
-.foot__legal { font-size: 12.5px; line-height: 1.7; color: #AEC4A8; max-width: 56ch; }
+.foot__legal { font-size: 12.5px; line-height: 1.7; color: var(--on-deep-mute); max-width: 56ch; }
 
 /* ── 19 · Sticky mobile CTA ─────────────────────────────────────────────── */
 .sticky {
@@ -706,6 +764,11 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   .bcard__ic { width: 64px; height: 64px; }
 }
 
+/* ── ≥ 560px — the three moments sit in a row ───────────────────────────── */
+@media (min-width: 560px) {
+  .life__grid { grid-template-columns: repeat(3, 1fr); }
+}
+
 /* ── ≥ 720px — two columns ──────────────────────────────────────────────── */
 @media (min-width: 720px) {
   :root { --sec-y: 66px; }
@@ -719,7 +782,7 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   .hero__copy { grid-area: copy; align-self: end; }
   .hero__shot { grid-area: shot; align-self: center; }
   .hero__offer { grid-area: offer; align-self: start; }
-  .hero__shot img { width: min(42vw, 380px); }
+  .hero__shot { max-width: 42vw; }
 
   .pack__grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
   .pcard { grid-template-columns: 1fr; text-align: center; }
@@ -727,8 +790,6 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   .pcard__body { display: flex; flex-direction: column; }
   /* Centred cards, but a quotation and a dosage line read better ranged. */
   .quote, .pcard__use { text-align: start; }
-
-  .day__in { grid-template-columns: 1fr 1fr; align-items: center; gap: 34px; }
 
   .ing__panel { grid-template-columns: 1fr 1fr; align-items: center; gap: 30px; }
   .ing__panel--flip .ing__copy { order: 2; }
@@ -746,8 +807,6 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   .offer__big, .offer__facts { justify-content: flex-start; }
   .offer__shot img { width: 248px; }
 
-  .camp__grid { grid-template-columns: 1.6fr 1fr; align-items: start; }
-
   .foot__in { grid-template-columns: auto 1fr; text-align: start; justify-items: start; gap: 6px 20px; }
   .foot__in img { grid-row: span 3; align-self: start; }
 }
@@ -758,7 +817,7 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   body { font-size: 16.5px; }
 
   .hero__in { grid-template-columns: 1.05fr .95fr; gap: 18px 48px; }
-  .hero__shot img { width: 406px; }
+  .hero__shot { max-width: 410px; }
   .hero__offer { padding: 22px; }
   .offer-line__price b { font-size: 34px; }
 
@@ -767,7 +826,6 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 
   .bgrid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
-  .day__in { gap: 50px; }
   .ing__panel { gap: 44px; }
   .offer__shot img { width: 288px; }
 }
