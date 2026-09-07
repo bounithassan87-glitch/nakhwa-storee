@@ -7,7 +7,7 @@
 //
 // Default is the brand's main domain (belleviabeuty.com), the spelling that is
 // configured in Cloudflare; override with SITE_URL. Idempotent — safe to re-run.
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, cpSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -41,6 +41,26 @@ const patch = (rel, fn) => {
     console.log(`[set-site-url] updated dist/${rel}`);
   }
 };
+
+// The root storefront's own files.
+//
+// These are copied from the repo root BEFORE the patches below, because the
+// patches edit dist/index.html in place: copying afterwards would overwrite the
+// absolute canonical this script had just stamped.
+//
+// They had no copy step at all, so dist/index.html was a tracked file kept in
+// step by hand — and it had already drifted a full product card behind its
+// source. An edit to the storefront shipped nothing.
+const ROOT_ASSETS = ["index.html", "bellevia-home.css", "bellevia.jpg"];
+for (const rel of ROOT_ASSETS) {
+  const src = join(root, rel);
+  if (!existsSync(src)) {
+    console.warn(`[set-site-url] ${rel} missing at the repo root — not copied`);
+    continue;
+  }
+  cpSync(src, join(dist, rel));
+  console.log(`[set-site-url] copied ${rel} → dist/${rel}`);
+}
 
 const today = new Date().toISOString().slice(0, 10);
 

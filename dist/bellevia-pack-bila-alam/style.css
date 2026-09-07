@@ -292,6 +292,20 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   min-height: 58px;
 }
 .head__logo { display: flex; }
+/* Logo and the way back sit together, so .head__in keeps the two children its
+   space-between layout was written for. */
+.head__lead { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.head__back {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12.5px; font-weight: 800; color: var(--muted);
+  text-decoration: none; white-space: nowrap;
+  padding: 4px 2px; border-radius: 8px;
+}
+.head__back svg { width: 14px; height: 14px; }
+.head__back:hover, .head__back:focus-visible { color: var(--ink, #14301a); }
+/* The note is the first thing to go when the bar gets tight — the way back is
+   navigation, the note is reassurance. */
+@media (max-width: 400px) { .head__note { display: none; } }
 .head__note { font-size: 12.5px; color: var(--muted); font-weight: 700; }
 
 /* ── 07 · Hero ──────────────────────────────────────────────────────────── */
