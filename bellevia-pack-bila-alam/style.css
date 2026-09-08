@@ -343,25 +343,58 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
    ~150px, which still fits the 288px text column of a 320px phone. */
 .hero__lede bdi { white-space: nowrap; }
 
-.hero__shot { display: flex; justify-content: center; }
-/* A white plate on the green field. The pack shot is 836×815, so the plate
-   takes that ratio exactly: `aspect-ratio` + `object-fit: contain` means the
-   picture shrinks at narrow widths instead of cropping, and reserves its own
-   height so nothing below it jumps while it loads. */
+/* The advert's composition, rebuilt in two layers: the couple behind, the pack
+   large and in front of them. The reference does this in one flat picture; here
+   it has to be two elements, because the page's text must stay live text.
+
+   The pack keeps a white card around it, and that is deliberate rather than a
+   leftover. It cannot be cut out: it is a white bottle photographed on white,
+   so there is no key — luminance, `multiply`, `darken` all erase the product
+   along with its background. Given that, the honest move is to make the plate
+   look intended, so it reads as a product card floating over the scene instead
+   of a rectangle nobody meant to leave there.
+
+   The scene is a 916×388 band, and it is that wide because that is the only
+   region of the creative with no burned-in advert text (x≥620) AND no packaging
+   (y≤388) — that bottle's label is misspelled. So the band cannot be made
+   square; the layout leans into it instead, wide scene above, card overlapping
+   its lower edge.
+
+   Both pictures declare a ratio, so the hero reserves its height before any
+   bytes land and nothing below it moves. */
 .hero__shot {
-  background: var(--paper);
-  border: 1px solid rgba(255, 255, 255, .18);
-  border-radius: var(--r-lg);
-  box-shadow: var(--sh-deep);
-  padding: 8px;
+  position: relative;
+  display: block;
   width: 100%; max-width: 420px; margin-inline: auto;
 }
-.hero__shot img {
+/* Taller than the band's own 916×388 on purpose: `cover` trims the sides so the
+   two faces come up larger and sit clear ABOVE the card. Cropping width here is
+   safe — the band's outer edges are trees. Cropping height would not be, the
+   faces live there. */
+.hero__scene {
   width: 100%; height: auto;
+  aspect-ratio: 916 / 500;
+  object-fit: cover; object-position: center 34%;
+  border-radius: var(--r-lg);
+  border: 1px solid rgba(255, 255, 255, .18);
+  box-shadow: var(--sh-deep);
+}
+/* Overlaps the scene's bottom edge just enough to read as layered rather than
+   stacked. The overlap is deliberately small: the faces end around 85% of the
+   band's height, and the brief is explicit that the pack must not cover them.
+   `contain` keeps the labels whole at every width — this is the one picture on
+   the page whose small print has to stay readable. */
+.hero__pack {
+  position: relative;
+  display: block;
+  width: 88%; max-width: 380px;
+  margin: -9% auto 0;
   aspect-ratio: 836 / 815;
   object-fit: contain;
   background: var(--paper);
-  border-radius: 16px;
+  border: 10px solid var(--paper);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-deep);
 }
 
 .hero__offer {
@@ -831,7 +864,7 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   body { font-size: 16.5px; }
 
   .hero__in { grid-template-columns: 1.05fr .95fr; gap: 18px 48px; }
-  .hero__shot { max-width: 410px; }
+  .hero__shot { max-width: 452px; }
   .hero__offer { padding: 22px; }
   .offer-line__price b { font-size: 34px; }
 

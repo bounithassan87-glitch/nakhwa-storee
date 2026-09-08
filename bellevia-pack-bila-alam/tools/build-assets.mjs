@@ -115,6 +115,9 @@ const F = {
   // so it is out of the hero and out of the share card. Kept in this map so a
   // corrected export can be dropped in under the same name and rebuilt.
   amal: 'amal.jpg', // 1343×800 — the official advert
+  // The newer hero creative, 1536×1024. Only its PHOTOGRAPHY is used — see
+  // HERO_SCENE below for what is cut away and why.
+  heroScene: 'hero-scene-couple.png', // 1536×1024
   // The three lifestyle scenes, in the order the strip shows them.
   salon: 'Gemini_Generated_Image_gyacqagyacqagyac.jpg', // 1408×768 — الوقفة
   stairs: 'Gemini_Generated_Image_vj7mf4vj7mf4vj7m.jpg', // 1408×768 — الدرج
@@ -203,6 +206,33 @@ console.log('benefit medallions — cut from the client’s own benefits sheet')
     }
   }
 }
+
+/**
+ * The hero backdrop, cut from the newer creative — photography ONLY.
+ *
+ * That creative is a finished advert: its left half carries a burned-in
+ * wordmark, eyebrow, headline, description, price block, delivery chips and a
+ * CTA, all of which the page already renders as live HTML. Shipping the file
+ * whole would print every one of them twice, so everything left of x=620 is
+ * cut away and the page keeps its own selectable, translatable text.
+ *
+ * The cut also stops at y=388, ABOVE the products. That is deliberate and it
+ * is the important part: the bottle in that creative reads
+ * «COMPLÉMENT ALIMENTARIE» and «الحقاظ» — two misspellings the real packaging
+ * does not have, and the page's own product shots (from F.studio) render
+ * correctly. Rather than ship a wrong label behind the copy, the backdrop is
+ * people and park only; every product pixel on the page still comes from
+ * 7fd0bc28. Compositing the correct pack into this scene is not possible here
+ * either — it is a white bottle on a white ground, so no luminance key can
+ * separate them without punching holes through the product.
+ *
+ * What survives: the couple, the trees, the light. Which is exactly the mood
+ * the brief asked for, and none of the text or packaging that came with it.
+ */
+const HERO_SCENE = { left: 620, top: 0, width: 916, height: 388 };
+
+console.log('hero backdrop — the couple and the park, no burned-in text, no packaging');
+await variants(sharp(src(F.heroScene)).extract(HERO_SCENE), 'hero-scene', [458, 916], HERO_SCENE.width);
 
 console.log('lifestyle — three scenes, each cropped clear of the carton that is not the product');
 await variants(sharp(src(F.salon)).extract(LIFE.salon), 'life-salon', [450, 900], LIFE.salon.width);
