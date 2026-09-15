@@ -204,25 +204,26 @@
     /* Three rules for three fields. There is no address rule because there is
        no address field: `/api/orders` accepts a catalog order without one, and
        the street is taken on the confirmation call. */
-    var RULES = {
-      fullname: function (v) {
-        if (!v) return 'عمّر الاسم ديالك.';
-        if (v.length < 3) return 'الاسم قصير بزاف.';
-        if (!/[؀-ۿa-zA-Z]/.test(v)) return 'كتب الاسم بالحروف.';
-        return '';
-      },
+    /* Validation lives in /assets/js/order-form.js, shared by every
+       storefront: the Moroccan phone shapes, the closed list of delivery
+       cities, and what counts as a name. Tightening one rule used to mean
+       editing six copies of it and missing one.
+
+       `fallback` is not a second copy of those rules — it is what runs if
+       the shared file fails to load, and it only refuses what is plainly
+       empty. A checkout does not get to break because a helper 404s. */
+    var SHARED = (window.nkOrderForm && window.nkOrderForm.rules) || {};
+    var fallback = {
+      fullname: function (v) { return v && v.trim().length >= 3 ? '' : 'عمّر الاسم ديالك.'; },
       phone: function (v) {
-        if (!v) return 'عمّر رقم التيليفون.';
-        if (!/^0[5-7]\d{8}$/.test(normalizePhone(v))) {
-          return 'الرقم ماشي صحيح. خاصو يبدا بـ 06 ولا 07 ولا 05 ويكون فيه 10 أرقام.';
-        }
-        return '';
+        return /^0[67]\d{8}$/.test(normalizePhone(v)) ? '' : 'الرقم ماشي صحيح. خاصو يبدا بـ 06 ولا 07.';
       },
-      city: function (v) {
-        if (!v) return 'عمّر المدينة.';
-        if (v.length < 2) return 'كتب اسم المدينة كامل.';
-        return '';
-      },
+      city: function (v) { return v && v.trim() ? '' : 'عمّر المدينة.'; },
+    };
+    var RULES = {
+      fullname: SHARED.fullname || fallback.fullname,
+      phone: SHARED.phone || fallback.phone,
+      city: SHARED.city || fallback.city,
     };
 
     function setError(input, msg) {

@@ -183,13 +183,6 @@
             <span class="err" data-err-for="city" hidden></span>
           </p>
 
-          <p class="field">
-            <label for="address">العنوان</label>
-            <input id="address" name="address" type="text" autocomplete="street-address"
-                   enterkeyhint="done" required minlength="6" placeholder="الحي، الزنقة، الرقم">
-            <span class="err" data-err-for="address" hidden></span>
-          </p>
-
           <div class="field field--qty">
             <label for="qty-value">الكمية</label>
             <div class="qty">
@@ -710,7 +703,7 @@
       <li>
         <span class="steps3__n">1</span>
         <h3>عمّر معلوماتك</h3>
-        <p>الاسم، التيليفون، المدينة والعنوان. غير هادشي.</p>
+        <p>الاسم، التيليفون والمدينة. غير هادشي.</p>
       </li>
       <li>
         <span class="steps3__n">2</span>
@@ -774,7 +767,7 @@
       </details>
       <details>
         <summary>كيفاش كنطلب؟</summary>
-        <p>عمّر الفورم اللي فوق: الاسم، رقم التيليفون، المدينة والعنوان. ومن بعد كنعيّطو ليك باش نأكدو الطلب.</p>
+        <p>عمّر الفورم اللي فوق: الاسم، رقم التيليفون والمدينة. ومن بعد كنعيّطو ليك باش نأكدو الطلب وناخدو العنوان.</p>
       </details>
       <details>
         <summary>واش نقدر نطلب أكثر من باك واحد؟</summary>
@@ -842,6 +835,7 @@
      main store — this page adds no second tracking system. -->
 <script src="/nk-track.js" defer></script>
 <script src="./config.js" defer></script>
+<script src="/assets/js/order-form.js" defer></script>
 <script src="./script.js" defer></script>
 </body>
 </html>

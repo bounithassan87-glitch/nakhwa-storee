@@ -258,14 +258,6 @@
             <p class="field__err" id="err-city" role="alert"></p>
           </div>
 
-          <div class="field field--wide">
-            <label for="address">العنوان</label>
-            <textarea id="address" name="address" rows="2" autocomplete="street-address"
-                      required minlength="6" placeholder="الحي، الزنقة، الرقم…"
-                      aria-describedby="err-address"></textarea>
-            <p class="field__err" id="err-address" role="alert"></p>
-          </div>
-
           <div class="field field--qty">
             <label for="quantity">الكمية</label>
             <!-- + before − in source so that, mirrored into RTL, the minus
@@ -760,7 +752,7 @@
         <summary>كيفاش نقدر نطلب؟</summary>
         <div class="qa__a">
           <p>
-            عمّري الفورم اللي فوق: الاسم، الهاتف، المدينة، العنوان والكمية.
+            عمّري الفورم اللي فوق: الاسم، الهاتف، المدينة والكمية.
             من بعد كنعيّطو ليك باش نأكدو الطلب والعنوان قبل ما نصيفطوه.
           </p>
         </div>
@@ -983,6 +975,7 @@
      main store — this page adds no second tracking system. -->
 <script src="/nk-track.js" defer></script>
 <script src="./config.js"></script>
+<script src="/assets/js/order-form.js" defer></script>
 <script src="./script.js" defer></script>
 </body>
 </html>

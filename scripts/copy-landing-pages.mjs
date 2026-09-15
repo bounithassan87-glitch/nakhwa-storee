@@ -96,3 +96,21 @@ for (const name of PAGES) {
     console.warn("[copy-landing-pages] nk-track.js missing at the repo root — tracking will not ship");
   }
 }
+
+// Shared browser assets, served from /assets/. Today that is the order-form
+// validator every storefront loads before its own script.
+//
+// Copied wholesale for the same reason nk-track.js is: a file the pages request
+// by absolute path has to exist at that path in `dist`, and a hand-maintained
+// copy is one that drifts. If this is ever missing, each page falls back to its
+// own minimal guard rather than breaking — but the real rules stop shipping, so
+// a missing directory is a warning and not a silent skip.
+{
+  const src = join(root, "assets");
+  if (existsSync(src)) {
+    cpSync(src, join(dist, "assets"), { recursive: true });
+    console.log("[copy-landing-pages] assets/ → dist/assets/");
+  } else {
+    console.warn("[copy-landing-pages] assets/ missing at the repo root — shared validation will not ship");
+  }
+}

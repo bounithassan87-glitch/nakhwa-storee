@@ -592,29 +592,26 @@
       return d;
     }
 
-    var RULES = {
-      fullname: function (v) {
-        if (!v) return 'عمّر الاسم ديالك.';
-        if (v.length < 3) return 'الاسم قصير بزاف.';
-        if (!/[؀-ۿa-zA-Z]/.test(v)) return 'كتب الاسم بالحروف.';
-        return '';
-      },
+    /* Validation lives in /assets/js/order-form.js, shared by every
+       storefront: the Moroccan phone shapes, the closed list of delivery
+       cities, and what counts as a name. Tightening one rule used to mean
+       editing six copies of it and missing one.
+
+       `fallback` is not a second copy of those rules — it is what runs if
+       the shared file fails to load, and it only refuses what is plainly
+       empty. A checkout does not get to break because a helper 404s. */
+    var SHARED = (window.nkOrderForm && window.nkOrderForm.rules) || {};
+    var fallback = {
+      fullname: function (v) { return v && v.trim().length >= 3 ? '' : 'عمّر الاسم ديالك.'; },
       phone: function (v) {
-        if (!v) return 'عمّر رقم الهاتف.';
-        var d = normalizePhone(v);
-        if (!/^0[5-7]\d{8}$/.test(d)) return 'الرقم ماشي صحيح. خاصو يبدا بـ 06 ولا 07 ولا 05 ويكون فيه 10 أرقام.';
-        return '';
+        return /^0[67]\d{8}$/.test(normalizePhone(v)) ? '' : 'الرقم ماشي صحيح. خاصو يبدا بـ 06 ولا 07.';
       },
-      city: function (v) {
-        if (!v) return 'عمّر المدينة.';
-        if (v.length < 2) return 'كتب اسم المدينة كامل.';
-        return '';
-      },
-      address: function (v) {
-        if (!v) return 'عمّر العنوان.';
-        if (v.length < 6) return 'زيد شوية ديال التفاصيل باش يوصل الطلب.';
-        return '';
-      },
+      city: function (v) { return v && v.trim() ? '' : 'عمّر المدينة.'; },
+    };
+    var RULES = {
+      fullname: SHARED.fullname || fallback.fullname,
+      phone: SHARED.phone || fallback.phone,
+      city: SHARED.city || fallback.city,
       quantity: function (v) {
         var n = parseInt(v, 10);
         if (!n || n < 1) return 'الكمية خاصها تكون 1 على الأقل.';
@@ -694,7 +691,12 @@
         customerName: $('#fullname').value.trim(),
         phone: normalizePhone($('#phone').value),
         city: $('#city').value.trim(),
-        address: $('#address').value.trim(),
+          // No `address` key, on purpose. This form stopped asking for the
+          // street: it is taken on the confirmation call instead. Sending an
+          // empty string here would NOT be the same thing — `Customer` is keyed
+          // by phone across every BelleVia page, so an empty address overwrites
+          // the real street this customer may already have on file from a page
+          // that did collect one. Omitting the key makes the server leave it be.
         quantity: parseInt($('#quantity').value, 10) || 1,
         source: CFG.source,
       };

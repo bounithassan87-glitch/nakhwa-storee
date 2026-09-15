@@ -223,7 +223,7 @@
       <li>
         <span class="howorder__n">1</span>
         <strong>عمّر الفورم</strong>
-        <span>الاسم، الهاتف، المدينة والعنوان.</span>
+        <span>الاسم، الهاتف والمدينة.</span>
       </li>
       <li>
         <span class="howorder__n">2</span>
@@ -322,14 +322,6 @@
               <option value="الناظور"></option>
             </datalist>
             <p class="field__err" id="err-city" role="alert"></p>
-          </div>
-
-          <div class="field field--wide">
-            <label for="address">العنوان</label>
-            <textarea id="address" name="address" rows="2" autocomplete="street-address"
-                      required minlength="6" placeholder="الحي، الزنقة، الرقم…"
-                      aria-describedby="err-address"></textarea>
-            <p class="field__err" id="err-address" role="alert"></p>
           </div>
 
           <div class="field field--qty">
@@ -835,7 +827,7 @@
           <p>
             <strong>لا. كتخلص منين يوصلك الطلب لعندك.</strong> ما كاين حتى خلاص
             مسبق، وما كنطلبوش منك حتى معلومة ديال بطاقة بنكية — غير الاسم،
-            الهاتف، المدينة والعنوان.
+            الهاتف والمدينة.
           </p>
         </div>
       </details>
@@ -844,7 +836,7 @@
         <summary>كيفاش كيدوز الطلب؟</summary>
         <div class="qa__a">
           <p>
-            تلات خطوات: عمّر الفورم (الاسم، الهاتف، المدينة، العنوان والكمية) —
+            تلات خطوات: عمّر الفورم (الاسم، الهاتف، المدينة والكمية) —
             كنعيّطو ليك باش نأكدو الطلب والعنوان — ومنين يوصلك،
             <span data-cod>كتخلص للي جاب ليك الطلب</span>.
             <a href="#commander">الفورم كاين هنا</a>.
@@ -1200,6 +1192,7 @@
      main store — this page adds no second tracking system. -->
 <script src="/nk-track.js" defer></script>
 <script src="./config.js"></script>
+<script src="/assets/js/order-form.js" defer></script>
 <script src="./script.js" defer></script>
 </body>
 </html>
