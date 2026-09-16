@@ -19,6 +19,12 @@ export const LANDING_PAGES = [
   "bellevia-anti-lice",
   "bellevia-pack-raha",
   "bellevia-pack-bila-alam",
+  // Orders from this one are taken over WhatsApp, not through `/api/orders`, so
+  // it has no catalogue row and never will. It is listed here because this list
+  // is also "what gets deployed" — leaving it out would mean the folder never
+  // reaches `dist/`. `landingStatusFor` is only ever called with a product in
+  // hand, so a page with no product behind it simply never comes up.
+  "bellevia-genouillere",
 ];
 
 /** The public path a landing page is served from, e.g. `/bellevia-weight-gain/`. */

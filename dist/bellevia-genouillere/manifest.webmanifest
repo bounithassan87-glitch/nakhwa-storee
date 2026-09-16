@@ -1,0 +1,17 @@
+{
+  "name": "BelleVia — دعامة الركبة الاحترافية",
+  "short_name": "BelleVia",
+  "description": "دعامة ركبة بتصميم جانبي مفصلي وأحزمة قابلة للتعديل، لدعم وثبات إضافيين أثناء الحركة.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0C0E10",
+  "icons": [
+    { "src": "./assets/favicon/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./assets/favicon/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./assets/favicon/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
