@@ -1,5 +1,5 @@
 {
-  "builtAt": "2026-09-02T02:36:44.525Z",
+  "builtAt": "2026-09-16T14:13:38.604Z",
   "approvedCreative": "pack-raha-background-reference.png.png",
   "productAssets": [
     "hero-pack-380.webp",
@@ -196,6 +196,42 @@
       "rect": null,
       "width": 1620,
       "sha256": "2f1c9d25ee91a21ecd075050455ab8965b2cd879530bfd282aa8df9f12e3a8e6"
+    },
+    "woman-caftan-340.webp": {
+      "source": "woman-caftan-reference.jpg",
+      "rect": null,
+      "width": 340,
+      "sha256": "3b2485ff98104975e9fe3fb2a6d2a8a615e86bee73e0367dc1c735bf6d54d71e"
+    },
+    "woman-caftan-680.webp": {
+      "source": "woman-caftan-reference.jpg",
+      "rect": null,
+      "width": 680,
+      "sha256": "88569b745c82f281910dde1f8e7b1106e2122938c7fa2e675baf025dab78dd0b"
+    },
+    "woman-comb-340.webp": {
+      "source": "woman-comb-reference.jpg",
+      "rect": null,
+      "width": 340,
+      "sha256": "587f7b6a5b0b680ceadaae05480e2a3ea66b1e5a0a4a2532a6b2f19e8a96bdc8"
+    },
+    "woman-comb-680.webp": {
+      "source": "woman-comb-reference.jpg",
+      "rect": null,
+      "width": 680,
+      "sha256": "df912b5394f5b713006d02add9abf1647af745631b9ad9ebfd423cf7601394e1"
+    },
+    "man-mirror-340.webp": {
+      "source": "man-mirror-reference.jpg",
+      "rect": null,
+      "width": 340,
+      "sha256": "a64a12566694239a21e247c6f883724ca12af7e3598529061e564993594b5411"
+    },
+    "man-mirror-680.webp": {
+      "source": "man-mirror-reference.jpg",
+      "rect": null,
+      "width": 680,
+      "sha256": "6c9ee963728f88d17d9acef4f78efd4a8b6e94116a8ee61be3cd05cf34a876b8"
     },
     "hero-creative-420.webp": {
       "source": "hero-creative-final.png",

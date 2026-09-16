@@ -90,6 +90,23 @@ const OFFER_OLD = src('84cef62e-15c7-478a-a4f8-4e53f7484b57.png'); // superseded
 /** The hair-fall photograph for the agitation section. A person, no packaging. */
 const HAIRLOSS_MAN = src('hairloss-man-reference.jpg');           // 2816×1536
 /**
+ * Positive lifestyle photographs, supplied 2026-09-16 to replace the page's
+ * distress imagery — the woman studying a brush full of hair and the man
+ * looking at his comb. Each shows the routine already working: good hair, a
+ * calm face, and the three bottles present but not posed as a packshot.
+ *
+ * The people in them are AI-generated, so the page attaches no name, no
+ * testimonial and no numeric result to any of them. They are scenery, not
+ * evidence, and the alt text describes the scene rather than a customer.
+ *
+ * All three are square and are emitted whole. The bottles sit low in every
+ * frame, so a crop tight enough to change the aspect would cut one of them —
+ * and `.split__shot img` is height-agnostic, so the square needs no crop.
+ */
+const WOMAN_CAFTAN = src('woman-caftan-reference.jpg');           // 1024²
+const WOMAN_COMB = src('woman-comb-reference.jpg');               // 1024²
+const MAN_MIRROR = src('man-mirror-reference.jpg');               // 1024²
+/**
  * The official hero creative, with the «مكونات طبيعية 100%» badge removed.
  *
  * The badge was a composition claim the page cannot stand behind: the
@@ -164,6 +181,21 @@ const CARRIED = [
   // the whole point of the frame, and any crop tight enough to change the
   // shape would drop one of them. Emitted at the wrap width and 1.5x.
   { name: 'hairloss-man', from: HAIRLOSS_MAN, widths: [540, 1080, 1620] },
+
+  /**
+   * The positive photographs that took over from the two above.
+   *
+   * `problem-woman` and `hairloss-man` are deliberately still emitted even
+   * though no page file references them any more: this build deletes whatever
+   * it does not write, so dropping their entries would delete the files
+   * outright, and they were to be retired from the page, not from the repo.
+   *
+   * 680 is 2× the 340px column `.problem .split__shot img` caps itself at, so
+   * the pair covers 1× and 2× with no upscaling past the 1024px source.
+   */
+  { name: 'woman-caftan', from: WOMAN_CAFTAN, widths: [340, 680] },
+  { name: 'woman-comb', from: WOMAN_COMB, widths: [340, 680] },
+  { name: 'man-mirror', from: MAN_MIRROR, widths: [340, 680] },
   /**
    * The official creative, cut ABOVE its price band.
    *

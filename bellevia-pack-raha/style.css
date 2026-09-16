@@ -620,10 +620,13 @@ a { color: inherit; }
 /* ── 08 · Split (image + list) ──────────────────────────────────────────── */
 .split { display: grid; gap: 20px; align-items: center; }
 .split__shot img { width: 100%; border-radius: var(--r-lg); box-shadow: var(--sh-1); }
-/* Capped rather than blown up: the brand supplied this photograph 458px wide,
-   and stretching a picture past its own resolution on a big phone looks worse
-   than a smaller, sharp one. */
-.problem .split__shot img { max-width: 340px; margin-inline: auto; }
+/* Capped rather than blown up. Both photographs are square, and from 860px up
+   they sit in a 340px column; letting them fill a phone's full width would make
+   them larger there than anywhere else on the page, and tall enough to push the
+   list they belong to off the screen. The cap keeps both breakpoints the same
+   size, so the two sections read as a pair. */
+.problem .split__shot img,
+.benefits .split__shot img { max-width: 340px; margin-inline: auto; }
 @media (min-width: 860px) {
   .split { grid-template-columns: 340px minmax(0, 1fr); justify-content: center; gap: 40px; }
   .split--rev .split__shot { order: 2; }
