@@ -20,7 +20,7 @@
     "verify": "npm run lint && npm run typecheck && npm test && npm run build",
     "dev": "wrangler pages dev --port 8788",
     "build:admin": "npm --prefix admin run build && node scripts/copy-admin-dist.mjs",
-    "build:site": "node scripts/set-site-url.mjs && node scripts/copy-landing-pages.mjs",
+    "build:site": "node scripts/set-site-url.mjs && node scripts/copy-landing-pages.mjs && node scripts/check-dist-placeholders.mjs",
     "build": "npm run build:admin && npm run build:site",
     "deploy": "wrangler pages deploy dist --project-name nakhwa-store --branch main",
     "test": "node --test --test-concurrency=1 \"tests/**/*.test.mjs\""
