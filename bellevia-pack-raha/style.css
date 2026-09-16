@@ -625,8 +625,8 @@ a { color: inherit; }
    them larger there than anywhere else on the page, and tall enough to push the
    list they belong to off the screen. The cap keeps both breakpoints the same
    size, so the two sections read as a pair. */
-.problem .split__shot img,
-.benefits .split__shot img { max-width: 340px; margin-inline: auto; }
+.benefits .split__shot img,
+.solution .split__shot img { max-width: 340px; margin-inline: auto; }
 @media (min-width: 860px) {
   .split { grid-template-columns: 340px minmax(0, 1fr); justify-content: center; gap: 40px; }
   .split--rev .split__shot { order: 2; }
