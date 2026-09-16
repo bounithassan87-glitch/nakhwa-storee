@@ -230,6 +230,92 @@ test("FORM · one bad field is enough to block the whole submission", () => {
   assert.equal(formPasses("", "", ""), false, "empty");
 });
 
+/* ══ A PAGE THAT OWNS ITS CITY FIELD ══════════════════════════════════════
+   Genouillère ships `list="cities"` and its own datalist, on purpose: a closed
+   list cannot hold every douar, and a customer who cannot find their town does
+   not order. The shared file has to recognise that and keep its hands off the
+   field — while still lending the page its name and phone rules. */
+
+/** A city input, with whatever attributes a page might have put on it. */
+const cityInput = (attrs = {}) => ({
+  getAttribute: (k) => attrs[k] ?? null,
+  hasAttribute: (k) => Object.prototype.hasOwnProperty.call(attrs, k),
+  setAttribute: (k, v) => { attrs[k] = v; },
+  addEventListener() {},
+});
+
+test("OPEN CITY · opting out is declared, never inferred", async (t) => {
+  const { isOpenCityField } = api;
+
+  await t.test("`data-city-open` opts the field out", () => {
+    assert.equal(isOpenCityField(cityInput({ "data-city-open": "", list: "cities" })), true);
+    assert.equal(isOpenCityField(cityInput({ "data-city-open": "" })), true);
+  });
+
+  await t.test("a plain field is ours to enhance", () => {
+    assert.equal(isOpenCityField(cityInput()), false);
+  });
+
+  await t.test("a page's own `list` is NOT on its own an opt-out", () => {
+    // This is the regression that made the rule explicit: weight-gain and
+    // anti-joint-pain both ship a sixteen-entry `list="cities"` that the shared
+    // 142-city list is MEANT to replace. Reading that as a decision silently
+    // dropped both pages from the closed list and from canonicalisation.
+    assert.equal(isOpenCityField(cityInput({ list: "cities" })), false);
+    assert.equal(isOpenCityField(cityInput({ list: "nk-city-list" })), false);
+  });
+
+  await t.test("it never throws, whatever it is handed", () => {
+    for (const bad of [null, undefined, {}, { hasAttribute: () => { throw new Error("x"); } }]) {
+      assert.equal(isOpenCityField(bad), false);
+    }
+  });
+});
+
+/* ══ GENOUILLÈRE ══════════════════════════════════════════════════════════
+   Name and phone are shared; the city rule is the page's own. Asserted here
+   against the shared rules the page actually calls. */
+
+test("GENOUILLERE · phone now matches the other five pages", () => {
+  assert.equal(rules.phone("0658552431"), "", "06 accepted");
+  assert.equal(rules.phone("0758552431"), "", "07 accepted");
+  assert.equal(rules.phone("+212658552431"), "", "+212 normalised");
+  assert.equal(rules.phone("00212758552431"), "", "00212 normalised");
+  assert.equal(rules.phone("212658552431"), "", "212 normalised");
+  assert.notEqual(rules.phone("0522334455"), "", "05 rejected");
+  assert.notEqual(rules.phone("0606060606"), "", "fake rejected");
+  assert.notEqual(rules.phone("0600000000"), "", "fake rejected");
+  assert.notEqual(rules.phone("0612345678"), "", "sequence rejected");
+});
+
+test("GENOUILLERE · names use the shared rule", () => {
+  assert.equal(rules.fullname("سعاد بنعلي"), "", "Arabic accepted");
+  assert.equal(rules.fullname("Hassan Bounit"), "", "Latin accepted");
+  assert.equal(rules.fullname("Marie-Claire"), "", "French accepted");
+  assert.notEqual(rules.fullname("Cvslm"), "", "garbage rejected");
+  assert.notEqual(rules.fullname("aaaa"), "", "repetition rejected");
+});
+
+test("GENOUILLERE · its cities are NOT forced through the 142-list", () => {
+  // The page's own rule: non-empty, at least two characters. Nothing else.
+  const pageCityRule = (v) => {
+    if (!v) return "المرجو كتابة المدينة.";
+    if (v.length < 2) return "المرجو كتابة اسم المدينة كاملاً.";
+    return "";
+  };
+
+  for (const city of ["الدار البيضاء", "دوار أولاد بوعبيد", "تيفنوت", "Ait Ourir Centre"]) {
+    assert.equal(pageCityRule(city), "", `${city} must be accepted by the page rule`);
+  }
+
+  // Three of those four are refused by the shared closed list — which is
+  // exactly why this page does not use it.
+  assert.equal(rules.city("الدار البيضاء"), "", "the shared list happens to know this one");
+  for (const city of ["دوار أولاد بوعبيد", "تيفنوت", "Ait Ourir Centre"]) {
+    assert.notEqual(rules.city(city), "", `${city} is refused by the shared list, hence the opt-out`);
+  }
+});
+
 test("FORM · the exact rows from the order log would all have been stopped", () => {
   // Every one of these reached the order system before this layer existed.
   assert.equal(formPasses("Cvslm", "0606060606", ""), false);

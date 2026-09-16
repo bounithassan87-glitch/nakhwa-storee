@@ -358,12 +358,45 @@
      Built here instead of in six HTML files: 140 <option> elements repeated per
      page is 140 chances for one page's list to drift from the rest. */
 
+  var LIST_ID = 'nk-city-list';
+
+  /**
+   * True when the page has declared that its city field is deliberately open.
+   *
+   * Opting out is an explicit `data-city-open` attribute on the input, and not
+   * something inferred. Inferring it from "this input already has a `list`"
+   * was tried and was wrong: `bellevia-weight-gain` and
+   * `bellevia-anti-joint-pain` both ship a sixteen-entry `list="cities"` that
+   * the shared list is MEANT to replace, and reading that as a decision
+   * silently dropped them from the closed list and from canonicalisation.
+   *
+   * The one page that needs it says so. Genouillère's own comment gives the
+   * reason: a closed list of Moroccan cities cannot hold every douar, and a
+   * customer who cannot find their town does not order. Such a field is left
+   * entirely alone — no list swap, no canonicalisation — and the page keeps
+   * its own city rule.
+   */
+  function isOpenCityField(input) {
+    try {
+      return Boolean(input && input.hasAttribute && input.hasAttribute('data-city-open'));
+    } catch (e) {
+      return false;
+    }
+  }
+
   function enhanceCityInputs(doc) {
     try {
-      var inputs = doc.querySelectorAll('input[name="city"]');
+      var all = doc.querySelectorAll('input[name="city"]');
+      if (!all.length) return;
+
+      // Partition first, so a page that owns every one of its city fields never
+      // gets 142 <option> elements injected into it for nothing.
+      var inputs = [];
+      for (var k = 0; k < all.length; k++) {
+        if (!isOpenCityField(all[k])) inputs.push(all[k]);
+      }
       if (!inputs.length) return;
 
-      var LIST_ID = 'nk-city-list';
       var list = doc.getElementById(LIST_ID);
       if (!list) {
         list = doc.createElement('datalist');
@@ -424,6 +457,13 @@
     normalizePhone: normalizePhone,
     resolveCity: resolveCity,
     cities: CITIES,
+    /**
+     * Whether this city input is the page's own open field.
+     *
+     * Exported so a page can ask rather than guess — and so the rule is
+     * testable against the same function the enhancement uses.
+     */
+    isOpenCityField: isOpenCityField,
     /** Exposed for the suite; not used by any page. */
     _fold: fold,
     _isFakePhoneBody: isFakePhoneBody,
