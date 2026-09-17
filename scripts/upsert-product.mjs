@@ -76,6 +76,11 @@ const PRESETS = {
   // disagree (30 on two renders, 60 on the studio shot and both ingredient
   // sheets), and a count on the invoice that the parcel contradicts is a COD
   // refusal at the door. See bellevia-pack-bila-alam/assets/images/CREDITS.md.
+  // Like PACK RAHA, this SKU is LOCAL and is deliberately never sent onward:
+  // Space Seller stocks the capsules and the cream separately, so the pack is
+  // not a line they can pick. `PACK_COMPOSITION` in shared/spaceseller-mapping.js
+  // holds the two SKUs that actually travel — articulaire-comp and joint-creme —
+  // and the pack branch there never reads this column.
   "bellevia-pack-bila-alam": {
     name: "باك بلا ألم",
     sku: "BVP-BILA-001",

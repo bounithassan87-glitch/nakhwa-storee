@@ -500,10 +500,11 @@ test("scrubbing tolerates non-strings without throwing", () => {
    product wrongly included sends a real parcel to a partner who does not
    stock it. */
 
-test("scope holds exactly the four Bellevia products Space Seller fulfils", () => {
+test("scope holds exactly the five Bellevia products Space Seller fulfils", () => {
   assert.deepEqual([...SPACESELLER_PRODUCTS].sort(), [
     "bellevia-anti-joint-pain",
     "bellevia-anti-lice",
+    "bellevia-pack-bila-alam",
     "bellevia-pack-raha",
     "bellevia-weight-gain",
   ]);
@@ -545,6 +546,7 @@ test("every in-scope product maps to a sendable body", () => {
   const packs = {
     "bellevia-anti-lice": ["anti-poux", "shampoux"],
     "bellevia-pack-raha": ["huil-anti-chute", "sham-anti-chute", "spray-anti-chute"],
+    "bellevia-pack-bila-alam": ["articulaire-comp", "joint-creme"],
   };
 
   for (const [slug, sku] of Object.entries(single)) {
@@ -569,6 +571,68 @@ test("every in-scope product maps to a sendable body", () => {
     [...Object.keys(single), ...Object.keys(packs)].sort(),
     [...SPACESELLER_PRODUCTS].sort(),
   );
+});
+
+test("باك بلا ألم reaches Space Seller as its two components, never as the pack", () => {
+  // Both SKUs are supplied by Space Seller and are the only strings that
+  // identify what the warehouse has to pick. Written as literals on purpose: if
+  // anyone regenerates them from the name, drops one, or collapses the pack
+  // into a single line, this fails rather than quietly shipping half a parcel.
+  const order = anOrder({
+    quantity: 1,
+    totalPrice: 32900, // 329 DH, the price the landing page quotes
+    // A local SKU on the product, to prove the pack branch ignores it.
+    items: [{ product: { sku: "BVP-BILA-001", name: "باك بلا ألم", slug: "bellevia-pack-bila-alam" } }],
+  });
+
+  assert.equal(orderInSpaceSellerScope(order).inScope, true, "must not be skipped as out_of_scope");
+
+  const r = buildSpaceSellerOrder(order);
+  assert.equal(r.ok, true);
+  assert.deepEqual(
+    r.body.products.map((p) => p.sku).sort(),
+    ["articulaire-comp", "joint-creme"],
+  );
+  for (const line of r.body.products) assert.equal(line.quantity, 1);
+  assert.equal(r.body.total_price, 329);
+
+  // The local SKU must not appear anywhere in the body.
+  assert.equal(JSON.stringify(r.body).includes("BVP-BILA-001"), false);
+
+  // Two lines from one price cannot be split honestly, so neither carries a
+  // unit_price — total_price stays the authoritative figure.
+  for (const line of r.body.products) assert.equal("unit_price" in line, false);
+});
+
+test("ordering several باك بلا ألم multiplies both component SKUs", () => {
+  const order = anOrder({
+    quantity: 3,
+    totalPrice: 98700, // 3 × 329
+    items: [{ product: { sku: "BVP-BILA-001", name: "باك بلا ألم", slug: "bellevia-pack-bila-alam" } }],
+  });
+  const r = buildSpaceSellerOrder(order);
+  assert.equal(r.ok, true);
+  assert.deepEqual(
+    [...r.body.products].sort((a, b) => a.sku.localeCompare(b.sku)),
+    [
+      { sku: "articulaire-comp", quantity: 3 },
+      { sku: "joint-creme", quantity: 3 },
+    ],
+  );
+});
+
+test("the باك بلا ألم composition is exactly the two supplied SKUs, each on the right item", () => {
+  const parts = packComponents("bellevia-pack-bila-alam");
+  assert.equal(Array.isArray(parts), true, "must be registered as a pack");
+  assert.deepEqual(parts.map((c) => c.sku), ["articulaire-comp", "joint-creme"]);
+  for (const c of parts) assert.equal(c.perPack, 1);
+
+  // Pinned verbatim, same reason as Anti-Lice: these two are easy to transpose,
+  // and a swap sends the warehouse the wrong item without anything failing.
+  // «comp» is complément — the capsules. The other is the cream.
+  const bySku = Object.fromEntries(parts.map((c) => [c.sku, c.component]));
+  assert.match(bySku["articulaire-comp"], /^كبسولات/, "articulaire-comp must be the capsules");
+  assert.match(bySku["joint-creme"], /^كريم/, "joint-creme must be the 100ml cream");
 });
 
 test("the scope decision never throws, whatever the order looks like", () => {

@@ -63,6 +63,22 @@ export const PACK_COMPOSITION = {
     { component: "شامبو ضد تساقط الشعر 150ml", sku: "sham-anti-chute", perPack: 1 },
     { component: "رشاش ضد تساقط الشعر 100ml", sku: "spray-anti-chute", perPack: 1 },
   ],
+  // باك بلا ألم — the capsules and the cream, picked separately.
+  //
+  // Same shape as the two packs above, and for the same reason: Space Seller
+  // stocks the two items, not the bundle, so one line against a pack SKU would
+  // describe a parcel their warehouse cannot pick.
+  //
+  // The components are named from the product's own catalog description
+  // ("كبسولات ANTI-JOINT PAIN (مكمل غذائي) وكريم المفاصل CRÈME DOULEURS
+  // ARTICULAIRES 100ml"), corroborated by the landing page. `articulaire-comp`
+  // is the supplement — «comp» for complément — and `joint-creme` is the cream.
+  // Both SKUs were supplied by Space Seller and are reproduced verbatim; like
+  // PACK RAHA, the product's own local SKU is deliberately never sent.
+  "bellevia-pack-bila-alam": [
+    { component: "كبسولات ANTI-JOINT PAIN (مكمل غذائي)", sku: "articulaire-comp", perPack: 1 },
+    { component: "كريم المفاصل CRÈME DOULEURS ARTICULAIRES 100ml", sku: "joint-creme", perPack: 1 },
+  ],
 };
 
 /** The components of a pack, or null if this product ships as itself. */
@@ -328,6 +344,8 @@ export const SPACESELLER_PRODUCTS = Object.freeze([
   "bellevia-anti-joint-pain",
   "bellevia-pack-raha",
   "bellevia-anti-lice",
+  // Decomposes into `articulaire-comp` + `joint-creme` — see PACK_COMPOSITION.
+  "bellevia-pack-bila-alam",
 ]);
 
 /** Whether this product's orders are sent to Space Seller at all. */
