@@ -65,7 +65,18 @@ export function spacesellerView(ss) {
     return {
       label: "خارج نطاق Space Seller",
       tone: "neutral",
-      retryable: false,
+      // Retryable, even though the label says this is not Space Seller's to
+      // ship. "Out of scope" is not a property of the order — it is the verdict
+      // of whichever scope list was deployed when the order was placed, stored
+      // as text and never recomputed. When a product joins SPACESELLER_PRODUCTS
+      // later, every order it already took keeps saying out_of_scope and, while
+      // this was false, kept hiding the one control that would fix it.
+      //
+      // Offering the button costs nothing when the verdict still stands: the
+      // endpoint does not trust this field either. It re-runs
+      // orderInSpaceSellerScope against the CURRENT list, so a product that is
+      // genuinely out of scope simply lands back here unchanged.
+      retryable: true,
       note: "هاد المنتج كيتسيفط من جهة أخرى.",
       noteTone: "muted",
     };

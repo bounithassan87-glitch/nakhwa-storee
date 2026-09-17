@@ -94,10 +94,24 @@ test("never-attempted and SKIPPED do not share wording", () => {
   assert.notEqual(never, skipped, "these were identical, which is what misled the operator");
 });
 
-test("out of scope stays its own state, and offers no retry", () => {
+test("out of scope stays its own state, still distinct from a failure", () => {
   const view = spacesellerView({ syncStatus: "SKIPPED", error: "out_of_scope" });
   assert.match(view.label, /خارج نطاق/);
-  assert.equal(view.retryable, false, "retrying a product somebody else ships is meaningless");
+  assert.equal(view.tone, "neutral", "not a failure — nothing broke");
+  assert.equal(view.noteTone, "muted");
+});
+
+test("out of scope offers a retry, because the scope list can change under it", () => {
+  // The stored text is the verdict of whichever SPACESELLER_PRODUCTS was
+  // deployed when the order was placed; it is never recomputed. باك بلا ألم
+  // took a real order while it was outside the list, and hiding the button
+  // left that order with no way back in once the list grew.
+  //
+  // The endpoint does not trust this field either — it re-runs the scope check
+  // against the current list — so offering the button cannot send anything
+  // Space Seller does not stock.
+  const view = spacesellerView({ syncStatus: "SKIPPED", error: "out_of_scope" });
+  assert.equal(view.retryable, true, "a stale scope verdict must stay reversible");
 });
 
 test("contention is muted, a real failure is not", () => {
