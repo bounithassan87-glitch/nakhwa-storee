@@ -115,9 +115,11 @@ const F = {
   // so it is out of the hero and out of the share card. Kept in this map so a
   // corrected export can be dropped in under the same name and rebuilt.
   amal: 'amal.jpg', // 1343×800 — the official advert
-  // The newer hero creative, 1536×1024. Only its PHOTOGRAPHY is used — see
-  // HERO_SCENE below for what is cut away and why.
-  heroScene: 'hero-scene-couple.png', // 1536×1024
+  // The hero creative, 1024×1536. Only its PHOTOGRAPHY is used — see HERO_SCENE
+  // below for what is cut away and why. Its predecessor, hero-scene-couple.png,
+  // is still in the source folder but no longer built: its couple read as
+  // generic Europeans, and this one is recognisably Moroccan.
+  heroScene: 'hero-scene-riad.png', // 1024×1536
   // The three lifestyle scenes, in the order the strip shows them.
   salon: 'Gemini_Generated_Image_gyacqagyacqagyac.jpg', // 1408×768 — الوقفة
   stairs: 'Gemini_Generated_Image_vj7mf4vj7mf4vj7m.jpg', // 1408×768 — الدرج
@@ -208,31 +210,43 @@ console.log('benefit medallions — cut from the client’s own benefits sheet')
 }
 
 /**
- * The hero backdrop, cut from the newer creative — photography ONLY.
+ * The hero backdrop, cut from the creative — photography ONLY.
  *
- * That creative is a finished advert: its left half carries a burned-in
- * wordmark, eyebrow, headline, description, price block, delivery chips and a
- * CTA, all of which the page already renders as live HTML. Shipping the file
- * whole would print every one of them twice, so everything left of x=620 is
- * cut away and the page keeps its own selectable, translatable text.
+ * The file is a finished advert. Its left column carries a burned-in wordmark,
+ * headline, sub-headline and three benefit badges, and its lower-left carries
+ * «329 درهم», a struck «450 درهم» and «التوصيل فابور» — every one of which the
+ * page already renders as live HTML. Shipping it whole would print all of them
+ * twice and turn selectable Arabic into pixels, so the crop starts at x=460,
+ * right of the last of them.
  *
- * The cut also stops at y=388, ABOVE the products. That is deliberate and it
- * is the important part: the bottle in that creative reads
- * «COMPLÉMENT ALIMENTARIE» and «الحقاظ» — two misspellings the real packaging
- * does not have, and the page's own product shots (from F.studio) render
- * correctly. Rather than ship a wrong label behind the copy, the backdrop is
- * people and park only; every product pixel on the page still comes from
- * 7fd0bc28. Compositing the correct pack into this scene is not possible here
- * either — it is a white bottle on a white ground, so no luminance key can
- * separate them without punching holes through the product.
+ * The crop also stops at y=845, ABOVE the two products, and that is the part
+ * that matters most. This creative's bottle reads «30 Capsules», while the
+ * client confirmed 60 and the page states 60 in five places. Its Arabic label
+ * is mangled too — «لإلئتم», «المفاصليل», «بساعد», «وطيفة», none of which are
+ * words. A hero showing 30 over copy saying 60 is a parcel refused at the door,
+ * so not one pixel of this file's packaging is used: every product shot on the
+ * page still comes from 7fd0bc28, whose label reads 60 and whose Arabic is
+ * correct.
  *
- * What survives: the couple, the trees, the light. Which is exactly the mood
- * the brief asked for, and none of the text or packaging that came with it.
+ * Compositing the correct pack INTO this scene is not possible here either —
+ * it is a white bottle photographed on white, so no luminance key and no blend
+ * mode separates it from its background without erasing the product too. Hence
+ * the two-layer hero: this scene behind, the verified pack on its own card.
+ *
+ * What survives: a Moroccan couple on the stairs of a riad, the plants, the
+ * light. Which is exactly the mood asked for, and none of the text, none of
+ * the prices, and none of the packaging that came with it.
+ *
+ * NOTE ON RESOLUTION. The source is 1024px wide and the text column eats the
+ * first 460 of them, so the clean region is 564px — narrower than the 916 the
+ * previous creative allowed. Variants stop at 564 rather than upscaling, which
+ * is why `sizes` in index.html asks for a smaller box than the plate's full
+ * width. A larger export would lift this ceiling; nothing in code can.
  */
-const HERO_SCENE = { left: 620, top: 0, width: 916, height: 388 };
+const HERO_SCENE = { left: 460, top: 130, width: 564, height: 715 };
 
-console.log('hero backdrop — the couple and the park, no burned-in text, no packaging');
-await variants(sharp(src(F.heroScene)).extract(HERO_SCENE), 'hero-scene', [458, 916], HERO_SCENE.width);
+console.log('hero backdrop — the Moroccan couple on the riad stairs, no text, no packaging');
+await variants(sharp(src(F.heroScene)).extract(HERO_SCENE), 'hero-scene', [282, 564], HERO_SCENE.width);
 
 console.log('lifestyle — three scenes, each cropped clear of the carton that is not the product');
 await variants(sharp(src(F.salon)).extract(LIFE.salon), 'life-salon', [450, 900], LIFE.salon.width);

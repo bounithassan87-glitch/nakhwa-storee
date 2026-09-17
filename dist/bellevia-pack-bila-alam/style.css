@@ -367,14 +367,20 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   display: block;
   width: 100%; max-width: 420px; margin-inline: auto;
 }
-/* Taller than the band's own 916×388 on purpose: `cover` trims the sides so the
-   two faces come up larger and sit clear ABOVE the card. Cropping width here is
-   safe — the band's outer edges are trees. Cropping height would not be, the
-   faces live there. */
+/* The source is a 564×715 PORTRAIT crop — the only region of the creative with
+   no burned-in text and no packaging — shown in a landscape box. `cover` keeps
+   it filling the plate, and `object-position` pulls the frame UP so the crop
+   falls off the couple's feet rather than their heads: both faces sit in the
+   top third of the source, and losing either one costs the whole point of the
+   photograph. Widening this box crops more of them, not less. */
 .hero__scene {
   width: 100%; height: auto;
-  aspect-ratio: 916 / 500;
-  object-fit: cover; object-position: center 34%;
+  /* Shallower on a phone, where the hero is one column and every pixel of
+     picture pushes 329 درهم and the CTA further below the fold. 3:2 still holds
+     both faces; the ≥720px block deepens it to 5:4 once the layout is two
+     columns and the height is free. */
+  aspect-ratio: 3 / 2;
+  object-fit: cover; object-position: center 10%;
   border-radius: var(--r-lg);
   border: 1px solid rgba(255, 255, 255, .18);
   box-shadow: var(--sh-deep);
@@ -830,6 +836,9 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   .hero__shot { grid-area: shot; align-self: center; }
   .hero__offer { grid-area: offer; align-self: start; }
   .hero__shot { max-width: 42vw; }
+  /* Two columns now, so the picture no longer competes with the price for
+     vertical room — give the couple back the depth the phone could not spare. */
+  .hero__scene { aspect-ratio: 5 / 4; }
 
   .pack__grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
   .pcard { grid-template-columns: 1fr; text-align: center; }
