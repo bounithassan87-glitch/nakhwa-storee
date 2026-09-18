@@ -121,9 +121,33 @@ const F = {
   // generic Europeans, and this one is recognisably Moroccan.
   heroScene: 'hero-scene-riad.png', // 1024×1536
   // The three lifestyle scenes, in the order the strip shows them.
-  salon: 'Gemini_Generated_Image_gyacqagyacqagyac.jpg', // 1408×768 — الوقفة
-  stairs: 'Gemini_Generated_Image_vj7mf4vj7mf4vj7m.jpg', // 1408×768 — الدرج
-  pray: 'Gemini_Generated_Image_ctag61ctag61ctag.jpg', // 1408×768 — الصلاة
+  // الوقفة — replaced the gyacqa scene. That one was a man rising from a sofa
+  // beside a television carrying an ANTI-JOINTS carton that does not exist; this
+  // one is a man on a sofa with the joint rendered over his knee, which is the
+  // visual direction the client asked for. gyacqa stays in the folder, unused.
+  salon: 'life-salon-anatomy.jpg', // 928×1152 — الوقفة
+  // الدرج — replaced the vj7mf4 riad-stairs scene. NOTE: this picture has no
+  // stairs in it. It is a labourer resting on breeze blocks with the spine and
+  // both knees rendered, chosen because it was the closest available match for
+  // the card's theme of load and effort; none of the supplied images contains a
+  // staircase. The «الدرج» caption therefore no longer describes what is in the
+  // frame. Flagged to the client.
+  stairs: 'life-stairs-anatomy.jpg', // 928×1152 — الدرج
+  // Third lifestyle scene. The old ctag61 prayer shot is no longer built: the
+  // client replaced every picture in this section with the anatomy-overlay set.
+  jeep: 'life-jeep-anatomy.jpg',   // 928×1152 — 3 · long-distance driving
+  office: 'life-office-anatomy.jpg', // 928×1152 — 2 · long hours at a desk
+  gift: 'life-gift-anatomy.jpg',   // 928×1152 — 4 · a son bringing the pack home
+  // 6 · the pack with its ingredients.
+  // ⚠️ SHIPPED AT THE CLIENT'S EXPLICIT INSTRUCTION, AND IT CONTRADICTS THE
+  // PAGE. Its bottle reads «30 Capsules», large and perfectly legible, while
+  // this page states 60 in five places — meta description, JSON-LD, the hero
+  // lede, the product card and the footer. Its French reads «COMPLEMENT
+  // AUMENTAIRE» rather than ALIMENTAIRE. No crop removes either: the number
+  // sits mid-label and the whole frame is product.
+  // This was raised twice with evidence and the client chose to ship it. The
+  // fix is a corrected export, not code.
+  packShot: 'life-pack-ingredients.jpg', // 928×1152
 };
 
 /**
@@ -141,9 +165,30 @@ const F = {
  * That file stays out. See CREDITS.md.
  */
 const LIFE = {
-  salon: { left: 0, top: 0, width: 900, height: 768 },    // الوقفة — TV with the box is at x>900
-  stairs: { left: 520, top: 0, width: 888, height: 768 }, // الدرج  — box on the step is at x<520
-  pray: { left: 0, top: 0, width: 880, height: 768 },     // الصلاة — box on the table is at x>880
+  // الوقفة — the packaging sits on a low table at x 95-400, y 770-1050, and it
+  // is fabricated: gibberish Arabic on the bottle and an illegible cream label.
+  // A horizontal cut at y=730 drops all of it and keeps the man, the room and
+  // BOTH knee overlays, which are the point of the picture. Verified by sampling
+  // the strip above the cut: zero near-white pixels, so no cap peeks through.
+  salon: { left: 0, top: 0, width: 928, height: 730 },
+  // الدرج — fabricated packaging sits at x 640-870, y 800-1090. A horizontal cut
+  // at y=785 drops it and keeps the man, the site and the full spine + knee
+  // overlay, which is the point of the picture.
+  stairs: { left: 0, top: 0, width: 928, height: 785 },
+  // Fabricated packaging sits at x 620-900, y 810-1140. A horizontal cut at
+  // y=795 drops it and keeps the man, the kasbah and the whole spine overlay.
+  jeep: { left: 0, top: 0, width: 928, height: 795 },
+  // Packaging sits LEFT here, on the desk at x 125-250, so this one is cut
+  // vertically rather than horizontally. The window keeps the face and the
+  // spine; the knee falls below it, and between the two the spine is the
+  // overlay this frame is built around.
+  office: { left: 270, top: 170, width: 658, height: 530 },
+  // NOT cropped clear of the pack: this slide IS the pack being handed over,
+  // and its small print is an out-of-focus blur rather than a legible wrong
+  // number. Framed only to fit the card.
+  gift: { left: 50, top: 250, width: 878, height: 700 },
+  // Framed to the card ratio only — nothing is cropped away for content.
+  packShot: { left: 0, top: 300, width: 928, height: 742 },
 };
 
 /**
@@ -249,9 +294,12 @@ console.log('hero backdrop — the Moroccan couple on the riad stairs, no text, 
 await variants(sharp(src(F.heroScene)).extract(HERO_SCENE), 'hero-scene', [282, 564], HERO_SCENE.width);
 
 console.log('lifestyle — three scenes, each cropped clear of the carton that is not the product');
-await variants(sharp(src(F.salon)).extract(LIFE.salon), 'life-salon', [450, 900], LIFE.salon.width);
-await variants(sharp(src(F.stairs)).extract(LIFE.stairs), 'life-stairs', [444, 888], LIFE.stairs.width);
-await variants(sharp(src(F.pray)).extract(LIFE.pray), 'life-pray', [440, 880], LIFE.pray.width);
+await variants(sharp(src(F.salon)).extract(LIFE.salon), 'life-salon', [464, 928], LIFE.salon.width);
+await variants(sharp(src(F.stairs)).extract(LIFE.stairs), 'life-stairs', [464, 928], LIFE.stairs.width);
+await variants(sharp(src(F.jeep)).extract(LIFE.jeep), 'life-jeep', [464, 928], LIFE.jeep.width);
+await variants(sharp(src(F.office)).extract(LIFE.office), 'life-office', [329, 658], LIFE.office.width);
+await variants(sharp(src(F.gift)).extract(LIFE.gift), 'life-gift', [439, 878], LIFE.gift.width);
+await variants(sharp(src(F.packShot)).extract(LIFE.packShot), 'life-pack', [464, 928], LIFE.packShot.width);
 
 /**
  * The OpenGraph / Twitter share image.

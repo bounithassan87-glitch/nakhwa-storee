@@ -526,20 +526,81 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 /* The three moments the copy names, each with the scene the brand shot for
    it. Photographs only — no product, no claim, no caption beyond the moment. */
 .life { margin-top: 26px; }
-.life__grid { display: grid; gap: 12px; }
-.life__item figure {
+
+/* A scroll-snap slider. The track is a plain overflow-x row, which is what
+   gives swipe on a phone, trackpad scroll on a laptop and arrow keys once
+   focused — all of it native, none of it scripted. `overscroll-behavior-x`
+   stops a swipe that runs off the end from dragging the page sideways with it.
+
+   The arrows and dots are the only scripted part, and they start `hidden`, so a
+   page whose JS never arrives still shows a perfectly usable scrolling row. */
+.life__slider { position: relative; }
+.life__track {
+  display: flex; gap: 12px;
+  margin: 0; padding: 0; list-style: none;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  /* The scrollbar would sit under the photographs and read as a design mistake;
+     the dots say the same thing deliberately. */
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.life__track::-webkit-scrollbar { display: none; }
+.life__track:focus-visible { outline: 3px solid var(--accent-bright); outline-offset: 3px; border-radius: var(--r); }
+@media (prefers-reduced-motion: reduce) { .life__track { scroll-behavior: auto; } }
+
+/* One slide per view on a phone, two from 560, three from 900 — the same
+   breakpoints the grid used, so the section's rhythm does not change. */
+.life__slide { flex: 0 0 100%; scroll-snap-align: start; min-width: 0; }
+
+.life__slide figure {
   position: relative;
   border-radius: var(--r); overflow: hidden;
   border: 1px solid var(--line);
   box-shadow: var(--sh-1);
 }
-.life__item img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 5 / 4; }
-.life__item figcaption {
+.life__slide img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 5 / 4; }
+.life__slide figcaption {
   position: absolute; inset-inline-start: 12px; bottom: 10px;
   font-size: 13px; font-weight: 800; color: #fff;
   background: rgba(15, 48, 24, .72);
   border-radius: 999px; padding: 4px 14px;
   backdrop-filter: blur(4px);
+}
+
+/* Dots carry the phone, arrows carry the desktop — a 44px tap target floating
+   over a photograph is worse than a swipe, and a mouse has nothing to swipe
+   with. Each is shown only where it is the better control. */
+.life__dots {
+  display: flex; justify-content: center; gap: 8px;
+  margin-top: 14px;
+}
+.life__dot {
+  width: 8px; height: 8px; padding: 0;
+  border: 0; border-radius: 999px;
+  background: var(--line-2); cursor: pointer;
+  transition: background .18s, width .18s;
+}
+.life__dot[aria-current="true"] { width: 22px; background: var(--g-700); }
+.life__dot:focus-visible { outline: 3px solid var(--accent-bright); outline-offset: 3px; }
+
+.life__nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  z-index: 2;
+  width: 44px; height: 44px;
+  display: none; align-items: center; justify-content: center;
+  background: var(--paper); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 999px;
+  box-shadow: var(--sh-2); cursor: pointer;
+}
+.life__nav svg { width: 20px; height: 20px; }
+.life__nav[disabled] { opacity: .35; cursor: default; }
+/* `inset-inline` so the pair swaps sides under RTL without a second rule. */
+.life__nav--prev { inset-inline-start: -10px; }
+.life__nav--next { inset-inline-end: -10px; }
+@media (min-width: 720px) {
+  .life__nav:not([hidden]) { display: flex; }
+  .life__dots { display: none; }
 }
 
 /* ── 10 · What's in the pack ────────────────────────────────────────────── */
@@ -819,7 +880,7 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 
 /* ── ≥ 560px — the three moments sit in a row ───────────────────────────── */
 @media (min-width: 560px) {
-  .life__grid { grid-template-columns: repeat(3, 1fr); }
+  .life__slide { flex-basis: calc((100% - 12px) / 2); }
 }
 
 /* ── ≥ 720px — two columns ──────────────────────────────────────────────── */
@@ -871,6 +932,9 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 @media (min-width: 900px) {
   :root { --sec-y: 78px; }
   body { font-size: 16.5px; }
+
+  /* Three across, matching the grid this slider replaced. */
+  .life__slide { flex-basis: calc((100% - 24px) / 3); }
 
   .hero__in { grid-template-columns: 1.05fr .95fr; gap: 18px 48px; }
   .hero__shot { max-width: 452px; }

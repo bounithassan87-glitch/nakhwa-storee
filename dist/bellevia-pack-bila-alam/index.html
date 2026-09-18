@@ -277,39 +277,95 @@
   <!-- The copy above names three moments — الوقفة, الدرج, الصلاة. Each one now
        has the scene the brand photographed for it. No product is in frame in
        any of the three: they are atmosphere, and their alt text says so. -->
+  <!-- A scroll-snap slider, not a carousel library.
+       The track is an ordinary overflow-x list: swipe on a phone, two-finger or
+       trackpad scroll on a laptop, arrow keys once focused, and it degrades to a
+       plain scrolling row if the script never runs. The arrows and dots below
+       are progressive enhancement — script.js reveals them and nothing breaks
+       without them.
+       Slides are added by adding <li>s; the count adapts on its own. -->
   <div class="wrap life">
-    <ul class="life__grid">
-      <li class="life__item">
+    <div class="life__slider" data-life-slider>
+      <ul class="life__track" data-life-track tabindex="0" role="region"
+          aria-label="مشاهد من النهار">
+      <li class="life__slide">
         <figure>
-          <img src="./assets/images/life-salon-450.webp"
-               srcset="./assets/images/life-salon-450.webp 450w, ./assets/images/life-salon-900.webp 900w"
+          <img src="./assets/images/life-stairs-464.webp"
+               srcset="./assets/images/life-stairs-464.webp 464w, ./assets/images/life-stairs-928.webp 928w"
                sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="900" height="768" loading="lazy" decoding="async"
-               alt="صورة تعبيرية: راجل كينوض من الصالون">
-          <figcaption>الوقفة</figcaption>
+               width="928" height="785" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: عامل بناء مرتاح فورشو، والعمود الفقري والركبتين مرسومين فوقو">
         </figure>
       </li>
-      <li class="life__item">
+      <li class="life__slide">
         <figure>
-          <img src="./assets/images/life-stairs-444.webp"
-               srcset="./assets/images/life-stairs-444.webp 444w, ./assets/images/life-stairs-888.webp 888w"
+          <img src="./assets/images/life-office-329.webp"
+               srcset="./assets/images/life-office-329.webp 329w, ./assets/images/life-office-658.webp 658w"
                sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="888" height="768" loading="lazy" decoding="async"
-               alt="صورة تعبيرية: مرا كبيرة فالسن كتطلع الدرج ديال رياض مغربي">
-          <figcaption>الدرج</figcaption>
+               width="658" height="530" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: موظف جالس فمكتبو، والعمود الفقري مرسوم فوق ضهرو">
         </figure>
       </li>
-      <li class="life__item">
+      <li class="life__slide">
         <figure>
-          <img src="./assets/images/life-pray-440.webp"
-               srcset="./assets/images/life-pray-440.webp 440w, ./assets/images/life-pray-880.webp 880w"
+          <img src="./assets/images/life-jeep-464.webp"
+               srcset="./assets/images/life-jeep-464.webp 464w, ./assets/images/life-jeep-928.webp 928w"
                sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="880" height="768" loading="lazy" decoding="async"
-               alt="صورة تعبيرية: مرا كبيرة فالسن جالسة فالصلاة، وعلى الحيط مكتوب «بلا ألم»">
-          <figcaption>الصلاة</figcaption>
+               width="928" height="795" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: راجل مغربي متكي على سيارة فالبادية، والعمود الفقري مرسوم فوقو">
         </figure>
       </li>
-    </ul>
+      <li class="life__slide">
+        <figure>
+          <img src="./assets/images/life-gift-439.webp"
+               srcset="./assets/images/life-gift-439.webp 439w, ./assets/images/life-gift-878.webp 878w"
+               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
+               width="878" height="700" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: ولد كيمد الباك لوالدتو فصالون مغربي">
+        </figure>
+      </li>
+      <li class="life__slide">
+        <figure>
+          <img src="./assets/images/life-salon-464.webp"
+               srcset="./assets/images/life-salon-464.webp 464w, ./assets/images/life-salon-928.webp 928w"
+               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
+               width="928" height="730" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: راجل جالس فالصالون وحاط يديه على ركبتو، والمفصل مرسوم فوقها">
+        </figure>
+      </li>
+      <li class="life__slide">
+        <figure>
+          <!-- Slide 6 · the pack with its ingredients, shipped whole at the
+               client's explicit instruction. Its bottle carries a capsule
+               count that contradicts the figure this page states elsewhere;
+               that was raised with evidence and the decision was to ship it.
+               The alt names no count, so the page's own words stay
+               consistent with themselves. -->
+          <img src="./assets/images/life-pack-464.webp"
+               srcset="./assets/images/life-pack-464.webp 464w, ./assets/images/life-pack-928.webp 928w"
+               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
+               width="928" height="742" loading="lazy" decoding="async"
+               alt="باك بلا ألم من BelleVia: علبة الكبسولات وأنبوب الكريم 100ml مع مكونات نباتية">
+        </figure>
+      </li>
+      </ul>
+
+      <!-- Hidden until script.js confirms the track actually overflows. A pair
+           of arrows over a row that already fits is furniture, not navigation. -->
+      <button class="life__nav life__nav--prev" type="button" data-life-prev hidden
+              aria-label="الصورة السابقة">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <button class="life__nav life__nav--next" type="button" data-life-next hidden
+              aria-label="الصورة اللي جاية">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+
+      <!-- Filled by script.js, one dot per page. Empty and hidden without it. -->
+      <div class="life__dots" data-life-dots hidden></div>
+    </div>
   </div>
 </section>
 

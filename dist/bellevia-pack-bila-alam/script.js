@@ -474,5 +474,104 @@
       else if (phone.addListener) phone.addListener(apply);
       on(window, 'resize', function () { if (!bar.hidden) apply(); });
     })();
+
+    /* ── The «الوقفة، الدرج، الصلاة» slider ────────────────────────────────
+       Progressive enhancement over a track that already scrolls and snaps on
+       its own. Everything here only ADDS controls: the arrows and the dots
+       start `hidden` in the markup, so if this block never runs the section is
+       still a swipeable, keyboard-scrollable row of pictures.
+
+       Nothing is revealed unless the track genuinely overflows, so a section
+       whose slides all fit — three slides on a wide screen, say — shows no
+       arrows and no dots rather than dead furniture. */
+    (function () {
+      var root = document.querySelector('[data-life-slider]');
+      if (!root) return;
+      var track = root.querySelector('[data-life-track]');
+      var prev = root.querySelector('[data-life-prev]');
+      var next = root.querySelector('[data-life-next]');
+      var dots = root.querySelector('[data-life-dots]');
+      if (!track) return;
+
+      // RTL reverses the sign of scrollLeft, so "forward" is a different
+      // direction depending on the document. Read it rather than assume it —
+      // hard-coding +1 sends the arrows backwards on this page.
+      var rtl = getComputedStyle(track).direction === 'rtl';
+
+      function step() {
+        var slide = track.querySelector('.life__slide');
+        if (!slide) return track.clientWidth;
+        // One full page of slides, not one slide: on desktop three are visible
+        // and advancing by one leaves the row almost where it was.
+        var per = Math.max(1, Math.round(track.clientWidth / slide.offsetWidth));
+        return slide.offsetWidth * per + 12 * (per - 1);
+      }
+      function overflows() { return track.scrollWidth - track.clientWidth > 4; }
+      function pages() {
+        // Counted from the slides, not from scrollWidth: scrollWidth carries the
+        // inter-slide gaps and step() does not, which rounded three slides up to
+        // four dots.
+        var slide = track.querySelector('.life__slide');
+        if (!slide) return 1;
+        var per = Math.max(1, Math.round(track.clientWidth / slide.offsetWidth));
+        return Math.max(1, Math.ceil(track.children.length / per));
+      }
+      function current() {
+        return Math.min(pages() - 1, Math.round(Math.abs(track.scrollLeft) / Math.max(1, step())));
+      }
+
+      function buildDots() {
+        if (!dots) return;
+        var n = pages();
+        if (dots.childElementCount === n) return;
+        dots.innerHTML = '';
+        for (var i = 0; i < n; i++) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'life__dot';
+          b.setAttribute('aria-label', 'الصورة ' + (i + 1) + ' من ' + n);
+          (function (idx) {
+            b.addEventListener('click', function () {
+              track.scrollTo({ left: (rtl ? -1 : 1) * idx * step(), behavior: 'smooth' });
+            });
+          })(i);
+          dots.appendChild(b);
+        }
+      }
+
+      function sync() {
+        var live = overflows();
+        if (prev) prev.hidden = !live;
+        if (next) next.hidden = !live;
+        if (dots) dots.hidden = !live;
+        if (!live) return;
+
+        buildDots();
+        var i = current(), n = pages();
+        if (prev) prev.disabled = i <= 0;
+        if (next) next.disabled = i >= n - 1;
+        if (dots) {
+          for (var k = 0; k < dots.children.length; k++) {
+            dots.children[k].setAttribute('aria-current', k === i ? 'true' : 'false');
+          }
+        }
+      }
+
+      function go(dir) {
+        track.scrollBy({ left: (rtl ? -dir : dir) * step(), behavior: 'smooth' });
+      }
+      if (prev) on(prev, 'click', function () { go(-1); });
+      if (next) on(next, 'click', function () { go(1); });
+
+      // rAF-throttled: scroll fires far more often than the dots need updating.
+      var ticking = false;
+      on(track, 'scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () { ticking = false; sync(); });
+      });
+      on(window, 'resize', sync);
+      sync();
+    })();
   })();
 })();
