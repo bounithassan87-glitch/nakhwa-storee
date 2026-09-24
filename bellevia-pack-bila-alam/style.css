@@ -72,6 +72,18 @@
   /* Warm type on a deep green field — 8.6:1 at its lowest, on --deep-2. */
   --accent-on-dark: #FFD9B0;
 
+  /* Gold. The fourth note, and the quietest: it draws hairlines, card edges and
+     section rules, never a surface. Three stops because one gold cannot sit on
+     both grounds — each is measured against the ground it is allowed on, and
+     none is used off it:
+       --gold          hairlines and edges; 4.9:1 on --deep-2, so safe as type too
+       --gold-on-dark  type on the deep bands — 7.1:1 on --deep-2, 10.2:1 on --deep-0
+       --gold-ink      type on the light ground — 5.6:1 on --sage, 6.1:1 on white
+     Gold never fills a button: the action colour is orange and stays orange. */
+  --gold: #C9A55A;
+  --gold-on-dark: #E8C87A;
+  --gold-ink: #7A5E10;
+
   --paper: #FFFFFF;
   /* The light ground: white pulled a few degrees toward the wordmark's leaf,
      never far enough to tint a product photographed on white. */
@@ -227,13 +239,17 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 
 .sec__head { text-align: center; max-width: 620px; margin-inline: auto; margin-bottom: 30px; }
 .sec__head h2 { font-size: clamp(23px, 6vw, 32px); }
-/* A short leaf-green rule under every section title — the one repeated
-   ornament on the page. */
+/* A short rule under every section title — the one repeated ornament on the
+   page. Gold at the centre, fading out at both ends, so it reads as a drawn
+   flourish rather than a bar. Decoration only: nothing is read off it. */
 .sec__head h2::after {
-  content: ''; display: block; width: 54px; height: 3px; border-radius: 2px;
-  margin: 14px auto 0; background: var(--accent-bright);
+  content: ''; display: block; width: 92px; height: 2px; border-radius: 2px;
+  margin: 15px auto 0;
+  background: linear-gradient(90deg, transparent, var(--gold-ink) 22%, var(--gold-ink) 78%, transparent);
 }
-.sec--green .sec__head h2::after { background: var(--accent-on-dark); }
+.sec--green .sec__head h2::after {
+  background: linear-gradient(90deg, transparent, var(--gold) 22%, var(--gold) 78%, transparent);
+}
 .sec__sub { margin-top: 12px; color: var(--muted); font-size: 15.5px; }
 .sec--green .sec__sub { color: var(--on-deep-soft); }
 
@@ -322,13 +338,15 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 }
 .hero__in { display: grid; gap: 18px; }
 
+/* Gold-edged, because it is the first thing on the page and the only place a
+   badge appears above the fold. `--gold-on-dark` is 7.1:1 on the hero field. */
 .hero__eyebrow {
   display: inline-block;
   font-size: 12.5px; font-weight: 800; letter-spacing: .02em;
-  color: var(--accent-on-dark);
-  background: rgba(255, 255, 255, .10);
-  border: 1px solid rgba(255, 255, 255, .20);
-  border-radius: 999px; padding: 5px 14px; margin-bottom: 12px;
+  color: var(--gold-on-dark);
+  background: rgba(201, 165, 90, .14);
+  border: 1px solid rgba(201, 165, 90, .55);
+  border-radius: 999px; padding: 6px 15px; margin-bottom: 12px;
 }
 .hero__h1 { font-size: clamp(30px, 9vw, 46px); letter-spacing: -.01em; color: var(--on-deep); }
 .hero__h1-em {
@@ -604,7 +622,24 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 }
 
 /* ── 10 · What's in the pack ────────────────────────────────────────────── */
-.pack__grid { display: grid; gap: 16px; }
+/* Two cards with a «+» between them, because the pack IS an addition: one from
+   inside, one from outside, and the kickers already say so. The plus is drawn
+   in CSS and marked aria-hidden by being a pseudo-element — it is punctuation
+   between two cards, not a word anybody needs read aloud. */
+.pack__grid { display: grid; gap: 16px; position: relative; }
+.pack__grid::before {
+  content: '+';
+  justify-self: center; align-self: center;
+  width: 46px; height: 46px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 26px; font-weight: 800; line-height: 1;
+  color: var(--gold-ink);
+  background: var(--paper);
+  border: 1px solid rgba(201, 165, 90, .5);
+  box-shadow: var(--sh-1);
+  /* Sits in the gutter the grid already leaves between the two cards. */
+  grid-row: 2; margin-block: -31px; z-index: 1;
+}
 .pcard {
   display: grid; grid-template-columns: 104px 1fr; gap: 14px; align-items: start;
   /* White, on a sage section: the product shots are white-on-white files, so
@@ -613,6 +648,8 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   background: var(--paper); border: 1px solid var(--line);
   border-radius: var(--r-lg); padding: 16px; box-shadow: var(--sh-1);
 }
+.pcard:first-of-type { grid-row: 1; }
+.pcard:last-of-type { grid-row: 3; }
 .pcard__shot { display: flex; justify-content: center; padding-top: 4px; }
 .pcard__shot img { width: 100%; height: auto; }
 .pcard__kicker {
@@ -648,16 +685,22 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .pcard__use b { color: var(--g-800); }
 
 /* ── 11 · Benefits ──────────────────────────────────────────────────────── */
+/* Gold-edged tiles on the deep band. The edge is a hairline rather than a fill
+   because these six sit together: six gold surfaces would shout, six gold
+   outlines read as a set. The medallion keeps its own gold ring, so the icon
+   and the card agree instead of competing. */
 .bgrid { display: grid; gap: 12px; }
 .bcard {
   display: flex; align-items: center; gap: 14px;
-  background: rgba(255, 255, 255, .07);
-  border: 1px solid rgba(255, 255, 255, .16);
-  border-radius: var(--r); padding: 12px 14px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .045));
+  border: 1px solid rgba(201, 165, 90, .42);
+  border-radius: var(--r); padding: 13px 15px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
 }
 .bcard__ic {
   width: 56px; height: 56px; border-radius: 50%; flex: 0 0 auto;
-  object-fit: cover; border: 2px solid rgba(255, 255, 255, .28);
+  object-fit: cover; border: 2px solid var(--gold);
+  box-shadow: 0 0 0 4px rgba(201, 165, 90, .14);
 }
 .bcard p { font-size: 15.5px; font-weight: 700; color: #fff; line-height: 1.45; }
 
@@ -700,10 +743,16 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 }
 .ing__sheet img { width: 100%; border-radius: 8px; }
 
+/* One card per ingredient, each opened by a short gold edge on the inline
+   start. The edge is the only ornament: these are names and one line of
+   description off the client's sheet, and anything louder would start
+   competing with the sheet itself sitting beside them. */
 .ilist { display: grid; gap: 10px; }
 .ilist li {
-  background: var(--sage); border: 1px solid var(--line);
-  border-radius: var(--r-sm); padding: 11px 14px;
+  background: var(--paper); border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--gold);
+  border-radius: var(--r-sm); padding: 12px 15px;
+  box-shadow: var(--sh-1);
 }
 .ilist b { display: block; color: var(--g-800); font-size: 15.5px; }
 .ilist span { display: block; font-size: 14px; color: var(--muted); margin-top: 2px; }
@@ -713,8 +762,44 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .ilist--pct b { font-size: 15px; }
 .ilist--pct .pct {
   margin-top: 0; flex: 0 0 auto;
-  font-weight: 800; font-size: 14.5px; color: var(--accent-ink);
+  font-weight: 800; font-size: 14.5px; color: var(--gold-ink);
+  background: rgba(201, 165, 90, .12);
+  border: 1px solid rgba(201, 165, 90, .38);
+  border-radius: 999px; padding: 2px 11px;
 }
+
+/* ── 12b · Who it suits ─────────────────────────────────────────────────── */
+/* Four cards on the sage ground, between the white ingredients section above
+   and the usage section below. White cards with the same gold hairline the
+   ingredient list uses, so the two sections read as one family rather than two
+   designs that happen to be adjacent. */
+.who__grid { display: grid; gap: 12px; }
+.who {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--gold);
+  border-radius: var(--r-lg);
+  padding: 20px 18px;
+  box-shadow: var(--sh-1);
+  /* Matches the hover on the other cards rather than introducing a new one. */
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+@media (hover: hover) {
+  .who:hover { transform: translateY(-2px); box-shadow: var(--sh-2); }
+}
+/* A fixed box, so the icon reserves its space before the SVG paints and the
+   heading under it never moves. */
+.who__ic {
+  display: grid; place-items: center;
+  width: 52px; height: 52px; border-radius: 50%;
+  margin-bottom: 14px;
+  color: var(--gold-ink);
+  background: rgba(201, 165, 90, .12);
+  border: 1px solid rgba(201, 165, 90, .42);
+}
+.who__ic svg { width: 27px; height: 27px; display: block; }
+.who h3 { font-size: 17px; color: var(--g-800); line-height: 1.35; }
+.who p { margin-top: 8px; font-size: 14.5px; color: var(--ink-2); line-height: 1.65; }
 
 /* ── 13 · Usage + warnings ──────────────────────────────────────────────── */
 .steps { display: grid; gap: 14px; }
@@ -723,9 +808,17 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   border-radius: var(--r-lg); padding: 18px 18px 20px; position: relative;
   box-shadow: var(--sh-1);
 }
+/* The step number as a gold coin rather than a large faded numeral: at 390px
+   the faded version read as a watermark and the eye skipped it, which is the
+   opposite of what a numbered instruction is for. */
 .step__n {
-  font-size: 30px; font-weight: 800; line-height: 1;
-  color: var(--accent-bright); opacity: .32; margin-bottom: 6px;
+  width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 15px; font-weight: 800; line-height: 1;
+  color: var(--gold-ink);
+  background: rgba(201, 165, 90, .13);
+  border: 1px solid rgba(201, 165, 90, .45);
+  margin-bottom: 11px;
 }
 .step h3 { font-size: 18px; }
 .step p { margin-top: 8px; font-size: 15px; color: var(--ink-2); }
@@ -811,27 +904,38 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .qa a { color: var(--accent-ink); font-weight: 700; }
 
 /* ── 17 · Final CTA ─────────────────────────────────────────────────────── */
+/* The close, on the deep band rather than the light one. It is the last thing
+   before the footer and it repeats the offer, so it should read as the same
+   moment as the hero — the page opens and shuts on green. A gold hairline
+   across the top separates it from the FAQ above without a hard rule. */
 .final {
-  padding-block: 52px;
+  padding-block: 54px;
   background:
-    radial-gradient(80% 60% at 50% 0%, rgba(70, 123, 3, .16), transparent 62%),
-    var(--sage-2);
-  border-top: 1px solid var(--line);
+    radial-gradient(85% 65% at 50% 0%, rgba(70, 123, 3, .30), transparent 64%),
+    linear-gradient(168deg, var(--deep-2) 0%, var(--deep-1) 100%);
+  border-top: 1px solid rgba(201, 165, 90, .38);
   text-align: center;
+  color: var(--on-deep);
 }
 .final__in { display: grid; gap: 12px; justify-items: center; }
-.final h2 { font-size: clamp(23px, 6.2vw, 33px); }
-.final__pack { font-size: 15px; color: var(--muted); font-weight: 700; }
+.final h2 { font-size: clamp(23px, 6.2vw, 33px); color: #fff; }
+.final h2::after {
+  content: ''; display: block; width: 92px; height: 2px; border-radius: 2px;
+  margin: 15px auto 2px;
+  background: linear-gradient(90deg, transparent, var(--gold) 22%, var(--gold) 78%, transparent);
+}
+.final__pack { font-size: 15px; color: var(--on-deep-soft); font-weight: 700; }
 .final__price { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.final__price b { font-size: clamp(34px, 10vw, 46px); font-weight: 800; color: var(--accent-ink); line-height: 1; }
-.final__price s { font-size: 18px; }
+.final__price b { font-size: clamp(34px, 10vw, 46px); font-weight: 800; color: var(--gold-on-dark); line-height: 1; }
+.final__price s { font-size: 18px; color: var(--on-deep-mute); }
 .final__trust {
   display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
   margin-bottom: 8px;
 }
 .final__trust li {
-  font-size: 13.5px; font-weight: 700; color: var(--g-800);
-  background: var(--paper); border: 1px solid var(--line-2);
+  font-size: 13.5px; font-weight: 700; color: var(--on-deep-soft);
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(201, 165, 90, .40);
   border-radius: 999px; padding: 6px 14px;
 }
 
@@ -872,6 +976,9 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 /* ── ≥ 480px — the pack cards can breathe ───────────────────────────────── */
 @media (min-width: 480px) {
   :root { --pad: 20px; }
+  /* Two up as soon as there is room. Below this the Arabic lines wrap to three
+     or four words each, which reads as a list rather than a card. */
+  .who__grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .pcard { grid-template-columns: 124px 1fr; gap: 18px; padding: 18px; }
   .bgrid { grid-template-columns: repeat(2, 1fr); }
   .bcard { flex-direction: column; text-align: center; gap: 10px; padding: 18px 14px; }
@@ -901,7 +1008,16 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
      vertical room — give the couple back the depth the phone could not spare. */
   .hero__scene { aspect-ratio: 5 / 4; }
 
+  /* Side by side now, so the «+» moves from the gutter between rows to the
+     gutter between columns and the two cards return to a single row. */
   .pack__grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .pack__grid::before {
+    grid-row: 1; grid-column: 1 / -1;
+    margin-block: 0; margin-inline: -23px;
+    align-self: center;
+  }
+  .pack__grid > .pcard:first-of-type { grid-row: 1; grid-column: 1; }
+  .pack__grid > .pcard:last-of-type { grid-row: 1; grid-column: 2; }
   .pcard { grid-template-columns: 1fr; text-align: center; }
   .pcard__shot img { width: auto; max-height: 236px; }
   .pcard__body { display: flex; flex-direction: column; }
@@ -946,8 +1062,25 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 
   .bgrid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
 
+  /* All four across. The longest heading is «أصحاب الأعمال والمجهود البدني»,
+     which still fits a quarter of the 1080 wrap on two lines. */
+  .who__grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
   .ing__panel { gap: 44px; }
   .offer__shot img { width: 288px; }
+
+  /* Usage and warnings side by side. They are read together — «how much» and
+     «who should not» are one decision — and stacking them put the warnings
+     below the fold of the section, which is the wrong place for the part that
+     earns the trust. The two steps stay stacked inside their own column so the
+     numbered order still reads top to bottom. */
+  .use .wrap {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 26px; align-items: start;
+  }
+  .use .sec__head { grid-column: 1 / -1; }
+  .use .steps { grid-template-columns: 1fr; gap: 16px; }
+  .use .warn { margin-top: 0; max-width: none; }
 }
 
 /* ── Tablet-only guard ──────────────────────────────────────────────────

@@ -562,7 +562,96 @@
   </div>
 </section>
 
-<!-- ═══ 07 · HOW TO USE + WARNINGS ══════════════════════════════════════════
+<!-- ═══ 07 · WHO IT SUITS ═══════════════════════════════════════════════════
+     Copy supplied by the client, and it is worth being precise about what it
+     does and does not say. Every line here describes WHO the pack suits, never
+     what it does to them — «دعم», «الراحة», «الحركة», «المرونة», and nothing
+     about treating, curing or repairing anything. That keeps it on the right
+     side of the same line the rest of the page holds: the only claims the page
+     makes in its own voice are the ones it can attribute, and a suitability
+     note is not a claim about an effect.
+
+     It sits after the ingredients rather than before them on purpose — a
+     reader decides whether a product is for them AFTER they have seen what is
+     in it, and the dosage and warnings follow immediately below, which is the
+     order the questions actually arrive in.
+
+     The icons are inline SVG, drawn here rather than loaded: four line marks do
+     not justify a request, and inline means they inherit currentColor and carry
+     no layout cost. Each is aria-hidden — the heading beside it already says
+     what it is, so a screen reader would only hear the same thing twice. -->
+<section class="sec whofor">
+  <div class="wrap">
+    <header class="sec__head">
+      <h2>لمن هذا الباك؟</h2>
+      <p class="sec__sub">مناسب للأشخاص اللي كيقلبو على دعم يومي للمفاصل والحركة.</p>
+    </header>
+
+    <ul class="who__grid">
+      <li class="who">
+        <span class="who__ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 3v3.4c0 1.1.42 2.1 1.18 2.85"/>
+            <path d="M15 3v3.4c0 1.1-.42 2.1-1.18 2.85"/>
+            <circle cx="12" cy="12" r="2.9"/>
+            <path d="M9 21v-3.4c0-1.1.42-2.1 1.18-2.85"/>
+            <path d="M15 21v-3.4c0-1.1-.42-2.1-1.18-2.85"/>
+          </svg>
+        </span>
+        <h3>آلام المفاصل اليومية</h3>
+        <p>للأشخاص اللي كيعانيو من عدم الراحة فالمفاصل خلال الأنشطة اليومية.</p>
+      </li>
+
+      <li class="who">
+        <span class="who__ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="15.6" cy="4.4" r="1.9"/>
+            <path d="M13.2 21l2.1-5.1-3.1-2.6.8-4.3 3.3 2.3 2.5.6"/>
+            <path d="M11.3 9.4 7.7 11.1 6.6 14.7"/>
+            <path d="M3.6 8.2h3.6"/>
+          </svg>
+        </span>
+        <h3>الأشخاص النشيطين والرياضيين</h3>
+        <p>لدعم المفاصل بعد المجهود البدني والحفاظ على الحركة والمرونة.</p>
+      </li>
+
+      <li class="who">
+        <span class="who__ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="4.2" r="1.9"/>
+            <path d="M12 6.4v6.6"/>
+            <path d="M7.4 9.2h9.2"/>
+            <path d="M12 13 9.2 21"/>
+            <path d="M12 13l2.8 8"/>
+          </svg>
+        </span>
+        <h3>أصحاب الأعمال والمجهود البدني</h3>
+        <p>مناسب للأشخاص اللي كيديرو مجهود بدني أو كيبقاو واقفين وحركيين خلال النهار.</p>
+      </li>
+
+      <li class="who">
+        <span class="who__ic" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10.2" cy="4.2" r="1.9"/>
+            <path d="M10.2 6.4v6.3"/>
+            <path d="M10.2 12.7 8.3 21"/>
+            <path d="M10.2 12.7 12.6 21"/>
+            <path d="m12.7 8.4 3.1 1.5"/>
+            <path d="M16.4 9.9V21"/>
+          </svg>
+        </span>
+        <h3>كبار السن</h3>
+        <p>لدعم الراحة والحركة اليومية والمحافظة على مرونة المفاصل.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══ 08 · HOW TO USE + WARNINGS ══════════════════════════════════════════
      Both taken word for word off the client's «طريقة الاستعمال» sheet. The
      warnings are not small print here: on a page selling a supplement they are
      a reason to trust it, so they get a card of their own, and the original
