@@ -330,7 +330,7 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
    is either white on the field or dark on a white card — the green is never
    asked to hold small type. */
 .hero {
-  padding-block: 30px 44px;
+  padding-block: 26px 34px;
   background:
     radial-gradient(90% 60% at 82% 4%, rgba(70, 123, 3, .34), transparent 62%),
     linear-gradient(170deg, var(--deep-2) 0%, var(--deep-1) 100%);
@@ -353,6 +353,42 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   display: block; margin-top: 6px;
   font-size: clamp(19px, 5.2vw, 27px); font-weight: 700; color: var(--accent-on-dark);
 }
+/* The four quoted benefit lines, as a row of chips under the lede.
+
+   Icon above the text and all four in one row, the way the reference advert
+   sets them. That arrangement is what made truncating two of the labels worth
+   doing: stacked, each chip is only as wide as a quarter of the copy column,
+   and a 33-character sentence would break to four words a line. Two columns on
+   phones, where a quarter column is too narrow for Arabic at any length. */
+.hero__chips {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 8px; margin-top: 18px;
+}
+/* Icon beside the text on phones, above it on desktop. Stacking costs about
+   30px of hero height per row, which on a 390px screen pushes the price card
+   further from the fold for no gain — there is room beside the text there.
+   The stacked form is switched on at 900px, where the four sit in one row and
+   a centred icon over a centred line is what the reference does. */
+.hero__chips li {
+  display: flex; align-items: center; gap: 9px;
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid rgba(201, 165, 90, .38);
+  border-radius: var(--r-sm); padding: 9px 11px;
+}
+/* Fixed box, so the chip's height is settled before the SVG paints. */
+.hero__chip-ic {
+  flex: 0 0 auto; display: grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  color: var(--gold-on-dark);
+  background: rgba(201, 165, 90, .15);
+  border: 1px solid rgba(201, 165, 90, .42);
+}
+.hero__chip-ic svg { width: 19px; height: 19px; display: block; }
+.hero__chips p {
+  font-size: 12px; font-weight: 700; line-height: 1.45;
+  color: var(--on-deep-soft);
+}
+
 .hero__lede { margin-top: 14px; font-size: 16px; color: var(--on-deep-soft); max-width: 44ch; }
 .hero__lede b { color: #fff; font-weight: 800; }
 /* «ANTI-JOINT PAIN» is the product's name; a line break through the middle of
@@ -432,9 +468,17 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .offer-line__label { font-weight: 800; font-size: 17px; color: var(--g-900); }
 /* Live and struck price travel in one flex item, so the gap cannot space them
    apart into two unrelated numbers. */
-.offer-line__price { display: inline-flex; align-items: baseline; gap: 9px; }
-.offer-line__price b { font-size: 30px; font-weight: 800; color: var(--accent-ink); line-height: 1.1; }
-.offer-line__price s { font-size: 16px; }
+/* Stacked, struck price on top, the way the reference sets it: the old number
+   is context for the new one, and reading down from 450 to 329 states the
+   discount in the order the eye moves. `column-reverse` does that without
+   touching the markup — the live price stays FIRST in the DOM, so a screen
+   reader still hears what it costs before what it used to cost. */
+.offer-line__price {
+  display: inline-flex; flex-direction: column-reverse;
+  align-items: flex-start; gap: 1px;
+}
+.offer-line__price b { font-size: 36px; font-weight: 800; color: var(--accent-ink); line-height: 1.05; }
+.offer-line__price s { font-size: 15px; }
 
 .offer-line__facts {
   display: flex; flex-wrap: wrap; gap: 8px;
@@ -533,93 +577,6 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .done h3 { font-size: 22px; }
 .done p { font-size: 14.5px; color: var(--muted); }
 .done__num b { color: var(--ink); font-size: 16px; }
-
-/* ── 09 · The day ───────────────────────────────────────────────────────── */
-.day__in { display: grid; gap: 18px; max-width: 760px; margin-inline: auto; }
-.day__copy h2 { font-size: clamp(22px, 5.8vw, 30px); }
-.day__copy p { margin-top: 14px; color: var(--ink-2); }
-.day__copy b { color: var(--g-800); font-weight: 800; }
-.day__copy .link-arrow { margin-top: 18px; }
-
-/* The three moments the copy names, each with the scene the brand shot for
-   it. Photographs only — no product, no claim, no caption beyond the moment. */
-.life { margin-top: 26px; }
-
-/* A scroll-snap slider. The track is a plain overflow-x row, which is what
-   gives swipe on a phone, trackpad scroll on a laptop and arrow keys once
-   focused — all of it native, none of it scripted. `overscroll-behavior-x`
-   stops a swipe that runs off the end from dragging the page sideways with it.
-
-   The arrows and dots are the only scripted part, and they start `hidden`, so a
-   page whose JS never arrives still shows a perfectly usable scrolling row. */
-.life__slider { position: relative; }
-.life__track {
-  display: flex; gap: 12px;
-  margin: 0; padding: 0; list-style: none;
-  overflow-x: auto; overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  /* The scrollbar would sit under the photographs and read as a design mistake;
-     the dots say the same thing deliberately. */
-  scrollbar-width: none; -ms-overflow-style: none;
-}
-.life__track::-webkit-scrollbar { display: none; }
-.life__track:focus-visible { outline: 3px solid var(--accent-bright); outline-offset: 3px; border-radius: var(--r); }
-@media (prefers-reduced-motion: reduce) { .life__track { scroll-behavior: auto; } }
-
-/* One slide per view on a phone, two from 560, three from 900 — the same
-   breakpoints the grid used, so the section's rhythm does not change. */
-.life__slide { flex: 0 0 100%; scroll-snap-align: start; min-width: 0; }
-
-.life__slide figure {
-  position: relative;
-  border-radius: var(--r); overflow: hidden;
-  border: 1px solid var(--line);
-  box-shadow: var(--sh-1);
-}
-.life__slide img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 5 / 4; }
-.life__slide figcaption {
-  position: absolute; inset-inline-start: 12px; bottom: 10px;
-  font-size: 13px; font-weight: 800; color: #fff;
-  background: rgba(15, 48, 24, .72);
-  border-radius: 999px; padding: 4px 14px;
-  backdrop-filter: blur(4px);
-}
-
-/* Dots carry the phone, arrows carry the desktop — a 44px tap target floating
-   over a photograph is worse than a swipe, and a mouse has nothing to swipe
-   with. Each is shown only where it is the better control. */
-.life__dots {
-  display: flex; justify-content: center; gap: 8px;
-  margin-top: 14px;
-}
-.life__dot {
-  width: 8px; height: 8px; padding: 0;
-  border: 0; border-radius: 999px;
-  background: var(--line-2); cursor: pointer;
-  transition: background .18s, width .18s;
-}
-.life__dot[aria-current="true"] { width: 22px; background: var(--g-700); }
-.life__dot:focus-visible { outline: 3px solid var(--accent-bright); outline-offset: 3px; }
-
-.life__nav {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  z-index: 2;
-  width: 44px; height: 44px;
-  display: none; align-items: center; justify-content: center;
-  background: var(--paper); color: var(--ink);
-  border: 1px solid var(--line); border-radius: 999px;
-  box-shadow: var(--sh-2); cursor: pointer;
-}
-.life__nav svg { width: 20px; height: 20px; }
-.life__nav[disabled] { opacity: .35; cursor: default; }
-/* `inset-inline` so the pair swaps sides under RTL without a second rule. */
-.life__nav--prev { inset-inline-start: -10px; }
-.life__nav--next { inset-inline-end: -10px; }
-@media (min-width: 720px) {
-  .life__nav:not([hidden]) { display: flex; }
-  .life__dots { display: none; }
-}
 
 /* ── 10 · What's in the pack ────────────────────────────────────────────── */
 /* Two cards with a «+» between them, because the pack IS an addition: one from
@@ -798,6 +755,43 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   border: 1px solid rgba(201, 165, 90, .42);
 }
 .who__ic svg { width: 27px; height: 27px; display: block; }
+
+/* The client's four photographs, shown WHOLE.
+
+   `contain`, not `cover`, is the whole point: three of the four are 1408×768
+   and the elderly couple is 1536×1024, and the brief was explicit that no part
+   of any frame may be cut. A shared 16/9 box with `cover` would have evened the
+   row by slicing the odd one; `contain` evens it by letting that one sit a
+   little inset instead, against a sage ground. Nothing is lost, and the four
+   still line up.
+
+   `order: -1` puts the photograph at the top of the card without touching the
+   markup — the figure stays after the icon in the DOM, which keeps the heading
+   the first thing a screen reader meets after the decorative mark. Visually a
+   photo-led card reads far better than an icon floating alone above one. The
+   negative margins cancel the card's padding so it sits flush under the gold
+   edge, like a card header rather than an inset picture. */
+.who { display: flex; flex-direction: column; }
+.who__fig {
+  order: -1;
+  margin: -20px -18px 16px;
+  border-radius: calc(var(--r-lg) - 2px) calc(var(--r-lg) - 2px) 0 0;
+  overflow: hidden;
+  background: var(--sage);
+  border-bottom: 1px solid var(--line);
+}
+/* One card per row on a phone, so nothing has to line up with anything: each
+   photograph keeps its own proportions and there are no bars at all. The shared
+   box only switches on from 480px, where cards sit side by side and a ragged
+   row of image heights would be worse than a slight inset on one of them. */
+.who__fig img { width: 100%; height: auto; display: block; }
+@media (min-width: 480px) {
+  /* 1408/768 rather than 16/9: it is the exact ratio of three of the four, so
+     those three fill the box with no bars whatsoever, and only the 1536×1024
+     elderly couple sits inset. Choosing 16/9 would have put a sliver of bar on
+     all four instead of a little on one. */
+  .who__fig img { aspect-ratio: 1408 / 768; object-fit: contain; }
+}
 .who h3 { font-size: 17px; color: var(--g-800); line-height: 1.35; }
 .who p { margin-top: 8px; font-size: 14.5px; color: var(--ink-2); line-height: 1.65; }
 
@@ -985,16 +979,11 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   .bcard__ic { width: 64px; height: 64px; }
 }
 
-/* ── ≥ 560px — the three moments sit in a row ───────────────────────────── */
-@media (min-width: 560px) {
-  .life__slide { flex-basis: calc((100% - 12px) / 2); }
-}
-
 /* ── ≥ 720px — two columns ──────────────────────────────────────────────── */
 @media (min-width: 720px) {
   :root { --sec-y: 66px; }
 
-  .hero { padding-block: 40px 56px; }
+  .hero { padding-block: 32px 40px; }
   .hero__in {
     grid-template-columns: 1fr 1fr;
     grid-template-areas: 'shot copy' 'shot offer';
@@ -1049,11 +1038,33 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   :root { --sec-y: 78px; }
   body { font-size: 16.5px; }
 
-  /* Three across, matching the grid this slider replaced. */
-  .life__slide { flex-basis: calc((100% - 24px) / 3); }
-
   .hero__in { grid-template-columns: 1.05fr .95fr; gap: 18px 48px; }
   .hero__shot { max-width: 452px; }
+  /* All four in one row, as the reference sets them. Only from 900: below this
+     a quarter of the copy column is too narrow for Arabic at any label length,
+     which is why the truncation stops at a trailing clause and does not go
+     further. */
+  .hero__chips { grid-template-columns: repeat(4, 1fr); gap: 7px; }
+  .hero__chips li { flex-direction: column; text-align: center; gap: 8px; padding: 12px 8px; }
+  .hero__chips p { font-size: 11.5px; }
+
+  /* The offer card stays in the copy column, and that is a decision rather than
+     an omission. Floating it over the lower part of the visual — the way the
+     reference advert places its price block — was built and measured twice, and
+     both times it cost more than it bought:
+
+       at 360px wide, bottom-aligned : the bottle disappeared behind it entirely
+       at 320px, pushed toward the copy: 21% of the pack still covered, the words
+                                         ANTI-JOINT PAIN hidden, and the fourth
+                                         benefit chip clipped by the card's edge
+
+     The reason is structural, not a matter of tuning. In the reference the
+     products sit in the UPPER right and the lower right is empty, so a price
+     block drops into free space. Here the visual is a vertical stack — scene
+     above, pack below — so the lower right IS the product. Anything placed
+     there either buries the pack or spills back across the gutter into the
+     chips. Hiding the product to show the price is the wrong trade on a page
+     that sells on delivery. */
   .hero__offer { padding: 22px; }
   .offer-line__price b { font-size: 34px; }
 

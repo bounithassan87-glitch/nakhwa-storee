@@ -114,6 +114,80 @@
         (<bdi>60</bdi> كبسولة) و<b>كريم المفاصل <bdi>100ml</bdi></b> — روتين يومي
         بسيط: وحدة من الداخل وواحد من الخارج.
       </p>
+
+      <!-- Four of the six lines from the client's own «فوائد باك آلام المفاصل»
+           sheet. Two are quoted whole; two are TRUNCATED to fit four across,
+           and the rule for that is narrow enough to state exactly:
+
+             · only a trailing clause may go —
+               «يخفف من آلام المفاصل ويعزز المرونة» → «يخفف من آلام المفاصل»
+               «يحسن الحركة والنشاط اليومي»        → «يحسن الحركة والنشاط»
+             · a hedge may NEVER go. «يساعد في تقليل الالتهابات» keeps its
+               «يساعد في»: dropping it would shorten the line by three words and
+               turn a qualified statement into a flat one, which is a bigger
+               claim than the sheet makes. Length is not worth that.
+
+           Each chip is therefore a leading fragment of a sentence the brand
+           wrote, never a paraphrase, and the benefits section below still
+           carries all six in full and unaltered. The two left out here are
+           «يعزز صحة العظام والمفاصل» and «مناسب للرياضيين وكبار السن».
+
+           The reference advert's fourth chip is «تنشيط الدورة الدموية». It is
+           deliberately NOT used: that is an Arabic rendering of «Stimule la
+           circulation sanguine», printed on the tube in French. This page keeps
+           the cream's printed lines in French on purpose — translating one
+           writes a claim the customer cannot check against the tube in their
+           hand. The fourth chip says «تركيبة طبيعية فعالة وآمنة» instead,
+           which is the brand's own Arabic.
+
+           Only the icons are aria-hidden; the text is content and is read. -->
+      <ul class="hero__chips">
+        <li>
+          <span class="hero__chip-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 3v3.4c0 1.1.42 2.1 1.18 2.85"/>
+              <path d="M15 3v3.4c0 1.1-.42 2.1-1.18 2.85"/>
+              <circle cx="12" cy="12" r="2.9"/>
+              <path d="M9 21v-3.4c0-1.1.42-2.1 1.18-2.85"/>
+              <path d="M15 21v-3.4c0-1.1-.42-2.1-1.18-2.85"/>
+            </svg>
+          </span>
+          <p>يخفف من آلام المفاصل</p>
+        </li>
+        <li>
+          <span class="hero__chip-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3.4 5.4 6.2v5.5c0 4.1 2.6 7.6 6.6 9.1 4-1.5 6.6-5 6.6-9.1V6.2Z"/>
+              <path d="m9.5 12.1 1.9 1.9 3.5-3.7"/>
+            </svg>
+          </span>
+          <p>يساعد في تقليل الالتهابات</p>
+        </li>
+        <li>
+          <span class="hero__chip-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="15.6" cy="4.6" r="1.8"/>
+              <path d="M13.3 21l2-5-3-2.5.8-4.2 3.2 2.2 2.4.6"/>
+              <path d="M11.4 9.5 7.9 11.2 6.8 14.7"/>
+            </svg>
+          </span>
+          <p>يحسن الحركة والنشاط</p>
+        </li>
+        <li>
+          <span class="hero__chip-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3.9c2.2 2.1 4.2 2.6 6 2.4v5.4c0 4-2.3 7.3-6 8.8-3.7-1.5-6-4.8-6-8.8V6.3c1.8.2 3.8-.3 6-2.4Z"/>
+              <path d="M12 9.2v5.6"/>
+              <path d="M9.6 11.4c1.3 0 2.4.9 2.4 2.2"/>
+            </svg>
+          </span>
+          <p>تركيبة طبيعية فعالة وآمنة</p>
+        </li>
+      </ul>
     </div>
 
     <!-- Cut from the client's studio pack shot, whose bottle label reads
@@ -247,123 +321,6 @@
         <button class="btn btn--ghost" type="button" id="order-again">طلب جديد</button>
       </div>
 
-    </div>
-  </div>
-</section>
-
-<!-- ═══ 03 · THE DAY ════════════════════════════════════════════════════════
-     Recognition, not diagnosis. It describes the moments the reader already
-     knows and says what the pack IS — a routine — without promising anything
-     about what it will do. -->
-<section class="sec sec--paper day">
-  <div class="wrap day__in">
-    <div class="day__copy">
-      <h2>الوقفة، الدرج، الصلاة… حركات بسيطة كتولي ثقيلة</h2>
-      <p>
-        الوقفة من الصالون. الطلوع للدرج. الجلسة الطويلة فالخدمة. ملي كتبدا
-        المفاصل كتشدّ، ماشي غير الوجع هو اللي كيبان — هو النهار كامل اللي
-        كيتبدّل.
-      </p>
-      <p>
-        <b>باك بلا ألم</b> ماشي حبة سحرية. هو روتين يومي فيه جوج حوايج كيمشيو
-        مع بعضياتهم: <b>كبسولة</b> كتاخدها مع الما، و<b>كريم</b> كتدلك بيه
-        البلاصة اللي كتوجعك.
-      </p>
-      <a class="link-arrow" href="#pack">شوف شنو كاين فالباك</a>
-    </div>
-  </div>
-
-  <!-- The copy above names three moments — الوقفة, الدرج, الصلاة. Each one now
-       has the scene the brand photographed for it. No product is in frame in
-       any of the three: they are atmosphere, and their alt text says so. -->
-  <!-- A scroll-snap slider, not a carousel library.
-       The track is an ordinary overflow-x list: swipe on a phone, two-finger or
-       trackpad scroll on a laptop, arrow keys once focused, and it degrades to a
-       plain scrolling row if the script never runs. The arrows and dots below
-       are progressive enhancement — script.js reveals them and nothing breaks
-       without them.
-       Slides are added by adding <li>s; the count adapts on its own. -->
-  <div class="wrap life">
-    <div class="life__slider" data-life-slider>
-      <ul class="life__track" data-life-track tabindex="0" role="region"
-          aria-label="مشاهد من النهار">
-      <li class="life__slide">
-        <figure>
-          <img src="./assets/images/life-stairs-464.webp"
-               srcset="./assets/images/life-stairs-464.webp 464w, ./assets/images/life-stairs-928.webp 928w"
-               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="928" height="785" loading="lazy" decoding="async"
-               alt="صورة تعبيرية: عامل بناء مرتاح فورشو، والعمود الفقري والركبتين مرسومين فوقو">
-        </figure>
-      </li>
-      <li class="life__slide">
-        <figure>
-          <img src="./assets/images/life-office-329.webp"
-               srcset="./assets/images/life-office-329.webp 329w, ./assets/images/life-office-658.webp 658w"
-               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="658" height="530" loading="lazy" decoding="async"
-               alt="صورة تعبيرية: موظف جالس فمكتبو، والعمود الفقري مرسوم فوق ضهرو">
-        </figure>
-      </li>
-      <li class="life__slide">
-        <figure>
-          <img src="./assets/images/life-jeep-464.webp"
-               srcset="./assets/images/life-jeep-464.webp 464w, ./assets/images/life-jeep-928.webp 928w"
-               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="928" height="795" loading="lazy" decoding="async"
-               alt="صورة تعبيرية: راجل مغربي متكي على سيارة فالبادية، والعمود الفقري مرسوم فوقو">
-        </figure>
-      </li>
-      <li class="life__slide">
-        <figure>
-          <img src="./assets/images/life-gift-439.webp"
-               srcset="./assets/images/life-gift-439.webp 439w, ./assets/images/life-gift-878.webp 878w"
-               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="878" height="700" loading="lazy" decoding="async"
-               alt="صورة تعبيرية: ولد كيمد الباك لوالدتو فصالون مغربي">
-        </figure>
-      </li>
-      <li class="life__slide">
-        <figure>
-          <img src="./assets/images/life-salon-464.webp"
-               srcset="./assets/images/life-salon-464.webp 464w, ./assets/images/life-salon-928.webp 928w"
-               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="928" height="730" loading="lazy" decoding="async"
-               alt="صورة تعبيرية: راجل جالس فالصالون وحاط يديه على ركبتو، والمفصل مرسوم فوقها">
-        </figure>
-      </li>
-      <li class="life__slide">
-        <figure>
-          <!-- Slide 6 · the pack with its ingredients, shipped whole at the
-               client's explicit instruction. Its bottle carries a capsule
-               count that contradicts the figure this page states elsewhere;
-               that was raised with evidence and the decision was to ship it.
-               The alt names no count, so the page's own words stay
-               consistent with themselves. -->
-          <img src="./assets/images/life-pack-464.webp"
-               srcset="./assets/images/life-pack-464.webp 464w, ./assets/images/life-pack-928.webp 928w"
-               sizes="(min-width: 900px) 330px, (min-width: 560px) 31vw, 90vw"
-               width="928" height="742" loading="lazy" decoding="async"
-               alt="باك بلا ألم من BelleVia: علبة الكبسولات وأنبوب الكريم 100ml مع مكونات نباتية">
-        </figure>
-      </li>
-      </ul>
-
-      <!-- Hidden until script.js confirms the track actually overflows. A pair
-           of arrows over a row that already fits is furniture, not navigation. -->
-      <button class="life__nav life__nav--prev" type="button" data-life-prev hidden
-              aria-label="الصورة السابقة">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-      </button>
-      <button class="life__nav life__nav--next" type="button" data-life-next hidden
-              aria-label="الصورة اللي جاية">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-
-      <!-- Filled by script.js, one dot per page. Empty and hidden without it. -->
-      <div class="life__dots" data-life-dots hidden></div>
     </div>
   </div>
 </section>
@@ -598,6 +555,13 @@
             <path d="M15 21v-3.4c0-1.1-.42-2.1-1.18-2.85"/>
           </svg>
         </span>
+        <figure class="who__fig">
+          <img src="./assets/images/who-pain-420.webp"
+               srcset="./assets/images/who-pain-420.webp 420w, ./assets/images/who-pain-840.webp 840w"
+               sizes="(min-width: 900px) 250px, (min-width: 480px) 45vw, calc(100vw - 72px)"
+               width="1408" height="768" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: مرا كبيرة فالسن جالسة فالصالون وشادة ركبتها">
+        </figure>
         <h3>آلام المفاصل اليومية</h3>
         <p>للأشخاص اللي كيعانيو من عدم الراحة فالمفاصل خلال الأنشطة اليومية.</p>
       </li>
@@ -612,6 +576,13 @@
             <path d="M3.6 8.2h3.6"/>
           </svg>
         </span>
+        <figure class="who__fig">
+          <img src="./assets/images/who-active-420.webp"
+               srcset="./assets/images/who-active-420.webp 420w, ./assets/images/who-active-840.webp 840w"
+               sizes="(min-width: 900px) 250px, (min-width: 480px) 45vw, calc(100vw - 72px)"
+               width="1408" height="768" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: زوج شباب كيجريو على كورنيش أݣادير">
+        </figure>
         <h3>الأشخاص النشيطين والرياضيين</h3>
         <p>لدعم المفاصل بعد المجهود البدني والحفاظ على الحركة والمرونة.</p>
       </li>
@@ -627,6 +598,13 @@
             <path d="M12 13l2.8 8"/>
           </svg>
         </span>
+        <figure class="who__fig">
+          <img src="./assets/images/who-work-420.webp"
+               srcset="./assets/images/who-work-420.webp 420w, ./assets/images/who-work-840.webp 840w"
+               sizes="(min-width: 900px) 250px, (min-width: 480px) 45vw, calc(100vw - 72px)"
+               width="1408" height="768" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: راجل فمكتب جالس قدام الحاسوب وكيهدر فالتيليفون">
+        </figure>
         <h3>أصحاب الأعمال والمجهود البدني</h3>
         <p>مناسب للأشخاص اللي كيديرو مجهود بدني أو كيبقاو واقفين وحركيين خلال النهار.</p>
       </li>
@@ -643,6 +621,13 @@
             <path d="M16.4 9.9V21"/>
           </svg>
         </span>
+        <figure class="who__fig">
+          <img src="./assets/images/who-elder-420.webp"
+               srcset="./assets/images/who-elder-420.webp 420w, ./assets/images/who-elder-840.webp 840w"
+               sizes="(min-width: 900px) 250px, (min-width: 480px) 45vw, calc(100vw - 72px)"
+               width="1536" height="1024" loading="lazy" decoding="async"
+               alt="صورة تعبيرية: زوج كبار فالسن كيتبسمو وهوما كيشربو أتاي">
+        </figure>
         <h3>كبار السن</h3>
         <p>لدعم الراحة والحركة اليومية والمحافظة على مرونة المفاصل.</p>
       </li>

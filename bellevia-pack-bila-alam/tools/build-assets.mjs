@@ -120,6 +120,12 @@ const F = {
   // is still in the source folder but no longer built: its couple read as
   // generic Europeans, and this one is recognisably Moroccan.
   heroScene: 'hero-scene-riad.png', // 1024×1536
+  // The four «لمن هذا الباك؟» photographs, in card order. Supplied by the
+  // client for that section; used whole, never cropped.
+  whoPain: 'who-pain.jpg',     // 1408×768
+  whoActive: 'who-active.jpg', // 1408×768
+  whoWork: 'who-work.jpg',     // 1408×768 — the office scene
+  whoElder: 'who-elder.webp',  // 1536×1024
   // The three lifestyle scenes, in the order the strip shows them.
   // الوقفة — replaced the gyacqa scene. That one was a man rising from a sofa
   // beside a television carrying an ANTI-JOINTS carton that does not exist; this
@@ -292,6 +298,26 @@ const HERO_SCENE = { left: 460, top: 130, width: 564, height: 715 };
 
 console.log('hero backdrop — the Moroccan couple on the riad stairs, no text, no packaging');
 await variants(sharp(src(F.heroScene)).extract(HERO_SCENE), 'hero-scene', [282, 564], HERO_SCENE.width);
+
+/**
+ * The four «لمن هذا الباك؟» photographs.
+ *
+ * Re-encoded at two widths and NOTHING else — no crop, no extract, no resize
+ * that changes proportion. The brief was explicit that these keep their own
+ * dimensions and lose no part of the frame, so `variants()` only ever scales
+ * them down whole.
+ *
+ * Three are 1408×768 and one, the elderly couple, is 1536×1024. That mismatch
+ * is handled in CSS with `object-fit: contain` rather than here with a crop:
+ * evening them up at build time would mean cutting the odd one, which is the
+ * one thing this set is not allowed to do.
+ */
+const WHO = { pain: F.whoPain, active: F.whoActive, work: F.whoWork, elder: F.whoElder };
+
+console.log('who it suits — four photographs, re-encoded whole, never cropped');
+for (const [name, file] of Object.entries(WHO)) {
+  await variants(sharp(src(file)), `who-${name}`, [420, 840], null);
+}
 
 console.log('lifestyle — three scenes, each cropped clear of the carton that is not the product');
 await variants(sharp(src(F.salon)).extract(LIFE.salon), 'life-salon', [464, 928], LIFE.salon.width);
