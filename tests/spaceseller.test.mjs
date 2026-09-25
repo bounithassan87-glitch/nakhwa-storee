@@ -515,6 +515,29 @@ test("cache-terazo and lilya-talon are fulfilled elsewhere, so they never sync",
   assert.equal(isInSpaceSellerScope("lilya-talon"), false);
 });
 
+/* The knee brace is sold through `/api/orders` like everything else, and its
+   orders must land in the dashboard and stop there — the client's instruction
+   was «ممنوع استعمال Space Seller نهائياً» for this product.
+
+   Nothing enforces that except this list, and the enforcement is silent: an
+   out-of-scope order is recorded SKIPPED/out_of_scope by `syncOrderToSpaceSeller`
+   BEFORE a client is built, so no token is read and no request is made. The
+   failure mode if someone adds the slug is therefore invisible in the
+   dashboard and visible only as a real parcel at a partner who does not stock
+   it — which is why it is asserted here rather than left to the comment above
+   the array. */
+test("the genouillere is NOT in Space Seller scope, and adding it would be a bug", () => {
+  assert.equal(isInSpaceSellerScope("bellevia-genouillere"), false);
+  assert.equal(
+    SPACESELLER_PRODUCTS.includes("bellevia-genouillere"),
+    false,
+    "bellevia-genouillere must never be added to SPACESELLER_PRODUCTS",
+  );
+
+  const order = { items: [{ quantity: 3, product: { slug: "bellevia-genouillere", sku: "BVP-GEN-001", name: "دعامة الركبة الاحترافية" } }] };
+  assert.equal(orderInSpaceSellerScope(order).inScope, false, "a genouillere order is out of scope");
+});
+
 test("being outside the scope is not a missing SKU — the two must not be confused", () => {
   // cache-terazo has no Space Seller SKU and never needs one. It must be
   // recognised as out of scope, which is silent, rather than as a blocked

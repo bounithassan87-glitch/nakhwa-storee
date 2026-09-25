@@ -1,20 +1,25 @@
 @charset "utf-8";
 /* ==========================================================================
-   BelleVia — دعامة الركبة الاحترافية · landing page
-   Mobile-first · RTL · white, black, and BelleVia green used sparingly.
+   دعامة الركبة الاحترافية · صفحة الهبوط
+   Mobile-first · RTL · deep green, gold, white.
 
-   The palette is three things and stops there. White is the page. Black is the
-   type and the one dark band, which is also the product's own colour — a black
-   brace on a white ground needs no third colour to look like itself. Green is
-   BelleVia's leaf (#467B03 family), and it appears ONLY on things you act on or
-   things that are true: the order button, a tick, a hairline under a heading.
-   No green backgrounds behind paragraphs, no gradients doing decoration.
+   The palette is three things. WHITE is the page and the product's stage — the
+   brace is black, photographed on white, and every other surface is chosen so
+   it never has to compete. DEEP GREEN is the band colour: it carries the hero,
+   the offer, and the footer, and it is what makes a 180 DH product read as
+   considered rather than cheap. GOLD is the one accent, and it appears only on
+   something you act on or something that is true — the order button, a rule
+   under a heading, a tick.
 
-   That restraint is the brief — «الأبيض + الأسود + أخضر BelleVia بشكل خفيف» —
-   and it is also what keeps the page from reading as a generated template:
-   generated pages reach for a second accent and a gradient per section.
+   Sections alternate white → deep green → white and never a fourth surface, so
+   the page reads as one object instead of a stack of templates. That
+   alternation IS the brief: «لا تجعل الصفحة كلها خضراء».
 
-   Every text/background pair below is at or above 4.5:1, most far above.
+   Gold is the trap in a palette like this: it has almost no contrast on white
+   (#C9A227 on white is 2.4:1), so there are two golds here — `--gold` is a FILL
+   and a SHAPE, never small type on a light ground, and `--gold-ink` is the same
+   hue pushed dark enough to be read as text. Every text/background pair below
+   is at or above 4.5:1.
    ========================================================================== */
 
 /* ── 00 · Fonts ─────────────────────────────────────────────────────────── */
@@ -53,50 +58,57 @@
 :root {
   /* Ink. Near-black rather than #000: pure black on pure white vibrates on an
      OLED phone held at arm's length, which is most of this page's traffic. */
-  --ink:    #101317;   /* 18.8:1 on white — headings and body */
-  --ink-2:  #3A4149;   /* 10.2:1 — secondary paragraphs */
-  --muted:  #5C646D;   /*  6.0:1 — captions, hints, never body text */
+  --ink:   #14211A;   /* 16.4:1 on white — headings and body */
+  --ink-2: #3A4A41;   /*  8.7:1 — secondary paragraphs */
+  --muted: #5E6E64;   /*  5.4:1 — captions and hints, never body text */
 
-  /* The one dark band, and the product's own colour. */
-  --black:      #0C0E10;
-  --on-black:      #FFFFFF;  /* 19.3:1 */
-  --on-black-soft: #C9CED3;  /* 12.3:1 */
-  --on-black-mute: #8F979F;  /*  6.2:1 */
+  /* The deep green bands. Two stops of one hue, so a gradient between them
+     reads as depth rather than as a second colour. */
+  --green-900: #0A2417;   /* the darkest note — the announcement bar, the footer */
+  --green-800: #0E3020;   /* the hero and offer bands */
+  --green-700: #14422C;
+  --green-ink: #1B6340;   /* green as TEXT on white — 6.0:1 */
+  --green-50:  #F1F7F3;   /* the only tinted light surface */
+  --green-100: #DCEBE2;
 
-  /* BelleVia green. `--green` is the fill every action carries (6.1:1 with
-     white on it). `--green-ink` is the same leaf pushed dark enough to be read
-     as TEXT on white (8.7:1). `--green-light` is for a tick or a hairline —
-     decoration only, never type. `--green-on-black` is the only green allowed
-     on the dark band (11.3:1). */
-  --green:          #3E6E03;
-  --green-ink:      #2F5402;
-  --green-light:    #6FA51B;
-  --green-on-black: #A8D46A;
-  --green-50:       #F3F8EC;
-  --green-100:      #DFEDC8;
+  /* Type on the deep bands. */
+  --on-green:      #FFFFFF;  /* 15.4:1 on --green-800 */
+  --on-green-soft: #CFE0D6;  /* 11.0:1 */
+  --on-green-mute: #94A99C;  /*  5.6:1 */
+
+  /* Gold. `--gold` is a FILL and a SHAPE — the order button, a rule, a tick —
+     and it is never small type on a light ground, where it sits at 2.4:1.
+     `--gold-ink` is the same hue pushed dark enough to BE text on white
+     (6.2:1). `--gold-on-green` is the only gold allowed on the dark bands
+     (6.4:1). */
+  --gold:          #C9A227;
+  --gold-ink:      #7A5D0A;
+  --gold-on-green: #E0BE55;
+  --gold-soft:     #FBF4DF;
+  --gold-line:     #E8D9A3;
 
   --paper: #FFFFFF;
-  /* The only non-white surface on the light half of the page: white pulled a
-     few degrees toward the leaf, far too little to tint a product
-     photographed on white. */
-  --shade: #F6F8F3;
+  /* White pulled a few degrees warm. Far too little to tint a product
+     photographed on white, enough to stop two white sections touching. */
+  --shade: #FAF8F3;
 
-  --line:   #E4E8E0;
-  --line-2: #D2DACA;
+  --line:   #E7E4DC;
+  --line-2: #D6D2C7;
   --danger: #A81E15;
 
   --r-sm: 10px;
   --r:    14px;
   --r-lg: 22px;
 
-  /* Shadows are neutral and shallow. A coloured or deep shadow is the tell of
-     a template; a premium page mostly uses a hairline and lets white do it. */
-  --sh-1: 0 1px 2px rgba(16, 19, 23, .04), 0 2px 10px rgba(16, 19, 23, .05);
-  --sh-2: 0 2px 6px rgba(16, 19, 23, .06), 0 14px 34px rgba(16, 19, 23, .10);
+  /* Shallow and neutral. A coloured or deep shadow is the tell of a template;
+     a premium page mostly uses a hairline and lets white do the work. */
+  --sh-1: 0 1px 2px rgba(20, 33, 26, .04), 0 2px 10px rgba(20, 33, 26, .05);
+  --sh-2: 0 2px 6px rgba(20, 33, 26, .06), 0 14px 34px rgba(20, 33, 26, .10);
+  --sh-green: 0 10px 30px rgba(10, 36, 23, .28);
 
   --pad: 16px;
   --sec-y: 52px;
-  --wrap: 1100px;
+  --wrap: 1120px;
 }
 
 /* ── 02 · Base ──────────────────────────────────────────────────────────── */
@@ -138,12 +150,12 @@ a { color: inherit; }
 
 .wrap { width: 100%; max-width: var(--wrap); margin-inline: auto; padding-inline: var(--pad); }
 
-/* Standalone Latin runs only — a phone number, a product name on its own line.
-   Never mid-sentence: `display:inline-block` cuts the bidi run and reorders
-   Latin inside Arabic. For Latin INSIDE an Arabic sentence the markup uses
-   <bdi>, which isolates without leaving the inline flow. And never on money:
-   «199 درهم» is an Arabic phrase and must stay one, or the digits mirror to the
-   wrong side of the currency word. */
+/* Standalone Latin runs only — a price code, a phone number. Never
+   mid-sentence: `display:inline-block` cuts the bidi run and reorders Latin
+   inside Arabic. For Latin INSIDE an Arabic sentence the markup uses <bdi>,
+   which isolates without leaving the inline flow. And never on money written
+   as «180 درهم»: that is an Arabic phrase and must stay one, or the digits
+   mirror to the wrong side of the currency word. */
 .ltr { display: inline-block; direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
 bdi { font-variant-numeric: tabular-nums; }
 
@@ -154,474 +166,349 @@ bdi { font-variant-numeric: tabular-nums; }
 .skip {
   position: absolute; inset-inline-start: 0; top: 0; z-index: 99;
   transform: translateY(-200%);
-  background: var(--black); color: #fff; padding: 10px 18px; border-radius: 0 0 var(--r-sm) 0;
+  background: var(--green-900); color: #fff; padding: 10px 18px; border-radius: 0 0 var(--r-sm) 0;
 }
 .skip:focus { transform: none; }
 
-:where(a, button, input, summary, [tabindex]):focus-visible {
-  outline: 3px solid var(--green-light); outline-offset: 2px; border-radius: 4px;
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 4px;
 }
 
-/* Struck reference price. Same weight class as the live one wherever it
-   appears, so the eye reads a discount rather than a footnote. */
-s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
-
-/* Decorative emoji and glyphs are marked aria-hidden in the markup; this keeps
-   them from riding above the line they sit on. */
 .ico { font-style: normal; line-height: 1; }
 
 /* ── 03 · Buttons ───────────────────────────────────────────────────────── */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: 54px; padding: 12px 30px;
-  font: inherit; font-weight: 800; font-size: 17px; text-decoration: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 56px; padding: 13px 32px;
+  font: inherit; font-weight: 800; font-size: 17.5px; text-decoration: none;
   border: 0; border-radius: 999px; cursor: pointer;
   transition: background-color .16s ease, transform .16s ease;
 }
-/* One conversion colour on the whole page. Every «اطلب الآن» is this button. */
-.btn--green { background: var(--green); color: #fff; }
-.btn--green:hover { background: #345C02; }
-.btn--dark { background: var(--black); color: #fff; }
-.btn--dark:hover { background: #22262A; }
+/* One conversion colour on the whole page, and it is gold on both grounds —
+   white and deep green — so «اطلب» never changes identity as you scroll. */
+.btn--gold { background: var(--gold); color: #24200A; box-shadow: 0 8px 22px rgba(201, 162, 39, .32); }
+.btn--gold:hover { background: #B8932073; background: #B89320; }
+.btn--ghost {
+  background: transparent; color: var(--on-green);
+  border: 1.5px solid rgba(255, 255, 255, .34); min-height: 48px; font-size: 16px;
+}
+.btn--ghost:hover { background: rgba(255, 255, 255, .08); }
+/* The same ghost button on a WHITE card — «طلب جديد» after a confirmed order. */
+.btn--ghost-light { color: var(--green-ink); border-color: var(--line-2); }
+.btn--ghost-light:hover { background: var(--green-50); }
 .btn--block { width: 100%; }
 .btn:active { transform: translateY(1px); }
 .btn[disabled] { opacity: .6; cursor: progress; }
+.btn svg { width: 21px; height: 21px; flex: 0 0 auto; }
 
 /* ── 04 · Section furniture ─────────────────────────────────────────────── */
 .sec { padding-block: var(--sec-y); }
 .sec--shade { background: var(--shade); }
-.sec--dark { background: var(--black); color: var(--on-black-soft); }
-.sec--dark h2, .sec--dark h3 { color: #fff; }
-
-.sec__head { text-align: center; max-width: 640px; margin-inline: auto; margin-bottom: 32px; }
-.sec__head h2 { font-size: clamp(23px, 6vw, 33px); }
-/* A short leaf-green rule under every section title — the one repeated
-   ornament on the page, and the main place green appears at all. */
-.sec__head h2::after {
-  content: ''; display: block; width: 48px; height: 3px; border-radius: 2px;
-  margin: 14px auto 0; background: var(--green-light);
+.sec--green {
+  background:
+    radial-gradient(88% 60% at 84% 0%, rgba(27, 99, 64, .40), transparent 64%),
+    linear-gradient(168deg, var(--green-700), var(--green-800) 58%, var(--green-900));
+  color: var(--on-green-soft);
 }
-.sec--dark .sec__head h2::after { background: var(--green-on-black); }
+.sec--green h2, .sec--green h3 { color: #fff; }
+
+.sec__head { text-align: center; max-width: 660px; margin-inline: auto; margin-bottom: 34px; }
+.sec__head h2 { font-size: clamp(23px, 6vw, 34px); }
+/* A short gold rule under every section title — the one repeated ornament, and
+   the main place gold appears at all. */
+.sec__head h2::after {
+  content: ''; display: block; width: 52px; height: 3px; border-radius: 2px;
+  margin: 14px auto 0; background: var(--gold);
+}
 .sec__sub { margin-top: 12px; color: var(--muted); font-size: 15.5px; }
-.sec--dark .sec__sub { color: var(--on-black-soft); }
+.sec--green .sec__sub { color: var(--on-green-soft); }
 
 /* ── 05 · Announcement bar ──────────────────────────────────────────────── */
-/* Static, centred, no marquee. A scrolling strip is motion that carries
-   information, which fails the moment someone turns motion off — and it is the
-   first thing that makes a page look generated. */
-.ann {
-  background: var(--black); color: #fff;
-  border-bottom: 2px solid var(--green);
-}
+.ann { background: var(--green-900); color: #fff; border-bottom: 2px solid var(--gold); }
 .ann__list {
   display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-  gap: 4px 0; padding-block: 8px;
+  gap: 4px 0; padding-block: 9px;
 }
-.ann__list li {
-  padding-inline: 14px;
-  font-size: 13px; font-weight: 700; white-space: nowrap;
-}
+.ann__list li { padding-inline: 14px; font-size: 13px; font-weight: 700; white-space: nowrap; }
 /* Drawn between items rather than typed, so a hidden config field cannot leave
    a dangling separator behind it. */
 .ann__list li + li { border-inline-start: 1px solid rgba(255, 255, 255, .22); }
-/* Below 560 the three facts wrap onto two rows, and the item that begins the
-   second row would carry a leading rule with nothing on the other side of it.
-   CSS cannot see where a row breaks, so the rules simply go. */
+.ann__list b { color: var(--gold-on-green); }
+/* Below 560 the facts wrap onto two rows, and the item that begins the second
+   row would carry a leading rule with nothing on the other side of it. CSS
+   cannot see where a row breaks, so the rules simply go. */
 @media (max-width: 559.98px) {
   .ann__list li + li { border-inline-start: 0; }
   .ann__list li { padding-inline: 10px; }
 }
-.ann__price b { color: var(--green-on-black); }
-.ann__price s { color: var(--on-black-mute); font-weight: 400; font-size: 12px; }
 
 /* ── 06 · Header ────────────────────────────────────────────────────────── */
 .head { background: var(--paper); border-bottom: 1px solid var(--line); }
 .head__in {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  min-height: 58px;
+  min-height: 60px;
 }
-.head__lead { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .head__logo { display: flex; }
-.head__back {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 12.5px; font-weight: 800; color: var(--muted);
-  text-decoration: none; white-space: nowrap;
-  /* 44px tall: it is a standalone control, not a link inside a sentence, so
-     the inline-text exception to the minimum target size does not cover it. */
-  min-height: 44px; padding: 4px 8px; border-radius: 8px;
-}
-.head__back svg { width: 14px; height: 14px; }
-.head__back:hover, .head__back:focus-visible { color: var(--ink); }
 .head__note { font-size: 12.5px; color: var(--muted); font-weight: 700; }
-/* The note is the first thing to go when the bar gets tight — the way back is
-   navigation, the note is reassurance. */
 @media (max-width: 420px) { .head__note { display: none; } }
 
 /* ── 07 · Hero ──────────────────────────────────────────────────────────── */
-/* White, not a coloured field. The product is black; anything behind it that
-   is not white is competing with it. */
-.hero { padding-block: 28px 40px; }
+/* The deep green field, and the only place on the page that gets one this
+   large. Everything that must be READ inside it is either white on the field
+   or dark on a white card — the green is never asked to hold small type. */
+.hero {
+  padding-block: 30px 44px;
+  background:
+    radial-gradient(90% 62% at 82% 2%, rgba(27, 99, 64, .42), transparent 62%),
+    linear-gradient(172deg, var(--green-700) 0%, var(--green-800) 55%, var(--green-900) 100%);
+  color: var(--on-green-soft);
+}
 .hero__in { display: grid; gap: 22px; }
-/* Phone order is source order: headline, photograph, then everything that asks
-   for a decision. The photograph sits inside the first screen rather than under
-   it. */
-.hero__head { margin-bottom: -4px; }
 
-.hero__eyebrow {
-  display: inline-block;
-  font-size: 12.5px; font-weight: 800; letter-spacing: .02em;
-  color: var(--green-ink); background: var(--green-50);
-  border: 1px solid var(--green-100);
-  border-radius: 999px; padding: 5px 14px; margin-bottom: 14px;
+.hero__badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12.5px; font-weight: 800; letter-spacing: .01em;
+  color: var(--gold-on-green);
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid rgba(224, 190, 85, .38);
+  border-radius: 999px; padding: 6px 15px; margin-bottom: 15px;
 }
-.hero h1 { font-size: clamp(26px, 7.2vw, 42px); letter-spacing: -.015em; }
-.hero__lede { margin-top: 0; font-size: 16.5px; color: var(--ink-2); max-width: 46ch; }
+.hero h1 { font-size: clamp(27px, 7.4vw, 45px); letter-spacing: -.015em; color: #fff; }
+.hero h1 em { display: block; font-style: normal; color: var(--gold-on-green); margin-top: 4px; }
+.hero__lede { margin-top: 15px; font-size: 16.5px; color: var(--on-green-soft); max-width: 46ch; }
 
-/* The three trust points. Ticks are drawn in green — one of the two places on
-   the light half of the page where green is allowed to be a shape.
-
-   One column at every width. Three items across two columns leaves an orphan,
-   and across three columns each label gets ~160px, which wraps «أحزمة قابلة
-   للتعديل» onto two lines. A short vertical checklist reads faster than either. */
-.hero__points { display: grid; gap: 9px; margin-top: 20px; }
-.hero__points li {
-  display: flex; align-items: flex-start; gap: 10px;
-  font-size: 15.5px; font-weight: 700; color: var(--ink);
-}
-.hero__points li::before {
-  content: '✓'; flex: 0 0 auto;
-  width: 22px; height: 22px; margin-top: 4px; border-radius: 50%;
-  background: var(--green-50); color: var(--green-ink);
-  display: grid; place-items: center; font-size: 13px; font-weight: 800;
-}
-
-/* The photograph is square as supplied and stays square: cropping it to a band
-   would cut either the brace or the leg it is on, and the whole point of this
-   frame is that the two are in it together. It is the LCP element — preloaded,
-   never lazy, and it declares its ratio so nothing below it moves. */
-.hero__shot { width: 100%; max-width: 460px; margin-inline: auto; }
+/* The product photograph. It is the LCP element — preloaded, high priority,
+   never lazy — and it declares its ratio so nothing below it moves. */
+.hero__shot { width: 100%; max-width: 440px; margin-inline: auto; }
 .hero__shot img {
   width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
   border-radius: var(--r-lg);
-  border: 1px solid var(--line);
-  background: var(--shade);
+  border: 1px solid rgba(255, 255, 255, .16);
+  box-shadow: var(--sh-green);
 }
 
-.hero__buy { display: grid; gap: 12px; margin-top: 22px; }
-.hero__price { display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; }
-.hero__price b { font-size: 32px; font-weight: 800; color: var(--ink); line-height: 1.1; }
-/* The multi-buy, one line, digits and Arabic only — the Latin offer labels stay
-   in the chooser where each one sits on its own line as a standalone run. */
-.hero__price-alt { font-size: 14.5px; font-weight: 700; color: var(--green-ink); }
-.hero__price:empty { display: none; }
-/* The two promises under the button, exactly as the brief words them. */
-.hero__assure {
-  display: flex; flex-wrap: wrap; gap: 6px 18px;
-  font-size: 14px; font-weight: 700; color: var(--ink-2);
+/* The price plate. A white card on the green field, because this is the one
+   block on the first screen that must be read without a moment's effort. */
+.hero__buy {
+  background: var(--paper); color: var(--ink);
+  border: 1px solid var(--line); border-top: 4px solid var(--gold);
+  border-radius: var(--r-lg); padding: 20px 18px; box-shadow: var(--sh-2);
 }
-.hero__assure li { display: flex; align-items: center; gap: 7px; }
+.hero__buy-kicker {
+  font-size: 12.5px; font-weight: 800; letter-spacing: .02em;
+  color: var(--gold-ink); margin-bottom: 10px;
+}
+.price { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+/* One price, and no struck-through "was" beside it — there is no confirmed
+   former price for this product, so there is no rule to style one. */
+.price b { font-size: clamp(38px, 11vw, 52px); font-weight: 800; line-height: 1; color: var(--ink); }
+.price:empty { display: none; }
 
-/* ── 08 · Need / moments ────────────────────────────────────────────────── */
-.need__grid { display: grid; gap: 12px; }
-.ncard {
-  background: var(--paper); border: 1px solid var(--line);
-  border-radius: var(--r); padding: 18px 16px;
-  display: flex; align-items: center; gap: 13px;
+.hero__facts {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 15px 0 17px; padding-top: 15px; border-top: 1px dashed var(--line);
 }
-.ncard__ic {
-  width: 40px; height: 40px; flex: 0 0 auto; border-radius: 10px;
-  background: var(--green-50); color: var(--green-ink);
-  display: grid; place-items: center;
+.hero__facts li {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13.5px; font-weight: 700; color: var(--green-ink);
+  background: var(--green-50); border: 1px solid var(--green-100);
+  border-radius: 999px; padding: 6px 13px;
 }
-.ncard__ic svg { width: 21px; height: 21px; }
-.ncard h3 { font-size: 15.5px; font-weight: 700; line-height: 1.5; }
+.hero__note { margin-top: 12px; text-align: center; font-size: 13px; color: var(--muted); }
+.hero__note:empty { display: none; }
+/* The two chips beside «التوصيل مجاني» and «الدفع عند الاستلام». */
+.fact-ic { width: 16px; height: 16px; flex: 0 0 auto; }
 
-/* Two supplier photographs of the brace in use. Atmosphere, not a claim — the
-   caption names the moment and nothing else. */
-.shots { margin-top: 22px; display: grid; gap: 12px; }
-.shots figure {
-  position: relative; border-radius: var(--r); overflow: hidden;
-  border: 1px solid var(--line);
+/* The five headline specs, under the fold-line on the green. */
+.hero__specs {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+  margin-top: 6px;
 }
-.shots img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
-.shots figcaption {
-  position: absolute; inset-inline-start: 12px; bottom: 12px;
-  font-size: 13px; font-weight: 800; color: #fff;
-  background: rgba(12, 14, 16, .74);
-  border-radius: 999px; padding: 4px 14px;
-}
-
-/* ── 09 · Why this brace (dark band) ────────────────────────────────────── */
-/* Flex, not grid, and that is the whole point: there are FIVE cards, so the
-   last row is always a short one. Grid ranges a short row against the start
-   edge and leaves a hole at the other end, which reads as a card that failed to
-   load. Flex with `justify-content: center` centres whatever is left over, at
-   every column count, with no per-child `nth-child` pinning to keep in step. */
-.fgrid { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
-.fgrid > * { flex: 0 1 100%; }
-.fcard {
-  background: rgba(255, 255, 255, .05);
+.hero__specs li {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255, 255, 255, .06);
   border: 1px solid rgba(255, 255, 255, .13);
-  border-radius: var(--r); padding: 18px 16px;
+  border-radius: var(--r); padding: 11px 13px;
+  font-size: 13.5px; font-weight: 700; color: #fff; line-height: 1.45;
 }
-.fcard__ic {
-  width: 42px; height: 42px; border-radius: 11px; margin-bottom: 12px;
-  background: rgba(168, 212, 106, .12);
-  border: 1px solid rgba(168, 212, 106, .3);
-  color: var(--green-on-black);
+.hero__specs svg { width: 20px; height: 20px; flex: 0 0 auto; color: var(--gold-on-green); }
+
+/* ── 08 · Value cards ───────────────────────────────────────────────────── */
+.vgrid { display: grid; gap: 13px; }
+.vcard {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--r-lg); padding: 22px 18px;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.vcard:hover { border-color: var(--gold-line); box-shadow: var(--sh-1); }
+.vcard__ic {
+  width: 46px; height: 46px; border-radius: 13px; margin-bottom: 14px;
+  background: var(--gold-soft); border: 1px solid var(--gold-line);
+  color: var(--gold-ink);
   display: grid; place-items: center;
 }
-.fcard__ic svg { width: 22px; height: 22px; }
-.fcard h3 { font-size: 16.5px; }
-.fcard p { margin-top: 6px; font-size: 14.5px; line-height: 1.65; color: var(--on-black-soft); }
+.vcard__ic svg { width: 23px; height: 23px; }
+.vcard h3 { font-size: 17px; }
+.vcard p { margin-top: 7px; font-size: 14.5px; line-height: 1.65; color: var(--ink-2); }
 
-/* The four sides of the object, so someone buying a thing they have never
-   handled can turn it over. */
-.angles { margin-top: 34px; }
-.angles h3 { font-size: 17px; text-align: center; margin-bottom: 16px; }
-.angles__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.angle {
-  background: var(--paper); border-radius: var(--r); overflow: hidden; text-align: center;
+/* ── 09 · Anatomy ───────────────────────────────────────────────────────── */
+.anat { display: grid; gap: 24px; align-items: center; }
+.anat__shot {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--r-lg); padding: 12px; box-shadow: var(--sh-1);
 }
-.angle img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
-.angle figcaption {
-  padding: 8px 6px 11px; font-size: 13px; font-weight: 800; color: var(--ink);
-  border-top: 1px solid var(--line);
-}
-
-/* The supplier's Arabic callout diagram, on the dark band. It sits on a white
-   plate because the diagram is drawn for white — its leader lines and its type
-   are near-black, and they would vanish straight into the band. */
-.diagram {
-  max-width: 620px; margin: 30px auto 0;
-  padding: 12px; background: var(--paper); border-radius: var(--r);
-}
-.diagram img { width: 100%; height: auto; border-radius: 8px; }
-.diagram figcaption {
-  margin-top: 8px; text-align: center;
+.anat__shot img { width: 100%; border-radius: var(--r); }
+.anat__shot figcaption {
+  margin-top: 9px; text-align: center;
   font-size: 12.5px; line-height: 1.6; color: var(--muted);
 }
-
-/* ── 10 · Benefits ──────────────────────────────────────────────────────── */
-.blist { display: grid; gap: 10px; max-width: 760px; margin-inline: auto; }
-.blist li {
-  display: flex; align-items: flex-start; gap: 12px;
-  background: var(--paper); border: 1px solid var(--line);
-  border-radius: var(--r); padding: 13px 16px;
-  font-size: 15.5px; font-weight: 700;
+.alist { display: grid; gap: 12px; }
+.alist li {
+  display: flex; align-items: flex-start; gap: 13px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--line);
 }
-.blist li::before {
+.alist li:last-child { border-bottom: 0; padding-bottom: 0; }
+.alist__n {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  background: var(--green-800); color: var(--gold-on-green);
+  display: grid; place-items: center; font-size: 13.5px; font-weight: 800;
+}
+.alist h3 { font-size: 16px; }
+.alist p { margin-top: 3px; font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
+
+/* ── 10 · Value-for-price ───────────────────────────────────────────────── */
+.worth__in { display: grid; gap: 26px; align-items: center; }
+.worth__price {
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(224, 190, 85, .34);
+  border-radius: var(--r-lg); padding: 26px 20px; text-align: center;
+}
+.worth__price .price { justify-content: center; }
+.worth__price .price b { color: #fff; }
+.worth__price p { margin-top: 10px; font-size: 14px; color: var(--on-green-soft); }
+.wlist { display: grid; gap: 10px; }
+.wlist li {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .13);
+  border-radius: var(--r); padding: 12px 15px;
+  font-size: 15px; font-weight: 700; color: #fff;
+}
+.wlist li::before {
   content: '✓'; flex: 0 0 auto;
-  width: 24px; height: 24px; margin-top: 3px; border-radius: 50%;
-  background: var(--green); color: #fff;
+  width: 23px; height: 23px; margin-top: 2px; border-radius: 50%;
+  background: var(--gold); color: #24200A;
   display: grid; place-items: center; font-size: 13px; font-weight: 800;
 }
 
-/* Not small print. On a page selling something worn on a joint, the line that
-   says what it is NOT is a reason to trust the rest. */
-.disclaimer {
-  max-width: 760px; margin: 22px auto 0;
-  display: flex; align-items: flex-start; gap: 12px;
-  background: var(--shade); border: 1px solid var(--line-2);
-  border-radius: var(--r); padding: 15px 17px;
-}
-.disclaimer span {
-  width: 26px; height: 26px; flex: 0 0 auto; border-radius: 50%;
-  background: var(--ink); color: #fff;
-  display: grid; place-items: center; font-size: 15px; font-weight: 800; line-height: 1;
-}
-.disclaimer p { font-size: 14.5px; line-height: 1.7; color: var(--ink-2); }
-
-/* ── 11 · How to wear it ────────────────────────────────────────────────── */
-.steps { display: grid; gap: 14px; }
+/* ── 11 · Steps ─────────────────────────────────────────────────────────── */
+.steps { display: grid; gap: 16px; counter-reset: step; }
 .step {
   background: var(--paper); border: 1px solid var(--line);
-  border-radius: var(--r-lg); padding: 20px 18px;
+  border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-1);
 }
+.step figure { position: relative; }
+.step img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--shade); }
 .step__n {
-  font-size: 15px; font-weight: 800; line-height: 1;
+  position: absolute; inset-inline-start: 12px; top: 12px;
   width: 38px; height: 38px; border-radius: 50%;
-  background: var(--green-50); color: var(--green-ink);
-  display: grid; place-items: center; margin-bottom: 12px;
+  background: var(--gold); color: #24200A;
+  display: grid; place-items: center; font-size: 17px; font-weight: 800;
+  box-shadow: 0 3px 10px rgba(20, 33, 26, .22);
 }
-.step p { font-size: 15.5px; color: var(--ink-2); }
-
-.note {
-  max-width: 760px; margin: 22px auto 0;
-  border-inline-start: 3px solid var(--green-light);
-  background: var(--green-50);
-  /* Logical, not the `0 14px 14px 0` shorthand: that is physical, so under RTL
-     it squares off the LEFT corners while `border-inline-start` puts the green
-     rule on the right — a box with its flat edge at the opposite end from its
-     accent. These four keep the flat edge against the rule at both directions. */
-  border-start-start-radius: 0;
-  border-end-start-radius: 0;
-  border-start-end-radius: var(--r);
-  border-end-end-radius: var(--r);
-  padding: 14px 17px;
+.step__body { padding: 16px 17px 19px; }
+.step h3 { font-size: 16.5px; }
+.step p { margin-top: 6px; font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
+/* The safety line under the four steps — the one caution this page gives, and
+   it is about how tight to pull a strap, not about anyone's condition. */
+.steps__note {
+  margin-top: 22px; text-align: center;
+  max-width: 62ch; margin-inline: auto;
   font-size: 14.5px; line-height: 1.7; color: var(--ink-2);
+  background: var(--gold-soft); border: 1px solid var(--gold-line);
+  border-radius: var(--r); padding: 14px 18px;
 }
 
-/* ── 12 · Who it suits ──────────────────────────────────────────────────── */
-.suit__grid { display: grid; gap: 12px; }
-.scard {
+/* ── 12 · Gallery ───────────────────────────────────────────────────────── */
+.gal { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.gal figure {
   background: var(--paper); border: 1px solid var(--line);
-  border-radius: var(--r); padding: 20px 16px; text-align: center;
+  border-radius: var(--r); overflow: hidden; text-align: center;
 }
-.scard__ic {
-  width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 50%;
+.gal img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+.gal figcaption {
+  padding: 9px 6px 12px; font-size: 13px; font-weight: 800;
+  border-top: 1px solid var(--line);
+}
+
+/* ── 13 · Q&A ───────────────────────────────────────────────────────────── */
+.qa__list { display: grid; gap: 10px; max-width: 760px; margin-inline: auto; }
+.qa {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--r); overflow: hidden;
+}
+.qa summary {
+  cursor: pointer; list-style: none; padding: 16px 18px;
+  font-weight: 800; font-size: 15.5px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.qa summary::-webkit-details-marker { display: none; }
+.qa summary::after { content: '+'; flex: 0 0 auto; font-size: 22px; font-weight: 700; color: var(--gold-ink); line-height: 1; }
+.qa[open] summary::after { content: '−'; }
+.qa > p { padding: 0 18px 17px; font-size: 14.5px; color: var(--ink-2); }
+
+/* ── 14 · Trust ─────────────────────────────────────────────────────────── */
+.trust { display: grid; gap: 12px; max-width: 900px; margin-inline: auto; }
+.tcard {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 17px;
+}
+.tcard__ic {
+  width: 42px; height: 42px; flex: 0 0 auto; border-radius: 50%;
   background: var(--green-50); color: var(--green-ink);
   display: grid; place-items: center;
 }
-.scard__ic svg { width: 23px; height: 23px; }
-.scard h3 { font-size: 15.5px; font-weight: 700; line-height: 1.5; }
+.tcard__ic svg { width: 21px; height: 21px; }
+.tcard h3 { font-size: 15.5px; }
+.tcard p { margin-top: 2px; font-size: 14px; color: var(--muted); line-height: 1.55; }
 
-/* The five use-case scenes. Two across on a phone, five in a row from 560 up.
-   `aspect-ratio` + `object-fit: cover` do the cropping, so the tall source
-   panels are never squeezed and the card height is fixed before the bytes
-   land — no layout shift. `object-position` sits above centre because the
-   braced knee is in the upper-middle of every one of these frames. */
-.uses { margin-top: 26px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.uses figure {
-  position: relative; border-radius: var(--r); overflow: hidden;
-  border: 1px solid var(--line); background: var(--shade);
-}
-.uses img {
-  width: 100%; height: 100%;
-  aspect-ratio: 3 / 4; object-fit: cover; object-position: center 50%;
-}
-
-/* Where each frame is cropped, measured off each photograph rather than guessed
-   once for all five. The panels are 205×645 — over three times taller than a
-   3/4 card — so a card shows roughly 42% of the picture's height and the anchor
-   decides WHICH 42%. The braced knee sits at a different height in every one of
-   them: 50–68% in the gym, 53–68% running, 52–65% at football, 62–78% walking,
-   56–72% at tennis. One shared anchor cannot serve that spread — the 38% these
-   started on framed the walker's torso and cut her brace off almost entirely,
-   which is a use-case photo not showing the use. Each value below centres that
-   panel's own brace in the visible band. */
-.uses .u-gym    img { object-position: center 66%; }
-.uses .u-run    img { object-position: center 68%; }
-.uses .u-ball   img { object-position: center 65%; }
-.uses .u-walk   img { object-position: center 85%; }
-.uses .u-tennis img { object-position: center 74%; }
-.uses figcaption {
-  position: absolute; inset-inline-start: 9px; bottom: 9px;
-  font-size: 12px; font-weight: 800; color: #fff;
-  background: rgba(12, 14, 16, .74);
-  border-radius: 999px; padding: 3px 11px;
-}
-/* Five items in a two-column grid leaves the last one alone with a hole beside
-   it, so it runs full width instead. It needs its own crop: a 16/9 window on a
-   205×645 portrait is a thin horizontal band, and at the same 38% it landed on
-   the player's chest with the braced knee cut out of frame — a use-case photo
-   that does not show the product in use. 3/2 keeps more leg, and 62% puts the
-   knee in the middle of it. */
-@media (max-width: 719.98px) {
-  .uses > li:last-child:nth-child(odd) { grid-column: 1 / -1; }
-  /* A 3/2 window shows only ~21% of the picture's height, half what the 3/4
-     card shows, so it needs its own anchor — and it must beat `.uses .u-tennis`
-     above, which this selector does on specificity. */
-  .uses > li:last-child:nth-child(odd) img { aspect-ratio: 3 / 2; object-position: center 68%; }
-}
-
-/* ── 13 · Trust ─────────────────────────────────────────────────────────── */
-.trust__grid { display: grid; gap: 12px; max-width: 860px; margin-inline: auto; }
-.tcard {
-  display: flex; align-items: center; gap: 13px;
-  background: var(--paper); border: 1px solid var(--line);
-  border-radius: var(--r); padding: 16px;
-}
-.tcard .ico { font-size: 22px; flex: 0 0 auto; }
-.tcard p { font-size: 15px; font-weight: 700; line-height: 1.55; }
-
-/* ── 14 · Order form ────────────────────────────────────────────────────── */
+/* ── 15 · Order ─────────────────────────────────────────────────────────── */
 .order__card {
   background: var(--paper); border: 1px solid var(--line);
-  border-top: 4px solid var(--green);
+  border-top: 4px solid var(--gold);
   border-radius: var(--r-lg); box-shadow: var(--sh-2);
-  padding: 24px 18px; max-width: 540px; margin-inline: auto;
+  padding: 26px 18px; max-width: 560px; margin-inline: auto;
 }
 .order__head { text-align: center; margin-bottom: 20px; }
-.order__head h2 { font-size: clamp(21px, 5.6vw, 28px); }
-.order__head p { margin-top: 8px; font-size: 14.5px; color: var(--muted); }
+.order__head h2 { font-size: clamp(21px, 5.6vw, 29px); }
+.order__head p { margin-top: 9px; font-size: 14.5px; color: var(--muted); }
+.order__price {
+  display: flex; align-items: baseline; justify-content: center; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 20px; padding-bottom: 20px;
+  border-bottom: 1px dashed var(--line);
+}
+.order__price:empty { display: none; }
 
-/* ── The offer chooser ──────────────────────────────────────────────────
-   Two rows, and the whole row is the target — not a 20px radio dot. Same
-   tokens as every other card on the page: white, a hairline, the one green.
-   The selected row is marked three ways (green border, green tint, a filled
-   dot), so it does not rely on colour alone. */
-.offers { border: 0; padding: 0; margin: 0 0 18px; }
-.offers legend {
-  padding: 0; margin-bottom: 10px;
-  font-size: 14.5px; font-weight: 700; color: var(--ink);
+.notice {
+  background: var(--gold-soft); border: 1px solid var(--gold-line); color: #6B4E06;
+  border-radius: var(--r-sm); padding: 11px 15px; font-size: 14px; margin-bottom: 15px;
 }
-.offers__list { display: grid; gap: 10px; }
-
-.offer { display: block; cursor: pointer; }
-/* Clipped, not `display:none`: a hidden input is removed from the tab order and
-   from the radio group, which would take the arrow keys with it. */
-.offer__radio {
-  position: absolute; width: 1px; height: 1px;
-  padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
-}
-.offer__box {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
-  border: 1.5px solid var(--line-2); border-radius: var(--r);
-  padding: 14px 15px 14px 15px;
-  background: var(--paper);
-  transition: border-color .16s ease, background-color .16s ease;
-}
-.offer__head { display: flex; align-items: baseline; gap: 10px; flex: 1 1 auto; min-width: 0; }
-/* The radio's own dot, drawn on the row so the whole card reads as selectable. */
-.offer__head::before {
-  content: ''; flex: 0 0 auto;
-  width: 20px; height: 20px; border-radius: 50%;
-  border: 2px solid var(--line-2); background: var(--paper);
-  align-self: center;
-  transition: border-color .16s ease, box-shadow .16s ease;
-}
-/* «1 Genouillère» is digits + Latin and nothing else — a standalone run, and
-   the one shape that must NOT inherit the page's RTL. Left to inherit it, the
-   bidi algorithm parks the digit to the right of the word and the row reads
-   «Genouillère 1» — a different number in front of a different noun. Isolating
-   it LTR keeps the count where it was written. (Measured, not eyeballed: the
-   markup looks identical either way.) */
-.offer__name {
-  font-size: 15.5px; font-weight: 700;
-  direction: ltr; unicode-bidi: isolate; text-align: start;
-}
-.offer__price { margin-inline-start: auto; font-size: 20px; font-weight: 800; white-space: nowrap; }
-
-/* The saving. Computed in script.js — (2 × 180) − 300 — never typed. */
-.offer__save {
-  flex: 0 0 auto;
-  font-size: 13px; font-weight: 800; color: #fff;
-  background: var(--green); border-radius: 999px; padding: 3px 11px;
-}
-
-.offer__radio:checked + .offer__box { border-color: var(--green); background: var(--green-50); }
-.offer__radio:checked + .offer__box .offer__head::before {
-  border-color: var(--green); box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 20px var(--green);
-}
-.offer:hover .offer__box { border-color: var(--green-light); }
-.offer__radio:focus-visible + .offer__box { outline: 3px solid var(--green-light); outline-offset: 2px; }
 
 .fields { display: grid; gap: 15px; }
 .field { display: grid; gap: 6px; }
 .field label { font-size: 14.5px; font-weight: 700; }
 .field input {
   font: inherit; font-size: 16px; /* 16px or iOS zooms the page on focus */
-  min-height: 52px; padding: 10px 15px;
+  min-height: 52px; padding: 11px 15px;
   border: 1.5px solid var(--line-2); border-radius: var(--r-sm);
   background: var(--paper); color: var(--ink); width: 100%;
   transition: border-color .16s ease, box-shadow .16s ease;
 }
-.field input::placeholder { color: #99A2A9; }
+.field input::placeholder { color: #9AA39C; }
 .field input:focus {
-  outline: none; border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(62, 110, 3, .15);
+  outline: none; border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, .2);
 }
 .field input[aria-invalid='true'] { border-color: var(--danger); background: #FEF7F6; }
 .field__hint { font-size: 12.5px; color: var(--muted); }
@@ -629,131 +516,149 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .err { color: var(--danger); font-size: 13.5px; font-weight: 700; }
 .err--form {
   background: #FEF2F1; border: 1px solid #F2C9C5;
-  border-radius: var(--r-sm); padding: 10px 14px; margin-top: 14px;
+  border-radius: var(--r-sm); padding: 11px 15px; margin-top: 15px;
 }
 
-.order__card .btn { margin-top: 20px; }
-/* The WhatsApp glyph rides inside the button; it is decoration, and the button
-   says in words where it goes. */
-.btn svg { width: 21px; height: 21px; flex: 0 0 auto; }
+/* Quantity. A stepper, not a free number field: the API caps at 10 and a
+   typed «50» is a rejected order rather than a corrected one. */
+.field--qty { gap: 9px; }
+.qty {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: 1.5px solid var(--line-2); border-radius: var(--r-sm);
+  background: var(--paper); padding: 5px; width: max-content;
+}
+.qty__btn {
+  font: inherit; font-size: 23px; font-weight: 700; line-height: 1;
+  width: 48px; height: 46px; border: 0; border-radius: 9px;
+  background: var(--green-50); color: var(--green-ink); cursor: pointer;
+}
+.qty__btn:hover:not([disabled]) { background: var(--green-100); }
+.qty__btn[disabled] { opacity: .4; cursor: not-allowed; }
+.qty__value { min-width: 48px; text-align: center; font-size: 18px; font-weight: 800; }
+.qty__hint { font-size: 13px; color: var(--muted); }
+.qty__hint:empty { display: none; }
 
-.consent {
-  margin-top: 14px; text-align: center;
-  font-size: 12.5px; line-height: 1.7; color: var(--muted);
+.sum {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  margin-top: 19px; padding-top: 15px; border-top: 1px dashed var(--line);
+  font-weight: 700;
 }
+.sum b { font-size: 26px; font-weight: 800; }
 
-/* ── 15 · FAQ ───────────────────────────────────────────────────────────── */
-.faq__list { display: grid; gap: 10px; max-width: 740px; margin-inline: auto; }
-.qa {
-  background: var(--paper); border: 1px solid var(--line);
-  border-radius: var(--r); overflow: hidden;
-}
-.qa summary {
-  cursor: pointer; list-style: none; padding: 15px 18px;
-  font-weight: 800; font-size: 15.5px;
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-}
-.qa summary::-webkit-details-marker { display: none; }
-.qa summary::after {
-  content: '+'; flex: 0 0 auto;
-  font-size: 22px; font-weight: 700; color: var(--green-ink); line-height: 1;
-}
-.qa[open] summary::after { content: '−'; }
-.qa > p { padding: 0 18px 16px; font-size: 14.5px; color: var(--ink-2); }
+.order__card .btn[type='submit'] { margin-top: 18px; }
 
-/* ── 16 · Final CTA ─────────────────────────────────────────────────────── */
-.final { padding-block: 56px; background: var(--shade); border-top: 1px solid var(--line); text-align: center; }
-.final__in { display: grid; gap: 14px; justify-items: center; }
-.final h2 { font-size: clamp(22px, 6vw, 32px); }
-.final p { font-size: 15px; color: var(--ink-2); max-width: 46ch; }
-.final__shot { width: 200px; border-radius: var(--r); border: 1px solid var(--line); }
+.reassure {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 7px 16px;
+  margin-top: 16px; font-size: 13px; color: var(--muted); font-weight: 700;
+}
+.reassure li { display: flex; align-items: center; gap: 6px; }
+.reassure li::before { content: '✓'; color: var(--green-ink); font-weight: 800; }
+
+.done { text-align: center; display: grid; gap: 11px; justify-items: center; }
+.done__tick {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--green-50); color: var(--green-ink);
+  display: grid; place-items: center; font-size: 31px; font-weight: 800;
+}
+.done h3 { font-size: 23px; }
+.done p { font-size: 14.5px; color: var(--muted); }
+.done__num b { color: var(--ink); font-size: 16px; }
+
+/* ── 16 · Offer band ────────────────────────────────────────────────────── */
+.offer__in { display: grid; gap: 22px; justify-items: center; text-align: center; }
+.offer__kicker {
+  font-size: 12.5px; font-weight: 800; letter-spacing: .1em;
+  color: var(--gold-on-green);
+}
+.offer h2 { font-size: clamp(22px, 5.8vw, 32px); }
+.offer__shot {
+  background: var(--paper); border-radius: var(--r-lg);
+  padding: 8px; box-shadow: var(--sh-green); width: max-content; max-width: 100%;
+}
+.offer__shot img { width: min(64vw, 240px); border-radius: 16px; }
+.offer__facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+.offer__facts li {
+  font-size: 13.5px; font-weight: 700; color: #fff;
+  background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 999px; padding: 7px 15px;
+}
+.offer__stock { font-size: 13px; color: var(--on-green-mute); }
 
 /* ── 17 · Footer ────────────────────────────────────────────────────────── */
-.foot { background: var(--black); color: var(--on-black-soft); padding-block: 32px; }
+.foot { background: var(--green-900); color: var(--on-green-soft); padding-block: 34px; }
 .foot__in { display: grid; gap: 11px; justify-items: center; text-align: center; }
 /* The wordmark is drawn in dark olive and gold for light backgrounds; on the
-   black footer it all but disappears. It gets a light plate rather than a
+   deep green footer it all but disappears. It gets a light plate rather than a
    filter — inverting a brand mark is recolouring it. */
-.foot__in > img {
-  background: var(--paper); border-radius: 10px;
-  padding: 8px 12px; box-sizing: content-box;
-}
+.foot__in > img { background: var(--paper); border-radius: 10px; padding: 8px 12px; box-sizing: content-box; }
 .foot__prod { font-size: 14px; font-weight: 700; color: #fff; }
-.foot__contact { font-size: 14px; }
-/* The one conversion path in the footer, so it gets a real tap area rather
-   than the 21px an inline anchor would have. */
-.foot__contact a {
-  color: var(--green-on-black); font-weight: 700; text-decoration: none;
-  display: inline-block; min-height: 44px; padding: 10px 6px;
-  border-bottom: 1.5px solid currentColor;
-}
-.foot__legal { font-size: 12.5px; line-height: 1.7; color: var(--on-black-mute); max-width: 58ch; }
+.foot__legal { font-size: 12.5px; line-height: 1.7; color: var(--on-green-mute); max-width: 58ch; }
 
 /* ── 18 · Sticky mobile CTA ─────────────────────────────────────────────── */
 .sticky {
   position: fixed; inset-inline: 0; bottom: 0; z-index: 40;
-  background: rgba(255, 255, 255, .95);
+  background: rgba(255, 255, 255, .96);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--line);
   padding: 10px var(--pad) calc(10px + env(safe-area-inset-bottom));
 }
-.sticky .btn { min-height: 52px; }
-@media (min-width: 720px) { .sticky { display: none !important; } }
+.sticky .btn { min-height: 52px; font-size: 16.5px; }
+@media (min-width: 900px) { .sticky { display: none !important; } }
 
 /* ══════════════════════════════════════════════════════════════════════════
    19 · Breakpoints
 
    Not a scaled-down desktop: each width gets the composition it can hold. The
-   page is checked at 320, 375, 390 and 430 before anything else, because that
+   page is checked at 320, 360, 390 and 430 before anything else, because that
    is the whole audience.
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ── ≥ 480px ────────────────────────────────────────────────────────────── */
 @media (min-width: 480px) {
   :root { --pad: 20px; }
-  .need__grid, .suit__grid, .trust__grid { grid-template-columns: repeat(2, 1fr); }
-  .shots { grid-template-columns: repeat(2, 1fr); }
-  .angles__grid { grid-template-columns: repeat(4, 1fr); }
+  .gal { grid-template-columns: repeat(4, 1fr); }
+  .steps { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* ── ≥ 720px — two columns ──────────────────────────────────────────────── */
+/* ── ≥ 720px ────────────────────────────────────────────────────────────── */
 @media (min-width: 720px) {
   :root { --sec-y: 74px; }
-
-  .hero { padding-block: 44px 60px; }
-  /* Two columns: the words stack down the reading edge, the photograph holds
-     the other column across both rows. Named areas rather than `order`, because
-     the headline and the body are two separate elements here and only an area
-     grid can put them in one column without wrapping them in a third div. */
-  .hero__in {
-    grid-template-columns: 1.02fr .98fr;
-    grid-template-areas: 'head shot' 'body shot';
-    align-items: center; gap: 18px 44px;
-  }
-  .hero__head { margin-bottom: 0; grid-area: head; align-self: end; }
-  .hero__body { grid-area: body; align-self: start; }
-  .hero__shot { grid-area: shot; }
-
-  .fgrid > * { flex-basis: calc(50% - 6px); }
-  .steps { grid-template-columns: repeat(3, 1fr); }
-  .need__grid { grid-template-columns: repeat(4, 1fr); }
-  .ncard { flex-direction: column; text-align: center; gap: 12px; padding: 22px 16px; }
-  .suit__grid { grid-template-columns: repeat(4, 1fr); }
-  .uses { grid-template-columns: repeat(5, 1fr); gap: 12px; }
-  .trust__grid { grid-template-columns: repeat(2, 1fr); }
-
+  .vgrid { grid-template-columns: repeat(2, 1fr); }
+  .trust { grid-template-columns: repeat(2, 1fr); }
+  .anat { grid-template-columns: 1fr 1fr; gap: 34px; }
+  .worth__in { grid-template-columns: 1fr 1.15fr; text-align: start; }
+  .worth__price { align-self: start; }
+  .offer__in { grid-template-columns: auto 1fr; text-align: start; justify-items: start; gap: 34px; align-items: center; }
+  .offer__copy { order: 1; }
+  .offer__shot { order: 2; }
+  .offer__facts { justify-content: flex-start; }
   .foot__in { grid-template-columns: auto 1fr; text-align: start; justify-items: start; gap: 6px 20px; }
   .foot__in > img { grid-row: span 3; align-self: start; }
 }
 
-/* ── ≥ 1024px — full desktop composition ────────────────────────────────── */
-@media (min-width: 1024px) {
-  :root { --sec-y: 86px; }
-  body { font-size: 16.5px; }
+/* ── ≥ 900px — the hero goes side by side ───────────────────────────────── */
+@media (min-width: 900px) {
+  .hero { padding-block: 44px 62px; }
+  .hero__in {
+    grid-template-columns: 1.04fr .96fr;
+    grid-template-areas: 'copy shot' 'buy shot' 'specs specs';
+    align-items: start; gap: 24px 44px;
+  }
+  .hero__copy  { grid-area: copy; }
+  .hero__shot  { grid-area: shot; max-width: 100%; align-self: center; }
+  .hero__buy   { grid-area: buy; }
+  .hero__specs { grid-area: specs; grid-template-columns: repeat(5, 1fr); margin-top: 12px; }
+  .hero__specs li { flex-direction: column; text-align: center; gap: 8px; padding: 15px 11px; }
 
-  .hero__in { gap: 60px; }
-  .fgrid > * { flex-basis: calc(33.333% - 8px); }
-  .blist { grid-template-columns: repeat(2, 1fr); }
-  .trust__grid { grid-template-columns: repeat(4, 1fr); }
-  .tcard { flex-direction: column; text-align: center; gap: 10px; padding: 22px 16px; }
+  .steps { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── ≥ 1024px ───────────────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  :root { --sec-y: 88px; }
+  body { font-size: 16.5px; }
+  .vgrid { grid-template-columns: repeat(3, 1fr); }
+  .trust { grid-template-columns: repeat(4, 1fr); }
+  .tcard { flex-direction: column; text-align: center; gap: 11px; padding: 24px 17px; }
+  .anat { gap: 48px; }
 }

@@ -92,6 +92,29 @@ const PRESETS = {
     offer: 329,
     status: "ACTIVE",
   },
+  // ONE price, and that is the whole point of this row: 180 DH, with no
+  // `compareAt` and no `offer`. Every other preset here runs a discount, so
+  // this is the first to leave both columns NULL — `compareAtPrice` because
+  // there is no confirmed former price for this product and a struck-through
+  // number nobody can vouch for is a fake discount, and `offerPrice` because
+  // `basePrice` alone already IS the price. `/api/orders` charges
+  // `offerPrice ?? basePrice`, so NULL + 18000 bills exactly 18000.
+  //
+  // It must equal `price` in bellevia-genouillere/config.js, which quotes 180
+  // and carries no `oldPrice` key at all.
+  //
+  // Unlike PACK RAHA and BILA ALAM this is a single physical article, not a
+  // bundle, so the SKU is a real one that can travel to the courier rather
+  // than a local-only pack code.
+  "bellevia-genouillere": {
+    name: "دعامة الركبة الاحترافية",
+    sku: "BVP-GEN-001",
+    category: "دعامات ومثبتات الركبة",
+    description:
+      "دعامة ركبة خارجية بمفصلات جانبية معدنية وأربعة أشرطة قابلة للتعديل وفتحة أمامية للرضفة وبطانة داخلية ناعمة. مقاس واحد يُضبط بالأشرطة.",
+    base: 180,
+    status: "ACTIVE",
+  },
 };
 
 const args = process.argv.slice(2);
@@ -131,14 +154,18 @@ if (!isLocal && !wantsProduction) {
 
 // Centimes, never floats: the whole system stores money as integers.
 const dh = (n) => Math.round(n * 100);
+// `compareAt` and `offer` are optional. Both columns are nullable in the
+// schema, and a product sold at one flat price has no "was" figure and no
+// discount — writing `basePrice` into all three would invent a strikethrough
+// the admin dashboard would then show. An absent key stays NULL.
 const data = {
   name: preset.name,
   sku: preset.sku,
   category: preset.category,
   description: preset.description,
-  compareAtPrice: dh(preset.compareAt),
+  compareAtPrice: preset.compareAt == null ? null : dh(preset.compareAt),
   basePrice: dh(preset.base),
-  offerPrice: dh(preset.offer),
+  offerPrice: preset.offer == null ? null : dh(preset.offer),
   currency: "MAD",
   status: preset.status,
   isActive: preset.status === "ACTIVE",
@@ -149,7 +176,7 @@ console.log(`\n  target      ${host}${isLocal ? " (local)" : "  ← PRODUCTION"}
 console.log(`  slug        ${slug}`);
 console.log(`  name        ${data.name}`);
 console.log(`  sku         ${data.sku}`);
-console.log(`  old price   ${preset.compareAt} DH`);
+console.log(`  old price   ${preset.compareAt == null ? "— none (no strikethrough)" : preset.compareAt + " DH"}`);
 console.log(`  regular     ${preset.base} DH`);
 console.log(`  selling     ${selling} DH   ← what /api/orders will charge`);
 console.log(`  status      ${data.status}\n`);

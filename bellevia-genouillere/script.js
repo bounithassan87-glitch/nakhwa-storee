@@ -1,16 +1,14 @@
 /* ==========================================================================
-   BelleVia — دعامة الركبة الاحترافية · behaviour
+   دعامة الركبة الاحترافية · behaviour
 
-   Vanilla, no build step, no dependency, ~7KB unminified. Each block finds its
-   own hooks and does nothing at all if they are absent, so deleting a section
-   from the HTML cannot throw.
+   Vanilla, no build step, no dependency. Each block finds its own hooks and
+   does nothing at all if they are absent, so deleting a section from the HTML
+   cannot throw.
 
-   This page does NOT post an order anywhere. It validates three fields and
-   hands the customer to WhatsApp with the message already written. There is no
-   database call, no `/api/orders`, and no third-party WhatsApp API — the link
-   is `https://wa.me/<number>?text=<encoded>`, which the native app answers on
-   iPhone and Android and which falls back to WhatsApp Web on a desktop that has
-   no app installed.
+   The form posts to `/api/orders` — the store's one order endpoint, the same
+   one every other BelleVia storefront uses. It sends five fields, the server
+   prices the order from the catalogue, and the page only ever reports an order
+   the API confirmed.
    ========================================================================== */
 (function () {
   'use strict';
@@ -22,47 +20,22 @@
   /* ══ 00 · Config ═══════════════════════════════════════════════════════ */
   var RAW = window.GENOUILLERE_CONFIG || {};
   var CFG = {
-    /* Digits only. A number pasted in as «+212 624…» or «00212624…» would build
-       a wa.me URL that silently resolves to nothing, so it is cleaned here
-       rather than trusted. */
-    whatsappNumber: String(RAW.whatsappNumber || '').replace(/[^\d]/g, ''),
-    whatsappDisplay: String(RAW.whatsappDisplay || '').trim(),
-    productName: String(RAW.productName || 'دعامة الركبة الاحترافية').trim(),
+    orderApiEndpoint: String(RAW.orderApiEndpoint || '').trim(),
+    productSlug: String(RAW.productSlug || 'bellevia-genouillere').trim(),
+    source: String(RAW.source || 'bellevia-genouillere').trim(),
+    price: String(RAW.price || '').trim(),
     currency: String(RAW.currency || 'درهم').trim(),
-    currencyShort: String(RAW.currencyShort || 'DH').trim(),
     currencyCode: String(RAW.currencyCode || 'MAD').trim().toUpperCase(),
+    maxQuantity: Math.max(1, Math.min(10, parseInt(RAW.maxQuantity, 10) || 5)),
     delivery: String(RAW.delivery || '').trim(),
+    deliveryArea: String(RAW.deliveryArea || '').trim(),
     cashOnDelivery: RAW.cashOnDelivery !== false,
     cities: Array.isArray(RAW.cities) ? RAW.cities : [],
   };
 
-  /* The offer ladder, cleaned and sorted by quantity. A row is only kept if
-     both its quantity and its total are real positive numbers — a half-typed
-     offer is dropped rather than rendered as `NaN درهم`. */
-  var OFFERS = (Array.isArray(RAW.offers) ? RAW.offers : [])
-    .map(function (o) {
-      return {
-        qty: parseInt(o && o.qty, 10),
-        price: typeof (o && o.price) === 'number' ? o.price : parseFloat(o && o.price),
-        label: String((o && o.label) || '').trim(),
-      };
-    })
-    .filter(function (o) { return o.qty > 0 && isFinite(o.price) && o.price > 0; })
-    .sort(function (a, b) { return a.qty - b.qty; });
-
-  /** The single-unit total — the yardstick every saving is measured against. */
-  var UNIT = OFFERS.length ? OFFERS[0].price / OFFERS[0].qty : null;
-
-  /**
-   * What a row saves against buying that many units one at a time.
-   * Computed, never configured: «وفر 60 درهم» on the 2-pack is (2 × 180) − 300,
-   * a number the customer can check. A hand-written saving becomes a lie the
-   * first time someone edits a price and forgets it.
-   */
-  function saving(o) {
-    if (UNIT === null) return 0;
-    return Math.max(0, Math.round(o.qty * UNIT - o.price));
-  }
+  /** Digits only counts as a number; anything else is text someone typed. */
+  function numeric(v) { return /^\d+(?:[.,]\d+)?$/.test(v) ? parseFloat(v.replace(',', '.')) : null; }
+  var UNIT = numeric(CFG.price);
 
   /** «180 درهم» — an Arabic phrase, so it inherits the page's RTL and the
       digits stay to the right of the currency word where they belong. */
@@ -74,129 +47,31 @@
      is printed from config or not printed at all. */
   if (!CFG.cashOnDelivery) $$('[data-cod]').forEach(function (el) { el.remove(); });
   if (CFG.delivery) {
-    // The text goes on the span; the row around it carries the emoji and the
-    // card border, so the two hooks are separate — writing textContent onto the
-    // row would delete the 🚚 with it.
     $$('[data-delivery]').forEach(function (el) { el.textContent = CFG.delivery; });
     $$('[data-delivery-row]').forEach(function (el) { el.hidden = false; });
   } else {
     $$('[data-delivery-row]').forEach(function (el) { el.remove(); });
   }
+  if (CFG.deliveryArea) {
+    $$('[data-delivery-area]').forEach(function (el) { el.textContent = CFG.deliveryArea; el.hidden = false; });
+  } else {
+    $$('[data-delivery-area]').forEach(function (el) { el.remove(); });
+  }
 
-  /* ══ 02 · The offer ════════════════════════════════════════════════════
-     Every price on the page — the announcement strip, the hero, the chooser in
-     the form, the WhatsApp message, the structured data — is written from
-     `OFFERS`, so there is no second place for a stale number to hide.
-
-     With no offers configured, every price element is REMOVED rather than left
-     showing a placeholder: this page hands the customer to WhatsApp, where the
-     price could be agreed in the conversation, so a page with no price is a
-     valid page rather than a broken one. Nothing is ever invented. */
-
-  /** The row the customer has chosen. Defaults to the first, never to null. */
-  var picked = OFFERS.length ? OFFERS[0] : null;
-
-  (function offers() {
-    if (!OFFERS.length) {
-      // The wrapper goes too, not just the number: an emptied <p> still holds
-      // whitespace text nodes, so `:empty` would not catch it and the page
-      // would keep a bordered, blank price line.
-      $$('[data-price-wrap], [data-offers]').forEach(function (el) { el.remove(); });
+  /* ══ 02 · Prices ═══════════════════════════════════════════════════════
+     Every price on the page is written from this one number, so there is no
+     second place for a stale one to hide — and there is exactly ONE number.
+     No struck-through "was" price: none was ever confirmed for this product,
+     and an invented one is a fake discount. With none configured the price
+     elements are REMOVED rather than left showing a placeholder — an emptied
+     <p> still holds whitespace text nodes, so `:empty` would not catch it and
+     the page would keep a bordered, blank price line. */
+  (function prices() {
+    if (UNIT === null) {
+      $$('[data-price-wrap]').forEach(function (el) { el.remove(); });
       return;
     }
-
-    /* The headline price: what one unit costs. */
-    $$('[data-offer-from]').forEach(function (el) { el.textContent = money(OFFERS[0].price); el.hidden = false; });
-
-    /* The one-line echo of the multi-buy, for the strip and the hero. Built
-       from digits and Arabic only — the Latin labels stay in the chooser, where
-       each sits on its own line as a standalone run. */
-    var best = OFFERS[OFFERS.length - 1];
-    if (best !== OFFERS[0]) {
-      var sv = saving(best);
-      var line = 'أو ' + best.qty + ' بـ ' + money(best.price) + (sv ? ' — وفر ' + money(sv) : '');
-      $$('[data-offer-alt]').forEach(function (el) { el.textContent = line; el.hidden = false; });
-    } else {
-      $$('[data-offer-alt]').forEach(function (el) { el.remove(); });
-    }
-
-    /* ── The chooser ────────────────────────────────────────────────────
-       Built from config rather than typed into the HTML, so a price can never
-       disagree with the label beside it. Real radios in a real fieldset: the
-       arrow keys work, the group has one tab stop, and a screen reader
-       announces "1 of 2" without a line of ARIA. */
-    var box = $('[data-offers]');
-    if (!box) return;
-    box.textContent = '';
-
-    OFFERS.forEach(function (o, i) {
-      var sv = saving(o);
-
-      var input = document.createElement('input');
-      input.type = 'radio';
-      input.name = 'offer';
-      input.value = String(o.qty);
-      input.className = 'offer__radio';
-      if (i === 0) input.checked = true;
-
-      var head = document.createElement('span');
-      head.className = 'offer__head';
-      var name = document.createElement('span');
-      name.className = 'offer__name';
-      name.textContent = o.label || (o.qty + ' × ' + CFG.productName);
-      var price = document.createElement('b');
-      price.className = 'offer__price';
-      price.textContent = money(o.price);
-      head.appendChild(name);
-      head.appendChild(price);
-
-      var body = document.createElement('span');
-      body.className = 'offer__box';
-      body.appendChild(head);
-      if (sv) {
-        var tag = document.createElement('span');
-        tag.className = 'offer__save';
-        tag.textContent = 'وفر ' + money(sv);
-        body.appendChild(tag);
-      }
-
-      var label = document.createElement('label');
-      label.className = 'offer';
-      label.appendChild(input);
-      label.appendChild(body);
-      box.appendChild(label);
-
-      on(input, 'change', function () { if (input.checked) picked = o; });
-    });
-  })();
-
-  /* ══ 02b · Structured data ═════════════════════════════════════════════
-     The offers are stated in the markup too, so a crawler that runs no JS sees
-     them; this rewrites them from config so the two can never drift apart.
-
-     Only what is confirmed goes in: a total, a currency, the quantity that
-     total buys, and the page you order from. No `availability` (nobody has
-     given us stock figures), no `sku`, no rating and no reviews — a rich result
-     built on numbers nobody can vouch for is what earns a manual action. */
-  (function structuredData() {
-    var node = $('#ld-product');
-    if (!node) return;
-    try {
-      var data = JSON.parse(node.textContent);
-      if (!OFFERS.length) { delete data.offers; }
-      else {
-        data.offers = OFFERS.map(function (o) {
-          return {
-            '@type': 'Offer',
-            price: String(o.price),
-            priceCurrency: CFG.currencyCode,
-            eligibleQuantity: { '@type': 'QuantitativeValue', value: o.qty, unitCode: 'C62' },
-            url: location.origin + location.pathname,
-          };
-        });
-      }
-      node.textContent = JSON.stringify(data);
-    } catch (err) { /* a malformed block is not worth breaking the page over */ }
+    $$('[data-price]').forEach(function (el) { el.textContent = money(UNIT); el.hidden = false; });
   })();
 
   /* ══ 03 · City suggestions ═════════════════════════════════════════════
@@ -216,50 +91,43 @@
     list.appendChild(frag);
   })();
 
-  /* ══ 04 · Contact line in the footer ═══════════════════════════════════ */
-  (function contact() {
-    var out = $('[data-contact]');
-    if (!out || !CFG.whatsappNumber) return;
-    var label = CFG.whatsappDisplay || CFG.whatsappNumber;
-    out.innerHTML = 'واتساب: <a href="https://wa.me/' + CFG.whatsappNumber +
-      '" rel="noopener"><span class="ltr">' + label + '</span></a>';
-    out.hidden = false;
-  })();
-
-  /* ══ 05 · Tracking bridge ══════════════════════════════════════════════
+  /* ══ 04 · Tracking bridge ══════════════════════════════════════════════
      nk-track.js is the store's one tracking implementation — it fires PageView
      itself and sends every event twice (pixel + Conversions API) under a shared
-     event id. Nothing here re-implements it, and nothing here may throw.
-
-     This page fires ViewContent and Lead only. It never fires Purchase: no
-     order is committed here, and reporting a purchase at the moment someone
-     opens WhatsApp would teach Meta to optimise for taps instead of sales. */
-  function track(name, params) {
+     event id. Nothing here re-implements it, and nothing here may throw. */
+  function trackBoth(name, params) {
     try { if (window.nkTrack) return window.nkTrack.trackOnce(name, params); } catch (e) { /* never block */ }
     return undefined;
   }
+  function trackPixel(name, params, id) {
+    try { if (window.nkTrack) window.nkTrack.pixel(name, params, id); } catch (e) { /* never block */ }
+  }
+  function newEventId() {
+    try { if (window.nkTrack) return window.nkTrack.id(); } catch (e) { /* fall through */ }
+    return 'nk-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+  }
 
   var CONTENT = {
-    content_name: CFG.productName + ' — BelleVia',
+    content_name: 'دعامة الركبة الاحترافية',
     content_type: 'product',
-    content_ids: ['bellevia-genouillere'],
+    content_ids: [CFG.productSlug],
   };
 
   /* ViewContent on load: a single-product landing page IS the product view, and
      a scroll trigger would miss every bounce — exactly the impressions Meta
      needs to learn from. */
-  track('ViewContent', {
+  trackBoth('ViewContent', {
     content_name: CONTENT.content_name,
     content_type: CONTENT.content_type,
     content_ids: CONTENT.content_ids,
-    value: OFFERS.length ? OFFERS[0].price : undefined,
+    value: UNIT === null ? undefined : UNIT,
     currency: CFG.currencyCode,
   });
 
-  /* ══ 06 · Smooth scroll to the form ════════════════════════════════════
-     Every «اطلب الآن» on the page, and the sticky bar, land here. Same tab, no
-     new window, and the first field is focused once the scroll has settled —
-     focusing mid-flight cancels the smooth scroll in Safari.
+  /* ══ 05 · Smooth scroll to the form ════════════════════════════════════
+     Every «اطلب» on the page, and the sticky bar, land here. Same tab, and the
+     first field is focused once the scroll has settled — focusing mid-flight
+     cancels the smooth scroll in Safari.
 
      Product photographs are deliberately NOT wired to this: a picture that
      jumps the page when you tap to look closer is a page fighting its reader. */
@@ -270,26 +138,56 @@
       e.preventDefault();
       card.scrollIntoView({ behavior: 'smooth', block: 'start' });
       var first = $('#fullname');
-      if (!first) return;
+      var doneEl = $('#order-done');
+      if (!first || (doneEl && !doneEl.hidden)) return;
       setTimeout(function () { first.focus({ preventScroll: true }); }, 520);
     });
   });
 
-  /* ══ 07 · Order form → WhatsApp ════════════════════════════════════════ */
+  /* ══ 06 · Order form ═══════════════════════════════════════════════════ */
   (function orderForm() {
     var form = $('#order-form');
     if (!form) return;
 
     var submitBtn = $('#submit');
     var formError = $('#form-error');
+    var done = $('#order-done');
+    var doneNum = $('#order-number');
+    var doneAgain = $('#order-again');
+    var notice = $('#order-notice');
     /* Captured before the first submit can overwrite it — the button's label
        carries an inline SVG, so it is restored as HTML, not as text. */
     var LABEL = submitBtn ? submitBtn.innerHTML : '';
 
+    /* ── Quantity ────────────────────────────────────────────────────────
+       A plain multiplier, not a pack ladder: the catalogue prices this product
+       at a unit price and the server bills unit × quantity, so anything else on
+       screen would be a number the customer is not actually charged. */
+    var qty = 1;
+    var qtyOut = $('[data-qty-value]');
+    var qtyHint = $('[data-qty-hint]');
+
+    function renderTotal() {
+      var total = UNIT === null ? null : UNIT * qty;
+      var text = total === null ? '—' : money(total);
+      if (qtyOut) qtyOut.textContent = String(qty);
+      $$('[data-sum-total]').forEach(function (el) { el.textContent = text; });
+      $$('[data-sum-short]').forEach(function (el) { el.textContent = text; });
+      if (qtyHint) qtyHint.textContent = UNIT === null || qty < 2 ? '' : qty + ' × ' + money(UNIT);
+      var down = $('[data-qty-down]'); var up = $('[data-qty-up]');
+      if (down) down.disabled = qty <= 1;
+      if (up) up.disabled = qty >= CFG.maxQuantity;
+    }
+    function setQty(n) { qty = Math.max(1, Math.min(CFG.maxQuantity, n)); renderTotal(); }
+    on($('[data-qty-down]'), 'click', function () { setQty(qty - 1); });
+    on($('[data-qty-up]'), 'click', function () { setQty(qty + 1); });
+    renderTotal();
+
     /* ── Validation ──────────────────────────────────────────────────────
-       Three rules for three fields. There is no address rule, no email rule and
-       no quantity rule because there are no such fields: every extra box on a
-       Moroccan COD form is orders lost, and the rest is settled on the call. */
+       These four rules mirror `catalogSchema` in functions/api/orders.ts
+       exactly — name 2–100, Moroccan mobile, city 2–80, address 3–200. Being
+       stricter here than the server would reject orders the API would accept;
+       being looser would send the customer a round trip to be told no. */
 
     /** Moroccan mobile, in whatever shape someone types it. */
     function normalizePhone(raw) {
@@ -303,40 +201,31 @@
       return d;
     }
 
-    /* Name and phone come from /assets/js/order-form.js, shared with every
-       other storefront, so the Moroccan mobile shapes and the fake-number
-       patterns are defined once. The CITY rule below is this page's own and
-       stays that way — the shared file keeps a closed list of 142 localities,
-       which is the opposite of what this field is for.
-
-       The shared helper recognises this input as the page's own (it carries
-       `list="cities"`, and that datalist exists here), so it does not touch it:
-       no list swap, no canonicalisation.
-
-       `fallback` is not a second copy of the shared rules — it is what runs if
-       that file fails to load, and it only refuses what is plainly wrong. A
-       checkout does not get to break because a helper 404s. */
-    var SHARED = (window.nkOrderForm && window.nkOrderForm.rules) || {};
-    var fallback = {
+    var RULES = {
       fullname: function (v) {
-        return v && v.trim().length >= 3 ? '' : 'المرجو كتابة الاسم الكامل.';
+        if (!v) return 'عمّر الاسم ديالك.';
+        if (v.length < 2) return 'الاسم قصير بزاف.';
+        if (v.length > 100) return 'الاسم طويل بزاف.';
+        if (!/[؀-ۿa-zA-Z]/.test(v)) return 'كتب الاسم بالحروف.';
+        return '';
       },
       phone: function (v) {
-        return /^0[67]\d{8}$/.test(normalizePhone(v))
-          ? '' : 'الرقم غير صحيح. يجب أن يبدأ بـ 06 أو 07 ويتكون من 10 أرقام.';
+        if (!v) return 'عمّر رقم التيليفون.';
+        if (!/^0[5-7]\d{8}$/.test(normalizePhone(v))) {
+          return 'الرقم ماشي صحيح. خاصو يبدا بـ 06 ولا 07 ولا 05 ويكون فيه 10 أرقام.';
+        }
+        return '';
       },
-    };
-
-    var RULES = {
-      fullname: SHARED.fullname || fallback.fullname,
-      phone: SHARED.phone || fallback.phone,
-      // Suggestions only, and deliberately NOT the shared city rule. Anything
-      // the customer types is a place they live: the datalist holds the 67
-      // towns most orders come from, and a douar that is not in it must still
-      // be able to place an order.
       city: function (v) {
-        if (!v) return 'المرجو كتابة المدينة.';
-        if (v.length < 2) return 'المرجو كتابة اسم المدينة كاملاً.';
+        if (!v) return 'عمّر المدينة.';
+        if (v.length < 2) return 'كتب اسم المدينة كامل.';
+        if (v.length > 80) return 'اسم المدينة طويل بزاف.';
+        return '';
+      },
+      address: function (v) {
+        if (!v) return 'عمّر العنوان باش يوصلك الطلب.';
+        if (v.length < 3) return 'العنوان قصير بزاف.';
+        if (v.length > 200) return 'العنوان طويل بزاف — قصّرو شوية.';
         return '';
       },
     };
@@ -371,33 +260,126 @@
       formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    /* ── The message ─────────────────────────────────────────────────────
-       Built with encodeURIComponent rather than string concatenation into the
-       query: a name with «&» in it, or the newlines this message needs, would
-       otherwise truncate the text at the first special character and land the
-       customer in WhatsApp with half a message. */
-    function whatsappUrl(data) {
-      var text =
-        'السلام عليكم، بغيت نطلب Genouillère.\n\n' +
-        'الاسم: ' + data.name + '\n' +
-        'الهاتف: ' + data.phone + '\n' +
-        'المدينة: ' + data.city + '\n\n' +
-        'الكمية: ' + data.quantity + '\n' +
-        'الثمن الإجمالي: ' + data.total + ' ' + CFG.currencyShort + '\n\n' +
-        'بغيت تأكيد الطلب.';
-      return 'https://wa.me/' + CFG.whatsappNumber + '?text=' + encodeURIComponent(text);
+    var busy = false;
+    function setBusy(b) {
+      busy = b;
+      if (!submitBtn) return;
+      submitBtn.disabled = b;
+      if (b) submitBtn.textContent = 'كنسجلو الطلب…';
+      else { submitBtn.innerHTML = LABEL; renderTotal(); }
     }
 
-    /* ── Submit ──────────────────────────────────────────────────────────
-       The form is a real <form> with a real submit button, so Enter works and
-       the browser's own autofill fires. Navigation is assigned to the current
-       tab rather than opened with window.open: a popup blocker eats window.open
-       when the call is even one tick away from the gesture, and on iOS the
-       blocked popup is silent — the customer taps, nothing happens, and the
-       order is gone. Same tab always reaches WhatsApp, and the page is still in
-       history behind it. */
+    var SERVER_MESSAGES = {
+      product_unavailable: 'المنتوج ماشي متوفر دابا. عيط لينا وغادي نعاونوك.',
+      invalid_payload: 'كاينة شي معلومة ناقصة ولا ماشي صحيحة. عاود شوف الفورم عافاك.',
+      validation_error: 'كاينة شي معلومة ناقصة ولا ماشي صحيحة. عاود شوف الفورم عافاك.',
+      invalid_quantity: 'هاد الكمية ماشي متوفرة. بدلها وعاود.',
+      rate_limited: 'بزاف ديال المحاولات فوقت قصير. تسنى شوية وعاود.',
+      insufficient_stock: 'ما بقاش بزاف فالمخزون. نقّص الكمية ولا عيط لينا.',
+    };
+
+    // Minted once per page view, before anything is sent, so the browser copy
+    // and the server copy of each event carry the same id. Purchase gets its
+    // own — Meta deduplicates per event name AND id.
+    var leadEventId = newEventId();
+    var purchaseEventId = newEventId();
+
+    function payload() {
+      return {
+        productSlug: CFG.productSlug,
+        // Joins this order to the funnel events from the same visit, so the
+        // server can record order_success against the session that started the
+        // form. Opaque and anonymous; absent if storage is unavailable.
+        sessionId: (window.nkTrack && window.nkTrack.sessionId && window.nkTrack.sessionId()) || undefined,
+        customerName: $('#fullname').value.trim(),
+        phone: normalizePhone($('#phone').value),
+        city: $('#city').value.trim(),
+        // A real street, unlike the three-field BelleVia pages that omit the
+        // key entirely. `Customer` is keyed by phone across every storefront,
+        // so what goes here is written to that customer's record — which is
+        // exactly right when it is a genuine address, and exactly why a
+        // stand-in sentence must never be sent.
+        address: $('#address').value.trim(),
+        quantity: qty,
+        source: CFG.source,
+        // Attribution ids. If Meta is unreachable these are simply ignored and
+        // the order is unaffected. No price is sent — the server prices the
+        // order from the catalogue and would discard one if it were.
+        eventId: leadEventId,
+        purchaseEventId: purchaseEventId,
+      };
+    }
+
+    function showDone(result) {
+      form.hidden = true;
+      if (notice) notice.hidden = true;
+      if (done) {
+        if (doneNum) doneNum.textContent = (result && result.orderNumber) || '—';
+        var numLine = $('.done__num');
+        if (numLine) numLine.hidden = !(result && result.orderNumber);
+        done.hidden = false;
+        done.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      /* Lead + Purchase, browser copy only: the server fired its own from the
+         order path with these same ids, at the moment the row was committed.
+         The value is what the API confirmed — never a constant, or Meta
+         optimises against revenue that does not match the sale. */
+      var value = result && result.total != null
+        ? result.total / 100
+        : (UNIT === null ? undefined : UNIT * qty);
+      var currency = (result && result.currency) || CFG.currencyCode;
+
+      trackPixel('Lead', {
+        value: value, currency: currency,
+        content_name: CONTENT.content_name,
+        order_id: result && result.orderNumber,
+      }, leadEventId);
+
+      // fbevents logs "Parameter 'currency' is invalid for event 'Purchase'"
+      // because its validator's list of 49 codes omits MAD. It is advisory —
+      // the event is still sent, and the Conversions API accepts MAD.
+      // Do not "fix" it by changing the currency. See META-TRACKING.md.
+      trackPixel('Purchase', {
+        value: value, currency: currency,
+        content_name: CONTENT.content_name,
+        content_type: CONTENT.content_type,
+        content_ids: CONTENT.content_ids,
+        contents: [{ id: CFG.productSlug, quantity: qty, item_price: value == null ? undefined : value / qty }],
+        num_items: qty,
+        order_id: result && result.orderNumber,
+      }, purchaseEventId);
+    }
+
+    on(doneAgain, 'click', function () {
+      form.reset();
+      inputs.forEach(function (i) { setError(i, ''); });
+      if (formError) formError.hidden = true;
+      if (done) done.hidden = true;
+      if (notice) notice.hidden = !DEMO;
+      form.hidden = false;
+      setQty(1);
+      // A second order in the same page view is a different conversion.
+      leadEventId = newEventId();
+      purchaseEventId = newEventId();
+      $('#fullname').focus();
+    });
+
+    /* ── Demo mode ───────────────────────────────────────────────────────
+       No endpoint means there is nowhere for an order to go. The form stays
+       usable so the page can be shown to the client, but it says so and
+       refuses to claim an order was placed — a fake success is worth a real
+       order lost. */
+    var DEMO = !CFG.orderApiEndpoint;
+    if (DEMO && notice) {
+      notice.textContent = 'وضع التجربة: رابط الطلبات ما تعمّرش فالإعدادات، فالطلبات ما كيتسجلوش.';
+      notice.hidden = false;
+    }
+
+    /* ── Submit ──────────────────────────────────────────────────────────── */
     on(form, 'submit', function (e) {
       e.preventDefault();
+      if (busy) return; // duplicate-click protection
       if (formError) formError.hidden = true;
 
       var bad = null;
@@ -408,57 +390,56 @@
         return;
       }
 
-      if (!CFG.whatsappNumber) {
-        showFormError('رقم واتساب غير مضبوط في الإعدادات. المرجو الاتصال بنا مباشرة.');
+      /* InitiateCheckout on a valid attempt. Gated to once per page view: a
+         customer who mistypes a phone number, corrects it and resubmits is one
+         checkout, not two. */
+      trackBoth('InitiateCheckout', {
+        value: UNIT === null ? undefined : UNIT * qty,
+        currency: CFG.currencyCode,
+        content_type: CONTENT.content_type,
+        contents: [{ id: CFG.productSlug, quantity: qty }],
+      });
+
+      if (DEMO) {
+        showFormError('وضع التجربة: الطلب ما تسجّلش. خاص تتعمّر الإعدادات.');
         return;
       }
 
-      /* The chosen row is read back from the DOM rather than trusted from the
-         `change` handler alone: browser autofill and a restored bfcache page
-         can both leave a radio checked that never fired an event. */
-      var chosen = $('input[name="offer"]:checked');
-      if (chosen) {
-        picked = OFFERS.filter(function (o) { return String(o.qty) === chosen.value; })[0] || picked;
-      }
+      setBusy(true);
 
-      var data = {
-        name: $('#fullname').value.trim(),
-        phone: normalizePhone($('#phone').value),
-        city: $('#city').value.trim(),
-        quantity: picked ? (picked.label || String(picked.qty)) : '',
-        total: picked ? picked.price : '',
-      };
+      var ac = 'AbortController' in window ? new AbortController() : null;
+      var timer = setTimeout(function () { if (ac) ac.abort(); }, 15000);
 
-      /* A Lead is exactly what this is: a contact handed over, not a sale. It is
-         fired before navigating, and it is allowed to fail silently — tracking
-         never stands between a customer and WhatsApp. */
-      track('Lead', {
-        content_name: CONTENT.content_name,
-        content_type: CONTENT.content_type,
-        content_ids: CONTENT.content_ids,
-        value: picked ? picked.price : undefined,
-        currency: CFG.currencyCode,
-      });
-
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'جاري فتح واتساب…';
-      }
-
-      window.location.href = whatsappUrl(data);
-
-      /* If WhatsApp is not installed and the handover does nothing visible, the
-         button must not stay dead — someone who came back to the tab needs to
-         be able to try again. */
-      setTimeout(function () {
-        if (!submitBtn) return;
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = LABEL;
-      }, 2500);
+      fetch(CFG.orderApiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload()),
+        signal: ac ? ac.signal : undefined,
+      })
+        .then(function (res) {
+          return res.json().catch(function () { return {}; })
+            .then(function (body) { return { ok: res.ok, body: body }; });
+        })
+        .then(function (r) {
+          // Success is whatever the server says it is. The page never reports
+          // an order as placed on its own initiative, and on failure every
+          // field the customer typed is left exactly as it was so they can
+          // retry.
+          if (r.ok && r.body && r.body.ok) { showDone(r.body); return; }
+          var code = r.body && r.body.error;
+          showFormError(SERVER_MESSAGES[code] || 'ما قدرناش نسجلو الطلب دابا. عاود حاول ولا عيط لينا.');
+        })
+        .catch(function () {
+          showFormError('كاين مشكل فالكونيكسيون. تأكد من الأنترنيت وعاود حاول.');
+        })
+        .then(function () {
+          clearTimeout(timer);
+          setBusy(false);
+        });
     });
   })();
 
-  /* ══ 08 · Sticky mobile CTA ════════════════════════════════════════════
+  /* ══ 07 · Sticky mobile CTA ════════════════════════════════════════════
      Up only once BOTH the hero button and the order card are off screen, so the
      opening screen is never two identical CTAs and the bar never covers the
      form it points at. `body` carries matching bottom padding while it is up,
@@ -467,15 +448,16 @@
     var bar = $('#sticky');
     var card = $('.order__card');
     var heroCta = $('.hero__buy .btn');
+    var done = $('#order-done');
     if (!bar || !card || !('IntersectionObserver' in window)) return;
 
-    var phone = window.matchMedia('(max-width: 719px)');
+    var phone = window.matchMedia('(max-width: 899px)');
     var visible = new Map();
 
     function apply() {
       var anyOn = false;
       visible.forEach(function (v) { if (v) anyOn = true; });
-      var show = phone.matches && !anyOn;
+      var show = phone.matches && !anyOn && (!done || done.hidden);
       bar.hidden = !show;
       document.body.style.paddingBottom = show ? bar.offsetHeight + 'px' : '';
     }
@@ -492,12 +474,8 @@
 
     if (phone.addEventListener) phone.addEventListener('change', apply);
     else if (phone.addListener) phone.addListener(apply);
-    /* Unconditionally, not only while the bar is already up. Gating on
-       `!bar.hidden` means a resize can hide the bar but never reveal it, so a
-       phone rotated from landscape (≥720, bar suppressed) back to portrait
-       depends entirely on the media-query change event arriving — and when it
-       does not, the CTA is gone for the rest of the visit. `apply` reads a
-       Map and one offsetHeight; running it on resize costs nothing. */
+    /* Unconditionally, not only while the bar is already up: gating on
+       `!bar.hidden` means a resize can hide the bar but never reveal it. */
     on(window, 'resize', apply);
   })();
 })();
