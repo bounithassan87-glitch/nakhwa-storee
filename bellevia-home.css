@@ -287,6 +287,15 @@ ul { margin: 0; padding: 0; list-style: none; }
 .p-media--cut img { object-fit: contain; padding: 1.1rem 1rem; filter: drop-shadow(0 14px 24px rgba(20,48,26,.16)); }
 .p-media--photo img { object-fit: cover; }
 .p-card:hover .p-media img { transform: scale(1.04); }
+
+/* Whole-card link. Opt-in per card rather than global, so the three cards that
+   shipped before it keep behaving exactly as they did.
+
+   No second <a> and no JS: the CTA's own ::after is stretched over the card, so
+   there is still one link with one accessible name, and `:focus-within` already
+   lifts the card when that link is focused. Nothing moves by a pixel. */
+.p-card--linked { position: relative; }
+.p-card--linked .p-cta::after { content: ''; position: absolute; inset: 0; }
 .p-tag {
   position: absolute; top: .85rem; inset-inline-start: .85rem;
   background: var(--g-700); color: #fff;
