@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>إعلان العرض — دعامة الركبة</title>
+<!--
+  Meta ad creative, 1080×1350 (4:5). Rendered, not drawn:
+
+    node bellevia-genouillere/tools/build-ad.mjs      → tools/unit-cutout.png
+    chrome --headless=new --window-size=1080,1350 \
+      --screenshot=ad-offer-1080x1350.png file://…/tools/ad-offer.html
+
+  The product is `angle-front-400.webp` exactly as the supplier shot it, with
+  only its white studio background keyed away. Nothing is redrawn, recoloured,
+  relabelled or reproportioned, and the two units of the bundle are two copies
+  of that one photograph — which is what two of this SKU look like.
+
+  ⚠️ ONLY these numbers may appear: 1, 2, 180, 300. No 299, no 349, no
+  per-unit figure, no saving, no countdown, no stock counter, no health claim,
+  no testimonial. The two price lines are the client's own wording, verbatim.
+
+  Hierarchy, in the order the eye should take it:
+    1. the pair of braces        — the largest mass, top-middle
+    2. «2 بـ 300 درهم»           — the largest type. The «2» is set nearly as
+                                   big as the «300»: read small, the line
+                                   collapses to «300 درهم» and a viewer
+                                   prices ONE brace at 300.
+    3. «اطلب دابا»                — the only solid gold shape on the canvas
+    4. «1 بـ 180 درهم»           — plainly readable, visibly quieter
+    5. delivery / cash on delivery — small, last
+-->
+<style>
+  @font-face { font-family: Tajawal; font-weight: 400; font-display: block;
+    src: url(../assets/fonts/tajawal-400-ar.woff2) format('woff2');
+    unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF; }
+  @font-face { font-family: Tajawal; font-weight: 400; font-display: block;
+    src: url(../assets/fonts/tajawal-400-lat.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+2000-206F; }
+  @font-face { font-family: Tajawal; font-weight: 700; font-display: block;
+    src: url(../assets/fonts/tajawal-700-ar.woff2) format('woff2');
+    unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF; }
+  @font-face { font-family: Tajawal; font-weight: 800; font-display: block;
+    src: url(../assets/fonts/tajawal-800-ar.woff2) format('woff2');
+    unicode-range: U+0600-06FF, U+0750-077F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF; }
+  @font-face { font-family: Tajawal; font-weight: 800; font-display: block;
+    src: url(../assets/fonts/tajawal-800-lat.woff2) format('woff2');
+    unicode-range: U+0000-00FF, U+2000-206F; }
+
+  :root {
+    --green-900:#06170E; --green-800:#0B2718; --green-700:#123A25;
+    --gold:#DEB942; --gold-soft:#E9CF7A; --gold-deep:#C99E24;
+    --ink-on-gold:#211803;
+    --on-dark:#FFFFFF; --on-dark-soft:#C9DBCF; --on-dark-mute:#A3BDAE;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1350px; }
+  body {
+    font-family: Tajawal, sans-serif; color: var(--on-dark);
+    background: var(--green-900);
+    position: relative; overflow: hidden;
+  }
+
+  /* ── the field ────────────────────────────────────────────────────── */
+  /* Three lights. A cool, soft spot sits directly behind the product: the
+     brace is near-black, and a near-black object on a dark ground only
+     separates if the ground behind it is lifted. A warm key from the top
+     right gives the green its depth, and the base gradient falls off toward
+     the bottom where the type sits. */
+  .bg { position: absolute; inset: 0;
+    background:
+      radial-gradient(38% 29% at 50% 37%, rgba(178,214,188,.17), transparent 72%),
+      radial-gradient(52% 34% at 80% 6%, rgba(222,185,66,.13), transparent 68%),
+      linear-gradient(172deg, var(--green-700) 0%, var(--green-800) 48%, var(--green-900) 100%);
+  }
+  .bg::after { content: ''; position: absolute; inset: 0;
+    background: radial-gradient(86% 62% at 50% 40%, transparent 48%, rgba(2,10,5,.55) 100%); }
+
+  /* Fine grain. Large dark gradients band into visible steps once Meta
+     recompresses the upload; a whisper of noise breaks the steps up and gives
+     the flat colour the tooth of printed stock. */
+  .grain { position: absolute; inset: 0; opacity: .07; mix-blend-mode: overlay; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .in { position: relative; height: 100%; padding: 46px 60px 46px;
+        display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+  /* ── brand ────────────────────────────────────────────────────────── */
+  /* The wordmark is drawn in dark olive and gold for light grounds and all but
+     vanishes on this one. It gets a light plate rather than a filter —
+     inverting a brand mark is recolouring it. Warm white, not paper white, so
+     the plate belongs to the scene instead of punching a hole in it. */
+  .brand { background: #FBF9F3; border-radius: 16px; padding: 9px 17px;
+           box-shadow: 0 12px 30px rgba(0,0,0,.32); }
+  .brand img { width: 128px; height: auto; display: block; }
+
+  .name { margin-top: 12px; display: flex; align-items: center; gap: 14px;
+          font-size: 29px; font-weight: 700; color: var(--on-dark-soft); }
+  /* Two gold hairlines, fading away from the words. In RTL ::before is the
+     right-hand rule, so each gradient runs gold → clear outward. */
+  .name::before, .name::after { content: ''; width: 38px; height: 1.5px; }
+  .name::before { background: linear-gradient(90deg, rgba(233,207,122,.8), transparent); }
+  .name::after  { background: linear-gradient(90deg, transparent, rgba(233,207,122,.8)); }
+
+  /* ── product ──────────────────────────────────────────────────────── */
+  .stage { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
+  /* An art-directed canvas, so physical left/right on purpose: every offset
+     below is measured, and «start/end» would only add a mirror to reason
+     through. Widths follow from the heights (the cutout is 0.6 wide to 1 tall).
+     The larger unit stands on the right, so the pair sits 12px left of centre:
+     geometric centre and visual weight disagree, and this splits them. */
+  .pair { position: relative; flex: none; width: 660px; height: 556px; }
+  .pair img { position: absolute; }
+  /* Front unit — full exposure, where the eye lands first in RTL. */
+  .pair img.front { right: 32px; bottom: 0; height: 556px;
+    filter: brightness(1.08) drop-shadow(0 8px 10px rgba(0,0,0,.5)) drop-shadow(0 26px 40px rgba(0,0,0,.38)); }
+  /* Rear unit — smaller, higher, a touch darker: further from the light, not
+     faded. Opacity would let the green show through the fabric. */
+  .pair img.back { left: 18px; bottom: 60px; height: 448px;
+    filter: brightness(.94) drop-shadow(0 8px 10px rgba(0,0,0,.45)) drop-shadow(0 22px 34px rgba(0,0,0,.34)); }
+
+  /* The ground they stand on: one broad, faint pool of light, and a tight
+     dark contact shadow under each base. Horizontal and well below the
+     silhouettes — a floor, not an outline. */
+  .pool { position: absolute; left: 50%; bottom: -36px; width: 660px; height: 104px;
+          transform: translateX(-50%); border-radius: 50%;
+          background: radial-gradient(closest-side, rgba(196,226,204,.15), transparent 100%);
+          filter: blur(6px); }
+  .cast { position: absolute; border-radius: 50%; filter: blur(8px);
+          background: radial-gradient(closest-side, rgba(0,0,0,.66), rgba(0,0,0,.3) 55%, transparent 100%); }
+  .cast--back  { left: 32px;  bottom: 46px; width: 244px; height: 38px; opacity: .85; }
+  .cast--front { left: 300px; bottom: -16px; width: 318px; height: 50px; }
+
+  /* ── the offer ────────────────────────────────────────────────────── */
+  .offer { display: flex; flex-direction: column; align-items: center; }
+  .big {
+    display: flex; align-items: baseline; justify-content: center; gap: 16px;
+    font-weight: 800; line-height: 1;
+    filter: drop-shadow(0 10px 26px rgba(0,0,0,.5));
+  }
+  .big .k { font-size: 168px; letter-spacing: -.02em;
+    background: linear-gradient(180deg, #F6E3A2 12%, var(--gold) 62%, var(--gold-deep) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .big .b { font-size: 72px; color: var(--on-dark-soft); }
+  .big .n { font-size: 188px; letter-spacing: -.03em;
+    background: linear-gradient(180deg, #FFFFFF 38%, #F1E6C8 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .big .c { font-size: 66px; color: var(--on-dark); }
+
+  .alt {
+    margin-top: 18px;
+    display: inline-flex; align-items: baseline; gap: 11px;
+    font-size: 36px; font-weight: 700; line-height: 1.2; color: var(--on-dark-soft);
+    background: rgba(255,255,255,.045);
+    border: 1.5px solid rgba(255,255,255,.2); border-radius: 999px; padding: 11px 34px 12px;
+  }
+  .alt .n { color: #fff; font-weight: 800; }
+
+  /* ── cta ──────────────────────────────────────────────────────────── */
+  /* The one solid gold shape. Metallic by gradient and a lit top edge, not by
+     texture; wide enough to read as the action, not a label. */
+  .cta {
+    margin-top: 34px; width: 540px; padding: 24px 0 26px; border-radius: 999px;
+    font-size: 48px; font-weight: 800; line-height: 1.15; color: var(--ink-on-gold);
+    background: linear-gradient(180deg, #F4DD8E 0%, var(--gold) 46%, var(--gold-deep) 100%);
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.55),
+      inset 0 -3px 0 rgba(110,80,0,.28),
+      0 22px 46px rgba(0,0,0,.5),
+      0 0 0 1px rgba(244,221,142,.28);
+  }
+
+  /* Two facts, both true and both read from config.js. Deliberately small: the
+     brief's hierarchy ends at the CTA and these must not compete with it. */
+  .trust { margin-top: 26px; display: flex; align-items: center; gap: 22px;
+           font-size: 24px; font-weight: 700; color: var(--on-dark-mute); }
+  .trust span { display: flex; align-items: center; gap: 9px; }
+  .trust svg { width: 24px; height: 24px; color: var(--gold-soft); }
+  .trust i { width: 1.5px; height: 22px; background: rgba(255,255,255,.2); }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="grain"></div>
+<div class="in">
+
+  <div class="brand"><img src="../assets/logo/logo-342.webp" alt="BelleVia"></div>
+  <p class="name">دعامة الركبة الاحترافية</p>
+
+  <div class="stage">
+    <div class="pair">
+      <div class="pool"></div>
+      <span class="cast cast--back"></span>
+      <img class="back" src="./unit-cutout.png" alt="">
+      <span class="cast cast--front"></span>
+      <img class="front" src="./unit-cutout.png" alt="">
+    </div>
+  </div>
+
+  <div class="offer">
+    <!-- The bundle — the largest type on the creative. -->
+    <p class="big"><span class="k">2</span><span class="b">بـ</span><span class="n">300</span><span class="c">درهم</span></p>
+    <!-- The single unit — smaller, still plainly readable. -->
+    <p class="alt"><span>1 بـ</span><span class="n">180</span><span>درهم</span></p>
+  </div>
+
+  <div class="cta">اطلب دابا</div>
+
+  <div class="trust">
+    <span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>
+      التوصيل مجاني
+    </span>
+    <i></i>
+    <span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>
+      الدفع عند الاستلام
+    </span>
+  </div>
+
+</div>
+</body>
+</html>
