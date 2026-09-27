@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync, existsSync, cpSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { LANDING_PAGES } from "../shared/landing-pages.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(root, "dist");
@@ -71,12 +72,31 @@ write(
 );
 
 // sitemap.xml — regenerated (idempotent).
+//
+// The root page plus every deployed landing page. It used to list only `/`,
+// which meant the five product pages the site actually sells from were not in
+// the sitemap at all — each one discoverable only through the storefront's own
+// links. Generated from LANDING_PAGES rather than hand-listed, so a page can
+// never ship without being in the sitemap, and a page dropped from the deploy
+// can never linger in it.
+//
+// `copy-landing-pages.mjs` deletes the per-folder robots.txt/sitemap.xml, so
+// this file is the only sitemap the site serves.
+const urls = [
+  { loc: `${origin}/`, priority: "1.0" },
+  ...LANDING_PAGES.map((slug) => ({ loc: `${origin}/${slug}/`, priority: "0.9" })),
+];
 write(
   "sitemap.xml",
   `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
-    `  <url>\n    <loc>${origin}/</loc>\n    <lastmod>${today}</lastmod>\n` +
-    `    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>\n` +
+    urls
+      .map(
+        ({ loc, priority }) =>
+          `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${today}</lastmod>\n` +
+          `    <changefreq>weekly</changefreq>\n    <priority>${priority}</priority>\n  </url>\n`,
+      )
+      .join("") +
     `</urlset>\n`,
 );
 

@@ -60,14 +60,32 @@ for (const name of PAGES) {
   const html = join(dest, "index.html");
   if (existsSync(html)) {
     let out = readFileSync(html, "utf8");
+    const abs = (url) => (/^https?:\/\//.test(url) ? url : `${base}/${url.replace(/^\.?\//, "")}`);
+
     out = out.replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${base}/">`);
-    out = out.replace(
-      /(<meta property="og:image" content=")([^"]*)(">)/,
-      (_m, a, url, c) => a + (/^https?:\/\//.test(url) ? url : `${base}/${url.replace(/^\.?\//, "")}`) + c,
-    );
-    if (!/property="og:url"/.test(out)) {
+    out = out.replace(/(<meta property="og:image" content=")([^"]*)(">)/, (_m, a, url, c) => a + abs(url) + c);
+    // Twitter resolves a relative image against the page, but the root page has
+    // always had this stamped absolute — a landing page should not be the one
+    // place in the site that ships a relative share image.
+    out = out.replace(/(<meta name="twitter:image" content=")([^"]*)(">)/, (_m, a, url, c) => a + abs(url) + c);
+
+    // og:url is replaced when the source declares one and inserted when it does
+    // not. Replacing matters: a source that ships `content="./"` for offline use
+    // would otherwise keep it, and a relative og:url is the one OpenGraph field
+    // scrapers do not resolve.
+    if (/property="og:url"/.test(out)) {
+      out = out.replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${base}/">`);
+    } else {
       out = out.replace(/(<meta property="og:image"[^>]*>)/, `$1\n<meta property="og:url" content="${base}/">`);
     }
+
+    // JSON-LD needs absolute URLs and has no tag structure to match on, so a
+    // page writes `__ORIGIN__` and this stamps it. A surviving placeholder in
+    // dist/ would be a live page advertising a broken URL to Google, so it is
+    // reported rather than left to be found later.
+    out = out.split("__ORIGIN__").join(origin);
+    if (out.includes("__ORIGIN__")) console.warn(`[copy-landing-pages] ${name}: unstamped __ORIGIN__ remains`);
+
     writeFileSync(html, out);
   }
 
