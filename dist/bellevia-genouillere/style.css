@@ -351,6 +351,28 @@ bdi { font-variant-numeric: tabular-nums; }
 .vcard h3 { font-size: 17px; }
 .vcard p { margin-top: 7px; font-size: 14.5px; line-height: 1.65; color: var(--ink-2); }
 
+/* Three scenes under the six spec cards. Same ratio as the source frames, so
+   `cover` crops nothing — these are composed shots and trimming them costs the
+   runner's stride or the hinge itself. */
+.bens { margin-top: 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.bens figure {
+  position: relative; border-radius: var(--r); overflow: hidden;
+  border: 1px solid var(--line); background: var(--shade);
+}
+.bens img { width: 100%; aspect-ratio: 192 / 123; object-fit: cover; }
+.bens figcaption {
+  position: absolute; inset-inline-start: 8px; bottom: 8px;
+  font-size: 11.5px; font-weight: 800; color: #fff;
+  background: rgba(12, 22, 16, .76);
+  border-radius: 999px; padding: 3px 10px;
+}
+@media (max-width: 479.98px) {
+  /* Three across on a 320px phone gives each frame ~95px, which is smaller
+     than the hinge in it. One column, full width, sharp. */
+  .bens { grid-template-columns: 1fr; }
+  .bens figcaption { font-size: 12.5px; }
+}
+
 /* ── 09 · Anatomy ───────────────────────────────────────────────────────── */
 .anat { display: grid; gap: 24px; align-items: center; }
 .anat__shot {
@@ -408,14 +430,11 @@ bdi { font-variant-numeric: tabular-nums; }
   border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--sh-1);
 }
 .step figure { position: relative; }
-.step img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--shade); }
-.step__n {
-  position: absolute; inset-inline-start: 12px; top: 12px;
-  width: 38px; height: 38px; border-radius: 50%;
-  background: var(--gold); color: #24200A;
-  display: grid; place-items: center; font-size: 17px; font-weight: 800;
-  box-shadow: 0 3px 10px rgba(20, 33, 26, .22);
-}
+/* The fitting photos are composed frames, 178×116, with the supplier's number
+   in the top corner. The ratio matches the source exactly so `cover` has
+   nothing to crop — a 4/3 window here would trim the sides and take a hand or
+   the number with them. No `.step__n`: these frames number themselves. */
+.step img { width: 100%; aspect-ratio: 178 / 116; object-fit: cover; background: var(--shade); }
 .step__body { padding: 16px 17px 19px; }
 .step h3 { font-size: 16.5px; }
 .step p { margin-top: 6px; font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
@@ -519,24 +538,58 @@ bdi { font-variant-numeric: tabular-nums; }
   border-radius: var(--r-sm); padding: 11px 15px; margin-top: 15px;
 }
 
-/* Quantity. A stepper, not a free number field: the API caps at 10 and a
-   typed «50» is a rejected order rather than a corrected one. */
-.field--qty { gap: 9px; }
-.qty {
-  display: inline-flex; align-items: center; gap: 5px;
-  border: 1.5px solid var(--line-2); border-radius: var(--r-sm);
-  background: var(--paper); padding: 5px; width: max-content;
+/* The offer chooser — two rows, and the whole row is the target, not a 20px
+   radio dot. It replaces a quantity stepper: the catalogue sells this product
+   at 1 for 180 and 2 for 300 and in no other quantity, so a control that could
+   reach 3 would only ever produce a rejected order.
+
+   The selected row is marked three ways — gold border, gold tint, a filled dot
+   — so it never relies on colour alone. */
+.offers { border: 0; padding: 0; margin: 0; }
+.offers legend {
+  padding: 0; margin-bottom: 10px;
+  font-size: 14.5px; font-weight: 700; color: var(--ink);
 }
-.qty__btn {
-  font: inherit; font-size: 23px; font-weight: 700; line-height: 1;
-  width: 48px; height: 46px; border: 0; border-radius: 9px;
-  background: var(--green-50); color: var(--green-ink); cursor: pointer;
+.offers__list { display: grid; gap: 10px; }
+
+.pick { display: block; cursor: pointer; }
+/* Clipped, not `display:none`: a hidden input leaves the tab order and the
+   radio group, which would take the arrow keys with it. */
+.pick__radio {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
 }
-.qty__btn:hover:not([disabled]) { background: var(--green-100); }
-.qty__btn[disabled] { opacity: .4; cursor: not-allowed; }
-.qty__value { min-width: 48px; text-align: center; font-size: 18px; font-weight: 800; }
-.qty__hint { font-size: 13px; color: var(--muted); }
-.qty__hint:empty { display: none; }
+.pick__box {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  border: 1.5px solid var(--line-2); border-radius: var(--r);
+  padding: 14px 15px; background: var(--paper);
+  transition: border-color .16s ease, background-color .16s ease;
+}
+.pick__head { display: flex; align-items: baseline; gap: 10px; flex: 1 1 auto; min-width: 0; }
+/* The radio's own dot, drawn on the row so the whole card reads as selectable. */
+.pick__head::before {
+  content: ''; flex: 0 0 auto; align-self: center;
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--line-2); background: var(--paper);
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.pick__name { font-size: 15.5px; font-weight: 700; }
+.pick__price { margin-inline-start: auto; font-size: 20px; font-weight: 800; white-space: nowrap; }
+
+/* The saving. Computed in script.js — (2 × 180) − 300 — never typed. */
+.pick__save {
+  flex: 0 0 auto;
+  font-size: 13px; font-weight: 800; color: #24200A;
+  background: var(--gold); border-radius: 999px; padding: 3px 11px;
+}
+
+.pick__radio:checked + .pick__box { border-color: var(--gold); background: var(--gold-soft); }
+.pick__radio:checked + .pick__box .pick__head::before {
+  border-color: var(--gold); box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 20px var(--gold);
+}
+.pick:hover .pick__box { border-color: var(--gold-line); }
+.pick__radio:focus-visible + .pick__box { outline: 3px solid var(--gold); outline-offset: 2px; }
 
 .sum {
   display: flex; align-items: baseline; justify-content: space-between; gap: 10px;

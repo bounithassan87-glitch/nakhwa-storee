@@ -119,6 +119,38 @@ const F = {
                           `lifestyle-strip.jpg` is the same set done right. */
   infographic: "infographic-ar.jpg",
   strip: "lifestyle-strip.jpg",
+
+  /* ── Third batch, 2026-09-27: the full Arabic sales poster, 1024×1536 ──────
+     A finished one-page design, not raw photography. Two rows of photographs
+     inside it are things the page did not have, so those are cut out; nothing
+     else from it is built.
+
+     TAKEN — the four fitting photos (y 858–974). Hands opening the brace,
+     placing it on a knee, fastening the straps, checking the fit. The steps
+     section had been illustrating those four actions with studio shots of the
+     product lying still, which showed the object but never the procedure.
+     Each frame carries the poster's own green ①②③④ badge, and it is kept:
+     the numbers are correct, they are part of the supplied artwork, and the
+     page drops its own gold badge for these rather than stack two numbers in
+     one corner.
+
+     TAKEN — three of the four benefit photos (y 621–744): a man running, the
+     hinge in close-up, and an older couple walking. The hinge frame is tighter
+     than any product shot in the first batch.
+
+     ⚠️ NOT TAKEN — the fourth benefit photo, a knee lit with an orange pain
+     glow under «تخفيف الألم والضغط / تساعد على تقليل الألم والتورم». Pain and
+     swelling are the claims this page does not make, and the picture makes
+     them without a word of text.
+     ⚠️ NOT TAKEN — the three testimonial portraits with names, cities and
+     stars. No review was ever supplied as real.
+     ⚠️ NOT TAKEN — «ضمان الرضا أو استرجاع الأموال 100%», «ضمان الاستبدال
+     والاسترجاع», «خدمة ما بعد البيع» — none is a confirmed policy.
+     ⚠️ NOT TAKEN — the struck «299 DH». There is no confirmed former price.
+     ⚠️ NOT TAKEN — the poster's hero, VS-panel and podium product shots. Not
+     for any policy reason: the first batch simply has the same subjects at
+     higher resolution (800×800 and 400×400 against this poster's ~180px). */
+  poster: "poster-ar.webp",
 };
 
 const src = (k) => join(SRC, F[k]);
@@ -232,6 +264,52 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
     await webp("strip", USE[i], [210], {
       extract: { left: EDGE[i], top: 118, width: EDGE[i + 1] - EDGE[i], height: 645 },
       quality: 84,
+    });
+  }
+
+  /* ── The four fitting photos ─────────────────────────────────────────────
+     Cut at their frame edges, badge included. Boxes measured off the poster by
+     scanning for columns that are not the cream page background; the fourth is
+     placed on the 232px pitch the first three establish, because its own frame
+     is too light to detect the same way.
+
+     ⚠️ ONE width, and it is the ceiling. Each frame is ~178px across in a
+     1024px poster, so a `srcset` would be a lie — the builder never enlarges
+     and a larger request returns the same file. They are displayed small
+     enough to stay sharp. Showing the procedure any bigger needs the four
+     photographs supplied on their own, not baked into a poster. */
+  console.log("fitting steps:");
+  /* ⚠️ The poster is RIGHT-TO-LEFT, so its first step is its RIGHTMOST frame.
+     Reading these boxes left to right gives 4, 3, 2, 1 — naming them 1..4 by
+     x position puts the last photo on the first step, which is a set of
+     instructions that shows the wrong picture for every line. Each x below was
+     checked against the green badge burned into that frame. */
+  const STEP = [
+    ["step-open", 769],     // ① hands holding the brace open   — rightmost
+    ["step-place", 537],    // ② placing it around the knee
+    ["step-strap", 305],    // ③ fastening the straps
+    ["step-check", 64],     // ④ checking the fit               — leftmost
+  ];
+  for (const [name, left] of STEP) {
+    await webp("poster", name, [178], {
+      extract: { left, top: 858, width: 178, height: 116 },
+      quality: 86,
+    });
+  }
+
+  /* ── Three benefit photos ────────────────────────────────────────────────
+     The fourth frame of that row — the orange pain glow — is deliberately not
+     among them. See the note on `poster` above. */
+  console.log("benefits:");
+  const BEN = [
+    ["ben-run", 309, 184],    // a man running
+    ["ben-hinge", 533, 192],  // the hinge, close up
+    ["ben-walk", 763, 200],   // an older couple walking
+  ];
+  for (const [name, left, width] of BEN) {
+    await webp("poster", name, [width], {
+      extract: { left, top: 621, width, height: 123 },
+      quality: 86,
     });
   }
 

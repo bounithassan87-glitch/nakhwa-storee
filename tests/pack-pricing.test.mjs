@@ -45,10 +45,13 @@ describe("Bellevia pack pricing", () => {
     assert.deepEqual(packQuantitiesFor(SLUG), [1, 2, 3]);
   });
 
-  test("only Bellevia is pack-priced", () => {
+  test("exactly two products are pack-priced", () => {
     // A guard on the blast radius: adding a slug here changes what it charges,
     // so a new entry should be a deliberate edit to this test too.
-    assert.deepEqual(Object.keys(PACK_PRICING), [SLUG]);
+    assert.deepEqual(Object.keys(PACK_PRICING).sort(), [
+      "bellevia-genouillere",
+      "bellevia-weight-gain",
+    ]);
   });
 
   test("every price is a whole number of centimes", () => {
@@ -60,5 +63,40 @@ describe("Bellevia pack pricing", () => {
         assert.ok(total > 0, `${slug} qty ${qty} is not positive`);
       }
     }
+  });
+});
+
+/* The knee brace: 1 for 180, 2 for 300.
+ *
+ * Its landing page shows those two and nothing else, and it sends only a
+ * quantity — the server reads the total here. So this table and
+ * `bellevia-genouillere/config.js` are two copies of one fact, and these tests
+ * are what stops them drifting: a page quoting 300 against a table charging
+ * 360 is a customer shown one number and billed another. */
+describe("Genouillere pack pricing", () => {
+  const KNEE = "bellevia-genouillere";
+
+  test("the pair is charged 300, not twice 180", () => {
+    assert.equal(packTotalFor(KNEE, 1), 18000); // 180.00 DH
+    assert.equal(packTotalFor(KNEE, 2), 30000); // 300.00, not 2 × 180 = 360
+  });
+
+  test("the pair saves the 60 DH the page claims", () => {
+    const unit = packTotalFor(KNEE, 1);
+    assert.equal(unit * 2 - packTotalFor(KNEE, 2), 6000); // «وفر 60 درهم»
+  });
+
+  test("it is sold in ONE and TWO only", () => {
+    assert.deepEqual(packQuantitiesFor(KNEE), [1, 2]);
+    // undefined, not null: the product IS pack-priced, these sizes are not
+    // sold. The order form offers exactly two options for this reason — a
+    // stepper reaching 3 would only ever build a rejected order.
+    assert.equal(packTotalFor(KNEE, 3), undefined);
+    assert.equal(packTotalFor(KNEE, 0), undefined);
+  });
+
+  test("adding the row did not disturb the other pack-priced product", () => {
+    assert.equal(packTotalFor("bellevia-weight-gain", 2), 34900);
+    assert.equal(packTotalFor("bellevia-pack-raha", 2), null);
   });
 });

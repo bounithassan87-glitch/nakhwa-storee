@@ -23,19 +23,47 @@
     orderApiEndpoint: String(RAW.orderApiEndpoint || '').trim(),
     productSlug: String(RAW.productSlug || 'bellevia-genouillere').trim(),
     source: String(RAW.source || 'bellevia-genouillere').trim(),
-    price: String(RAW.price || '').trim(),
+    currencyShort: String(RAW.currencyShort || 'DH').trim(),
     currency: String(RAW.currency || 'درهم').trim(),
     currencyCode: String(RAW.currencyCode || 'MAD').trim().toUpperCase(),
-    maxQuantity: Math.max(1, Math.min(10, parseInt(RAW.maxQuantity, 10) || 5)),
     delivery: String(RAW.delivery || '').trim(),
     deliveryArea: String(RAW.deliveryArea || '').trim(),
     cashOnDelivery: RAW.cashOnDelivery !== false,
     cities: Array.isArray(RAW.cities) ? RAW.cities : [],
   };
 
-  /** Digits only counts as a number; anything else is text someone typed. */
-  function numeric(v) { return /^\d+(?:[.,]\d+)?$/.test(v) ? parseFloat(v.replace(',', '.')) : null; }
-  var UNIT = numeric(CFG.price);
+  /* The offer ladder, cleaned and sorted by quantity. A row survives only if
+     both its quantity and its total are real positive numbers, so a half-typed
+     offer is dropped rather than rendered as `NaN درهم`.
+
+     ⚠️ This must mirror PACK_PRICING["bellevia-genouillere"] in
+     shared/catalog.js. The page never sends a price — the server reads that
+     table — so a quantity offered here and missing there is an order the API
+     answers `invalid_quantity`. */
+  var OFFERS = (Array.isArray(RAW.offers) ? RAW.offers : [])
+    .map(function (o) {
+      return {
+        qty: parseInt(o && o.qty, 10),
+        price: typeof (o && o.price) === 'number' ? o.price : parseFloat(o && o.price),
+        label: String((o && o.label) || '').trim(),
+      };
+    })
+    .filter(function (o) { return o.qty > 0 && isFinite(o.price) && o.price > 0; })
+    .sort(function (a, b) { return a.qty - b.qty; });
+
+  /** The single-unit total — the yardstick every saving is measured against. */
+  var UNIT = OFFERS.length ? OFFERS[0].price / OFFERS[0].qty : null;
+
+  /**
+   * What a row saves against buying that many units one at a time.
+   * Computed, never configured: «وفر 60 درهم» on the pair is (2 × 180) − 300,
+   * a number the customer can check. A hand-written saving becomes a lie the
+   * first time someone edits a price and forgets it.
+   */
+  function saving(o) {
+    if (UNIT === null) return 0;
+    return Math.max(0, Math.round(o.qty * UNIT - o.price));
+  }
 
   /** «180 درهم» — an Arabic phrase, so it inherits the page's RTL and the
       digits stay to the right of the currency word where they belong. */
@@ -67,11 +95,62 @@
      <p> still holds whitespace text nodes, so `:empty` would not catch it and
      the page would keep a bordered, blank price line. */
   (function prices() {
-    if (UNIT === null) {
+    if (!OFFERS.length) {
       $$('[data-price-wrap]').forEach(function (el) { el.remove(); });
       return;
     }
-    $$('[data-price]').forEach(function (el) { el.textContent = money(UNIT); el.hidden = false; });
+    /* The headline price is what ONE costs. The pair is the upsell, and it is
+       shown where it can be acted on — inside the chooser — rather than in the
+       hero, where a second number competes with the first. */
+    $$('[data-price]').forEach(function (el) { el.textContent = money(OFFERS[0].price); el.hidden = false; });
+
+    /* The chooser. Built from config rather than typed into the HTML, so a
+       price can never disagree with the label beside it. Real radios in a real
+       fieldset: arrow keys work, the group is one tab stop, and a screen reader
+       announces "1 of 2" without a line of ARIA. */
+    var box = $('[data-offers]');
+    if (!box) return;
+    box.textContent = '';
+
+    OFFERS.forEach(function (o, i) {
+      var sv = saving(o);
+
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'offer';
+      input.value = String(o.qty);
+      input.className = 'pick__radio';
+      if (i === 0) input.checked = true;
+
+      var name = document.createElement('span');
+      name.className = 'pick__name';
+      name.textContent = o.label || (o.qty + ' × ' + CFG.productName);
+
+      var price = document.createElement('b');
+      price.className = 'pick__price';
+      price.textContent = money(o.price);
+
+      var head = document.createElement('span');
+      head.className = 'pick__head';
+      head.appendChild(name);
+      head.appendChild(price);
+
+      var body = document.createElement('span');
+      body.className = 'pick__box';
+      body.appendChild(head);
+      if (sv) {
+        var tag = document.createElement('span');
+        tag.className = 'pick__save';
+        tag.textContent = 'وفر ' + money(sv);
+        body.appendChild(tag);
+      }
+
+      var label = document.createElement('label');
+      label.className = 'pick';
+      label.appendChild(input);
+      label.appendChild(body);
+      box.appendChild(label);
+    });
   })();
 
   /* ══ 03 · City suggestions ═════════════════════════════════════════════
@@ -120,7 +199,7 @@
     content_name: CONTENT.content_name,
     content_type: CONTENT.content_type,
     content_ids: CONTENT.content_ids,
-    value: UNIT === null ? undefined : UNIT,
+    value: OFFERS.length ? OFFERS[0].price : undefined,
     currency: CFG.currencyCode,
   });
 
@@ -159,28 +238,24 @@
        carries an inline SVG, so it is restored as HTML, not as text. */
     var LABEL = submitBtn ? submitBtn.innerHTML : '';
 
-    /* ── Quantity ────────────────────────────────────────────────────────
-       A plain multiplier, not a pack ladder: the catalogue prices this product
-       at a unit price and the server bills unit × quantity, so anything else on
-       screen would be a number the customer is not actually charged. */
-    var qty = 1;
-    var qtyOut = $('[data-qty-value]');
-    var qtyHint = $('[data-qty-hint]');
+    /* ── The chosen offer ────────────────────────────────────────────────
+       A pack ladder, not a multiplier: the catalogue prices 1 at 180 and 2 at
+       300 and sells no other quantity, so the total is the row's own price —
+       never unit × quantity, which would quote 360 for the pair. */
+    var picked = OFFERS.length ? OFFERS[0] : null;
 
     function renderTotal() {
-      var total = UNIT === null ? null : UNIT * qty;
-      var text = total === null ? '—' : money(total);
-      if (qtyOut) qtyOut.textContent = String(qty);
+      var text = picked ? money(picked.price) : '—';
       $$('[data-sum-total]').forEach(function (el) { el.textContent = text; });
       $$('[data-sum-short]').forEach(function (el) { el.textContent = text; });
-      if (qtyHint) qtyHint.textContent = UNIT === null || qty < 2 ? '' : qty + ' × ' + money(UNIT);
-      var down = $('[data-qty-down]'); var up = $('[data-qty-up]');
-      if (down) down.disabled = qty <= 1;
-      if (up) up.disabled = qty >= CFG.maxQuantity;
     }
-    function setQty(n) { qty = Math.max(1, Math.min(CFG.maxQuantity, n)); renderTotal(); }
-    on($('[data-qty-down]'), 'click', function () { setQty(qty - 1); });
-    on($('[data-qty-up]'), 'click', function () { setQty(qty + 1); });
+    $$('input[name="offer"]', form).forEach(function (input) {
+      on(input, 'change', function () {
+        if (!input.checked) return;
+        picked = OFFERS.filter(function (o) { return String(o.qty) === input.value; })[0] || picked;
+        renderTotal();
+      });
+    });
     renderTotal();
 
     /* ── Validation ──────────────────────────────────────────────────────
@@ -300,7 +375,7 @@
         // exactly right when it is a genuine address, and exactly why a
         // stand-in sentence must never be sent.
         address: $('#address').value.trim(),
-        quantity: qty,
+        quantity: picked ? picked.qty : 1,
         source: CFG.source,
         // Attribution ids. If Meta is unreachable these are simply ignored and
         // the order is unaffected. No price is sent — the server prices the
@@ -327,7 +402,7 @@
          optimises against revenue that does not match the sale. */
       var value = result && result.total != null
         ? result.total / 100
-        : (UNIT === null ? undefined : UNIT * qty);
+        : (picked ? picked.price : undefined);
       var currency = (result && result.currency) || CFG.currencyCode;
 
       trackPixel('Lead', {
@@ -345,8 +420,8 @@
         content_name: CONTENT.content_name,
         content_type: CONTENT.content_type,
         content_ids: CONTENT.content_ids,
-        contents: [{ id: CFG.productSlug, quantity: qty, item_price: value == null ? undefined : value / qty }],
-        num_items: qty,
+        contents: [{ id: CFG.productSlug, quantity: picked ? picked.qty : 1, item_price: value == null || !picked ? undefined : value / picked.qty }],
+        num_items: picked ? picked.qty : 1,
         order_id: result && result.orderNumber,
       }, purchaseEventId);
     }
@@ -358,7 +433,9 @@
       if (done) done.hidden = true;
       if (notice) notice.hidden = !DEMO;
       form.hidden = false;
-      setQty(1);
+      var first = $('input[name="offer"]');
+      if (first) { first.checked = true; picked = OFFERS[0] || picked; }
+      renderTotal();
       // A second order in the same page view is a different conversion.
       leadEventId = newEventId();
       purchaseEventId = newEventId();
@@ -382,6 +459,15 @@
       if (busy) return; // duplicate-click protection
       if (formError) formError.hidden = true;
 
+      /* The chosen row is read back from the DOM rather than trusted from the
+         `change` handler alone: browser autofill and a restored bfcache page
+         can both leave a radio checked that never fired an event. */
+      var chosen = $('input[name="offer"]:checked');
+      if (chosen) {
+        picked = OFFERS.filter(function (o) { return String(o.qty) === chosen.value; })[0] || picked;
+        renderTotal();
+      }
+
       var bad = null;
       inputs.forEach(function (input) { if (!validate(input) && !bad) bad = input; });
       if (bad) {
@@ -394,10 +480,10 @@
          customer who mistypes a phone number, corrects it and resubmits is one
          checkout, not two. */
       trackBoth('InitiateCheckout', {
-        value: UNIT === null ? undefined : UNIT * qty,
+        value: picked ? picked.price : undefined,
         currency: CFG.currencyCode,
         content_type: CONTENT.content_type,
-        contents: [{ id: CFG.productSlug, quantity: qty }],
+        contents: [{ id: CFG.productSlug, quantity: picked ? picked.qty : 1 }],
       });
 
       if (DEMO) {

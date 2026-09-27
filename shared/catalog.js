@@ -23,6 +23,16 @@ export const PRICE_BY_QTY = { 1: 29900, 2: 54900 };
  */
 export const PACK_PRICING = {
   "bellevia-weight-gain": { 1: 19900, 2: 34900, 3: 44900 },
+  // 1 for 180, 2 for 300 — so the second brace is 120 rather than 180, and the
+  // page can honestly say «وفر 60 درهم».
+  //
+  // Listing the product here is what makes 2 cost 300 at all: without a row the
+  // server charges `offerPrice ?? basePrice` × quantity, which is 360. It also
+  // CAPS the product at these two quantities — 3 and up now answer
+  // `invalid_quantity`, because there is no agreed price for them and falling
+  // back to unit × quantity would charge someone 540 off a page that never
+  // quoted it. The order form offers exactly these two and nothing else.
+  "bellevia-genouillere": { 1: 18000, 2: 30000 },
 };
 
 /**

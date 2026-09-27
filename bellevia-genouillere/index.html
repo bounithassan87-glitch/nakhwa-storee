@@ -245,15 +245,16 @@
             <span class="err" data-err-for="address" hidden></span>
           </p>
 
-          <div class="field field--qty">
-            <label for="qty-value">الكمية</label>
-            <div class="qty">
-              <button type="button" class="qty__btn" data-qty-down aria-label="نقّص الكمية">−</button>
-              <output class="qty__value ltr" id="qty-value" data-qty-value aria-live="polite">1</output>
-              <button type="button" class="qty__btn" data-qty-up aria-label="زيد الكمية">+</button>
-            </div>
-            <p class="qty__hint" data-qty-hint></p>
-          </div>
+          <!-- The offer, not a free quantity box. The catalogue prices this
+               product at 1 → 180 and 2 → 300 and sells it in no other
+               quantity, so a stepper that went to 5 would let someone pick a
+               number the API rejects. Both rows are built from config.js by
+               script.js, so a price can never disagree with the label beside
+               it, and «وفر 60 درهم» is computed rather than typed. -->
+          <fieldset class="offers" data-price-wrap>
+            <legend>اختر العرض</legend>
+            <div class="offers__list" data-offers></div>
+          </fieldset>
         </div>
 
         <p class="sum">
@@ -348,6 +349,44 @@
         <p>مناسبة للمشي، للدرج، وللأنشطة اليومية حسب راحتك.</p>
       </article>
     </div>
+
+    <!-- Three of the four photographs from the supplier's «لماذا هذه الدعامة
+         هي الأفضل؟» row. The fourth is not here: it shows a knee lit with an
+         orange glow under a caption promising relief from pain and swelling —
+         the two claims this page does not make, and the picture makes them
+         without a word of text. (The phrase itself is kept out of this file
+         too: HTML comments ship in view-source, and an ad reviewer reading the
+         source should find no claim there either.) The captions below describe
+         the scene and nothing more.
+
+         Small on purpose: each frame is ~190px wide in the poster they were
+         cut from, so this is the size at which they stay sharp. -->
+    <ul class="bens">
+      <li>
+        <figure>
+          <img src="./assets/images/ben-hinge-192.webp" width="192" height="123"
+               loading="lazy" decoding="async"
+               alt="صورة مقرّبة للمفصل المعدني الجانبي ديال الدعامة">
+          <figcaption>المفصل المعدني عن قرب</figcaption>
+        </figure>
+      </li>
+      <li>
+        <figure>
+          <img src="./assets/images/ben-run-184.webp" width="184" height="123"
+               loading="lazy" decoding="async"
+               alt="رجل كيجري فالخلاء وهو لابس الدعامة">
+          <figcaption>أثناء الجري</figcaption>
+        </figure>
+      </li>
+      <li>
+        <figure>
+          <img src="./assets/images/ben-walk-200.webp" width="200" height="123"
+               loading="lazy" decoding="async"
+               alt="زوج كبار فالسن كيتمشاو فحديقة">
+          <figcaption>المشي اليومي</figcaption>
+        </figure>
+      </li>
+    </ul>
   </div>
 </section>
 
@@ -445,10 +484,14 @@
 </section>
 
 <!-- ═══ 06 · HOW TO WEAR ════════════════════════════════════════════════════
-     Four steps. The photographs are the product's own studio shots, each one
-     picked because it genuinely shows the state the step describes — the open
-     sleeve, the brace on a leg, the straps fastened, the brace in use. Their
-     alt text says what the picture shows, not that it was shot as a step. -->
+     Four photographs of the brace actually being fitted — opened, placed,
+     strapped, checked. They replace four studio shots of the product lying
+     still, which showed the object but never the procedure the section is
+     about.
+
+     Each frame carries the supplier's own green number, so the page does NOT
+     draw its own badge here: two numbers in one corner is worse than the one
+     that is already correct. -->
 <section class="sec howto">
   <div class="wrap">
     <header class="sec__head">
@@ -456,13 +499,12 @@
       <p class="sec__sub">تركيب سهل وسريع، بلا ما تحتاج حتى حد يعاونك.</p>
     </header>
 
-    <ol class="steps">
+    <ol class="steps steps--shot">
       <li class="step">
         <figure>
-          <img src="./assets/images/angle-inside-400.webp" width="400" height="400"
+          <img src="./assets/images/step-open-178.webp" width="178" height="116"
                loading="lazy" decoding="async"
-               alt="الدعامة مفتوحة ومشوفة من الداخل، وكتبان البطانة الناعمة">
-          <p class="step__n" aria-hidden="true">1</p>
+               alt="الخطوة الأولى: يدان كيحلّو أشرطة الدعامة وكيوجدوها قبل اللبس">
         </figure>
         <div class="step__body">
           <h3>افتح الأشرطة</h3>
@@ -472,10 +514,9 @@
 
       <li class="step">
         <figure>
-          <img src="./assets/images/worn-clean-400.webp" width="400" height="712"
+          <img src="./assets/images/step-place-178.webp" width="178" height="116"
                loading="lazy" decoding="async"
-               alt="الدعامة ملبوسة على الساق مع الفتحة الأمامية فوق الرضفة">
-          <p class="step__n" aria-hidden="true">2</p>
+               alt="الخطوة الثانية: يدان كيحطّو الدعامة حول الركبة والفتحة فوق الرضفة">
         </figure>
         <div class="step__body">
           <h3>ضعها على الركبة</h3>
@@ -485,10 +526,9 @@
 
       <li class="step">
         <figure>
-          <img src="./assets/images/angle-front-400.webp" width="400" height="400"
+          <img src="./assets/images/step-strap-178.webp" width="178" height="116"
                loading="lazy" decoding="async"
-               alt="الدعامة من الأمام والأشرطة مشدودة فوق وتحت الركبة">
-          <p class="step__n" aria-hidden="true">3</p>
+               alt="الخطوة الثالثة: يدان كيشدّو أشرطة الدعامة على الركبة">
         </figure>
         <div class="step__body">
           <h3>ثبّت الأشرطة</h3>
@@ -498,10 +538,9 @@
 
       <li class="step">
         <figure>
-          <img src="./assets/images/hero-knee-400.webp" width="800" height="800"
+          <img src="./assets/images/step-check-178.webp" width="178" height="116"
                loading="lazy" decoding="async"
-               alt="الدعامة ملبوسة على ركبة مثنية أثناء الجلوس">
-          <p class="step__n" aria-hidden="true">4</p>
+               alt="الخطوة الرابعة: يدان كيتأكدو من ثبات الدعامة على الركبة قبل الحركة">
         </figure>
         <div class="step__body">
           <h3>تأكد من الثبات</h3>
