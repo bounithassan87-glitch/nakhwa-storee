@@ -19,15 +19,15 @@
 <meta property="og:url" content="./">
 <meta property="og:title" content="دعامة الركبة الاحترافية — 180 درهم، التوصيل مجاني">
 <meta property="og:description" content="مفصلات جانبية معدنية، أشرطة قابلة للتعديل، وتصميم مريح للاستعمال اليومي. الدفع عند الاستلام.">
-<meta property="og:image" content="./assets/images/og-cover.jpg">
+<meta property="og:image" content="./assets/images/og-football.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="دعامة الركبة الاحترافية ملبوسة على الركبة، ويظهر المفصل الجانبي المعدني والأشرطة القابلة للتعديل">
+<meta property="og:image:alt" content="لاعب كرة قدم في الملعب يلبس دعامة الركبة الاحترافية، ويظهر المفصل الجانبي المعدني والأشرطة القابلة للتعديل">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="دعامة الركبة الاحترافية — 180 درهم، التوصيل مجاني">
 <meta name="twitter:description" content="مفصلات جانبية معدنية وأشرطة قابلة للتعديل، لدعم وثبات أفضل أثناء الحركة.">
-<meta name="twitter:image" content="./assets/images/og-cover.jpg">
+<meta name="twitter:image" content="./assets/images/og-football.jpg">
 
 <link rel="icon" href="./assets/favicon/favicon-32.png" sizes="32x32">
 <link rel="icon" href="./assets/favicon/favicon-16.png" sizes="16x16">
@@ -39,8 +39,8 @@
 <!-- The hero photograph is the LCP element: preloaded, high priority, never
      lazy. Nothing else is preloaded — a second preload only takes bandwidth
      away from this one on a Moroccan 4G connection. -->
-<link rel="preload" as="image" href="./assets/images/hero-knee-400.webp"
-      imagesrcset="./assets/images/hero-knee-400.webp 400w, ./assets/images/hero-knee-800.webp 800w"
+<link rel="preload" as="image" href="./assets/images/hero-run-400.webp"
+      imagesrcset="./assets/images/hero-run-400.webp 400w, ./assets/images/hero-run-800.webp 800w"
       imagesizes="(min-width: 900px) 440px, calc(100vw - 40px)" fetchpriority="high">
 
 <link rel="stylesheet" href="./style.css">
@@ -61,9 +61,9 @@
   "brand": { "@type": "Brand", "name": "BelleVia" },
   "description": "دعامة ركبة خارجية بمفصلات جانبية معدنية وأشرطة قابلة للتعديل وفتحة أمامية حول الرضفة، مصممة لتوفير دعم وثبات إضافيين أثناء المشي والحركة اليومية.",
   "image": [
-    "__ORIGIN__/bellevia-genouillere/assets/images/og-cover.jpg",
-    "__ORIGIN__/bellevia-genouillere/assets/images/hero-knee-800.webp",
-    "__ORIGIN__/bellevia-genouillere/assets/images/angle-front-400.webp"
+    "__ORIGIN__/bellevia-genouillere/assets/images/angle-front-400.webp",
+    "__ORIGIN__/bellevia-genouillere/assets/images/hero-run-800.webp",
+    "__ORIGIN__/bellevia-genouillere/assets/images/og-football.jpg"
   ],
   "offers": {
     "@type": "Offer",
@@ -137,11 +137,11 @@
     </div>
 
     <figure class="hero__shot">
-      <img src="./assets/images/hero-knee-400.webp"
-           srcset="./assets/images/hero-knee-400.webp 400w, ./assets/images/hero-knee-800.webp 800w"
+      <img src="./assets/images/hero-run-400.webp"
+           srcset="./assets/images/hero-run-400.webp 400w, ./assets/images/hero-run-800.webp 800w"
            sizes="(min-width: 900px) 440px, calc(100vw - 40px)"
            width="800" height="800" fetchpriority="high" decoding="async"
-           alt="دعامة الركبة الاحترافية ملبوسة على ركبة مثنية، ويظهر المفصل المعدني الجانبي والأشرطة العلوية والسفلية">
+           alt="رجل يجري على كورنيش البحر وقت الغروب، لابس دعامة الركبة الاحترافية على ركبته اليمنى">
     </figure>
 
     <div class="hero__buy">
@@ -355,40 +355,46 @@
       </article>
     </div>
 
-    <!-- Three of the four photographs from the supplier's «لماذا هذه الدعامة
-         هي الأفضل؟» row. The fourth is not here: it shows a knee lit with an
-         orange glow under a caption promising relief from pain and swelling —
-         the two claims this page does not make, and the picture makes them
-         without a word of text. (The phrase itself is kept out of this file
-         too: HTML comments ship in view-source, and an ad reviewer reading the
-         source should find no claim there either.) The captions below describe
-         the scene and nothing more.
+    <!-- Three scenes from the supplier's lifestyle set of 2026-09-28: the brace
+         on a bent knee, a footballer, and both hands fastening it at home. The
+         first is a close-up cut out of a sales graphic whose icon column makes
+         claims this page does not; only the knee is taken from it. (The
+         wording is kept out of this file — HTML comments ship in view-source,
+         and an ad reviewer reading the source should find no claim there
+         either. It is recorded in tools/build-assets.mjs.) The captions below
+         describe the scene and nothing more.
 
-         Small on purpose: each frame is ~190px wide in the poster they were
-         cut from, so this is the size at which they stay sharp. -->
+         Full-size sources this time, so each tile has a real 2× in its srcset
+         — the poster crops these replace topped out at ~190px. -->
     <ul class="bens">
       <li>
         <figure>
-          <img src="./assets/images/ben-hinge-192.webp" width="192" height="123"
-               loading="lazy" decoding="async"
-               alt="صورة مقرّبة للمفصل المعدني الجانبي ديال الدعامة">
+          <img src="./assets/images/scene-knee-320.webp"
+               srcset="./assets/images/scene-knee-320.webp 320w, ./assets/images/scene-knee-562.webp 562w"
+               sizes="(min-width: 1160px) 352px, (min-width: 480px) calc((100vw - 64px) / 3), calc(100vw - 32px)"
+               width="562" height="360" loading="lazy" decoding="async"
+               alt="صورة مقرّبة لدعامة الركبة على ركبة مثنية، ويبان المفصل المعدني الجانبي">
           <figcaption>المفصل المعدني عن قرب</figcaption>
         </figure>
       </li>
       <li>
         <figure>
-          <img src="./assets/images/ben-run-184.webp" width="184" height="123"
-               loading="lazy" decoding="async"
-               alt="رجل كيجري فالخلاء وهو لابس الدعامة">
-          <figcaption>أثناء الجري</figcaption>
+          <img src="./assets/images/scene-football-320.webp"
+               srcset="./assets/images/scene-football-320.webp 320w, ./assets/images/scene-football-704.webp 704w"
+               sizes="(min-width: 1160px) 352px, (min-width: 480px) calc((100vw - 64px) / 3), calc(100vw - 32px)"
+               width="704" height="451" loading="lazy" decoding="async"
+               alt="لاعب كرة القدم فالملعب كيدي الكرة وهو لابس الدعامة">
+          <figcaption>أثناء لعب الكرة</figcaption>
         </figure>
       </li>
       <li>
         <figure>
-          <img src="./assets/images/ben-walk-200.webp" width="200" height="123"
-               loading="lazy" decoding="async"
-               alt="زوج كبار فالسن كيتمشاو فحديقة">
-          <figcaption>المشي اليومي</figcaption>
+          <img src="./assets/images/scene-home-320.webp"
+               srcset="./assets/images/scene-home-320.webp 320w, ./assets/images/scene-home-704.webp 704w"
+               sizes="(min-width: 1160px) 352px, (min-width: 480px) calc((100vw - 64px) / 3), calc(100vw - 32px)"
+               width="704" height="451" loading="lazy" decoding="async"
+               alt="يدين كيشدّو أحزمة الدعامة على الركبة، فوق كنبة فالدار">
+          <figcaption>تركيبها فالدار</figcaption>
         </figure>
       </li>
     </ul>
@@ -696,9 +702,11 @@
 <section class="sec sec--green offer">
   <div class="wrap offer__in">
     <figure class="offer__shot">
-      <img src="./assets/images/worn-clean-400.webp" width="400" height="712"
-           loading="lazy" decoding="async"
-           alt="دعامة الركبة الاحترافية ملبوسة على الساق، صورة استوديو على خلفية فاتحة">
+      <img src="./assets/images/scene-walk-280.webp"
+           srcset="./assets/images/scene-walk-280.webp 280w, ./assets/images/scene-walk-512.webp 512w"
+           sizes="(min-width: 375px) 240px, 64vw"
+           width="512" height="1086" loading="lazy" decoding="async"
+           alt="رجل كبير فالسن كيتمشى بعصي المشي فحديقة، لابس دعامة الركبة الاحترافية على ركبته اليمنى">
     </figure>
 
     <div class="offer__copy">

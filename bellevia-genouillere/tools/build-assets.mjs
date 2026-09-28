@@ -44,6 +44,17 @@
  *                     product and run off every side, so no crop yields a clean
  *                     brace.
  *
+ * ⚠️ Since 2026-09-28 none of the older batches' PEOPLE photographs is built.
+ * The outdoor hero, the gym and home frames, the right half of before-after,
+ * the lifestyle strip's five panels and the poster's three benefit photos were
+ * all replaced by the fourth batch (see `F`). What the older batches still
+ * supply is the product itself and how to put it on: the four angles, the
+ * Arabic diagram and the four fitting steps — nothing in the fourth batch shows
+ * either.
+ *
+ * Steps can be run on their own: `node build-assets.mjs scenes` rebuilds only
+ * the fourth batch. No argument builds everything.
+ *
  * Fonts, logo and favicon are copied from the Weight Gain page, so the BelleVia
  * wordmark is byte-for-byte the same on every page of the store.
  *
@@ -151,7 +162,49 @@ const F = {
      for any policy reason: the first batch simply has the same subjects at
      higher resolution (800×800 and 400×400 against this poster's ~180px). */
   poster: "poster-ar.webp",
+
+  /* ── Fourth batch, 2026-09-28: five lifestyle photographs ─────────────────
+     Supplied to replace every people photograph on the page. Three are plain
+     photography; two are finished graphics with claims burned in, and from
+     those only the photograph is cut. Every box in the `scenes` step was
+     measured on a 100px grid laid over the source.
+
+     runner-seaside.webp  1448×1086. A man running on a seaside promenade at
+                          sunset, brace on the right knee. No text. → the HERO.
+     footballer.webp      1448×1086. A player on the ball under stadium lights.
+                          No text (the LED boards read CHAMPIONSHIP, out of
+                          focus). → strip «أثناء لعب الكرة», and OpenGraph.
+     sofa-fitting.webp    1448×1086. An older man on a sofa fastening the
+                          brace. No text. → strip «تركيبها فالدار», cut below
+                          his face: 192:123 cannot hold his face and the brace
+                          together, and the brace is the subject.
+     walker-poles.webp    1448×1086. An older man walking with Nordic poles in a
+                          park. → the offer section's portrait, x 358–870 only.
+                          ⚠️ NOT built — both text blocks. The right column
+                          credits the brace with what walking does: heart and
+                          lungs, pain and stiffness, fall risk, the spine, mood,
+                          sleep. None is a property of a knee brace, most are
+                          medical claims, and the traffic is Meta ads. (The left
+                          headline also drops the article in «مع التقدم في السن».)
+     lunge-panel.webp     1254×1254. A sprinter's lunge inside a sales graphic.
+                          → strip «المفصل المعدني عن قرب»: the brace on the bent
+                          knee, nothing else.
+                          ⚠️ NOT built — the icon column (its second line is a
+                          pain-relief claim), the brush-stroke slogan, and the
+                          four product thumbnails (the angles batch has the same
+                          views at twice their size). The column runs right up
+                          to his left hand, so no crop of the whole figure is
+                          clean; the close-up is. */
+  runner: "runner-seaside.webp",
+  football: "footballer.webp",
+  sofa: "sofa-fitting.webp",
+  walker: "walker-poles.webp",
+  lunge: "lunge-panel.webp",
 };
+
+/** `node build-assets.mjs scenes angles` runs just those steps; no args, all. */
+const ONLY = process.argv.slice(2);
+const want = (step) => ONLY.length === 0 || ONLY.includes(step);
 
 const src = (k) => join(SRC, F[k]);
 
@@ -184,28 +237,72 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
 
 (async () => {
   console.log(`[build-assets] source: ${SRC}`);
+  if (ONLY.length) console.log(`[build-assets] only: ${ONLY.join(", ")}`);
 
-  /* ── Hero ────────────────────────────────────────────────────────────────
-     The full outdoor frame, untouched. Cropping it tighter on the knee costs
-     the only thing that makes it read instantly — a person, sitting, with the
-     brace on. 800w is the supplied maximum, and the hero is displayed at ≤400
-     CSS px, so the 800 file is a true 2× on a phone. */
-  console.log("hero:");
-  await webp("outdoor", "hero-knee", [400, 800], { quality: 84 });
+  /* ── Scenes: the fourth batch ────────────────────────────────────────────
+     Each box is the largest rectangle of its slot's shape that holds the
+     subject whole and none of the burned-in text. No width above a crop's
+     own is ever requested — `webp()` would return the same pixels under a
+     bigger name. */
+  if (want("scenes")) {
+    /* Hero — the runner at full length, square, centred on him. The hero
+       frame is 1:1; full length because a runner cut at the shins is a crop,
+       and one with both feet on the promenade is a photograph. The storefront
+       card covers this same file into 4:5, trimming 10% off each side, and he
+       stands in the middle third. 1086 is the source's height, so 800 is a
+       true downscale. */
+    console.log("hero:");
+    await webp("runner", "hero-run", [400, 800], {
+      extract: { left: 262, top: 0, width: 1086, height: 1086 },
+      quality: 84,
+    });
 
-  /* ── Life grid ─────────────────────────────────────────────────────────── */
-  console.log("life:");
-  await webp("gym", "life-gym", [400, 800]);
-  await webp("home", "life-home", [400, 800]);
+    /* The value strip — three tiles, each cut at the tiles' own 192:123. */
+    console.log("strip:");
+    // The brace on the bent knee, the hinge plate mid-frame. left ≥ 340 keeps
+    // the icon column out: its text ends at x≈328.
+    await webp("lunge", "scene-knee", [320, 562], {
+      extract: { left: 340, top: 487, width: 562, height: 360 },
+      quality: 84,
+    });
+    // Head to boots across the full width. No 192:123 box holds him AND the
+    // whole ball, so the ball loses its lower part rather than he his head.
+    await webp("football", "scene-football", [320, 704], {
+      extract: { left: 0, top: 40, width: 1448, height: 928 },
+      quality: 84,
+    });
+    // Both hands fastening the brace, the sofa behind.
+    await webp("sofa", "scene-home", [320, 704], {
+      extract: { left: 260, top: 400, width: 937, height: 600 },
+      quality: 84,
+    });
 
-  /* ── Offer shot ──────────────────────────────────────────────────────────
-     The right half of the split creative, cut at y=712 — above the burned-in
-     «AFTER: PREMIUM SUPPORT & RELIEF» bar. The left half is never built. */
-  console.log("offer:");
-  await webp("beforeAfter", "worn-clean", [400], {
-    extract: { left: 400, top: 0, width: 400, height: 712 },
-    quality: 84,
-  });
+    /* The offer section's portrait: the walker alone, between the two blocks
+       of burned-in text — both edges MEASURED off the pixels, not the grid.
+       The headline's third line, «تقدم في السن», is its longest and its ink
+       ends at x=350; a grid estimate of 318 let «تق» into the frame. The icon
+       discs start at x=885 and the bottom banner at x=882. The price of
+       x ≥ 358 is the lower half of his left pole, which slants out under the
+       headline and now leaves the frame at the edge. Displayed at ≤240 CSS
+       px, so 512 is a 2×+. */
+    console.log("offer:");
+    await webp("walker", "scene-walk", [280, 512], {
+      extract: { left: 358, top: 0, width: 512, height: 1086 },
+      quality: 84,
+    });
+
+    /* OpenGraph, 1200×630: the footballer from his face to below the brace.
+       A new file name rather than a new og-cover.jpg — WhatsApp and Facebook
+       cache a preview by URL, and the old URL would keep the old picture.
+       JPEG, not webp: some Moroccan WhatsApp builds still refuse a webp. */
+    console.log("og:");
+    const og = await sharp(must("football"))
+      .extract({ left: 0, top: 30, width: 1448, height: 758 })
+      .resize({ width: 1200, height: 630, fit: "cover", position: "centre" })
+      .jpeg({ quality: 84, mozjpeg: true })
+      .toFile(join(IMG, "og-football.jpg"));
+    console.log(`  og-football.jpg  ${og.width}×${og.height}  ${(og.size / 1024).toFixed(0)}KB`);
+  }
 
   /* ── Four angles ─────────────────────────────────────────────────────────
      The contact sheet's quadrants, in reading order on the sheet itself:
@@ -214,17 +311,19 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
        bottom-left  bent, the hinge folded
        bottom-right seen end-on, the padded inside of the sleeve
      Each card is displayed at ~160–200 CSS px, so 400×400 is a comfortable 2×. */
-  console.log("angles:");
-  const Q = {
-    "angle-front": { left: 0, top: 0 },
-    "angle-back": { left: 400, top: 0 },
-    "angle-bent": { left: 0, top: 400 },
-    "angle-inside": { left: 400, top: 400 },
-  };
-  for (const [name, at] of Object.entries(Q)) {
-    await webp("angles", name, [200, 400], {
-      extract: { ...at, width: 400, height: 400 },
-    });
+  if (want("angles")) {
+    console.log("angles:");
+    const Q = {
+      "angle-front": { left: 0, top: 0 },
+      "angle-back": { left: 400, top: 0 },
+      "angle-bent": { left: 0, top: 400 },
+      "angle-inside": { left: 400, top: 400 },
+    };
+    for (const [name, at] of Object.entries(Q)) {
+      await webp("angles", name, [200, 400], {
+        extract: { ...at, width: 400, height: 400 },
+      });
+    }
   }
 
   /* The English `callouts.jpg` is no longer built. `infographic-ar.jpg` says the
@@ -237,35 +336,20 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
      Cut at x=655 so the benefits panel — and every claim on it — stays out of
      the frame. This replaces the English sheet behind the same `<details>`:
      same role, same place, a language the reader actually has. */
-  console.log("diagram:");
-  // Native width. The source composite is 1024px across and this region is
-  // 655 of them, so 655 IS the maximum — a second, larger variant would be the
-  // same file under a bigger name.
-  await webp("infographic", "diagram-ar", [655], {
-    extract: { left: 0, top: 130, width: 655, height: 585 },
-    quality: 86,
-  });
-
-  /* ── Five use-case photographs ───────────────────────────────────────────
-     The picture band only: y 118–763 drops the duplicated caption rows top and
-     bottom. Panel edges measured off the sheet's own divider lines.
-
-     ⚠️ ONE width, and that is the ceiling, not a choice. The sheet is 1024px
-     across and holds five panels, so each is ~205px — roughly a thumbnail. A
-     `srcset` here would be a lie: asking for 420 returns the same 205px file,
-     because the builder never enlarges. So these ship at native size and the
-     page displays them small enough to stay sharp. To show them any larger,
-     the five scenes have to be supplied as five separate full-size photographs
-     rather than as one composite sheet. */
-  console.log("use cases:");
-  const EDGE = [0, 205, 408, 615, 819, 1024];
-  const USE = ["use-gym", "use-run", "use-football", "use-walk", "use-tennis"];
-  for (let i = 0; i < USE.length; i++) {
-    await webp("strip", USE[i], [210], {
-      extract: { left: EDGE[i], top: 118, width: EDGE[i + 1] - EDGE[i], height: 645 },
-      quality: 84,
+  if (want("diagram")) {
+    console.log("diagram:");
+    // Native width. The source composite is 1024px across and this region is
+    // 655 of them, so 655 IS the maximum — a second, larger variant would be
+    // the same file under a bigger name.
+    await webp("infographic", "diagram-ar", [655], {
+      extract: { left: 0, top: 130, width: 655, height: 585 },
+      quality: 86,
     });
   }
+
+  /* The lifestyle strip's five ~205px panels (`use-*`) are no longer built:
+     the fourth batch supplied the same kinds of scene as full-size
+     photographs, which is exactly what their size ceiling was waiting for. */
 
   /* ── The four fitting photos ─────────────────────────────────────────────
      Cut at their frame edges, badge included. Boxes measured off the poster by
@@ -278,66 +362,49 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
      and a larger request returns the same file. They are displayed small
      enough to stay sharp. Showing the procedure any bigger needs the four
      photographs supplied on their own, not baked into a poster. */
-  console.log("fitting steps:");
   /* ⚠️ The poster is RIGHT-TO-LEFT, so its first step is its RIGHTMOST frame.
      Reading these boxes left to right gives 4, 3, 2, 1 — naming them 1..4 by
      x position puts the last photo on the first step, which is a set of
      instructions that shows the wrong picture for every line. Each x below was
      checked against the green badge burned into that frame. */
-  const STEP = [
-    ["step-open", 769],     // ① hands holding the brace open   — rightmost
-    ["step-place", 537],    // ② placing it around the knee
-    ["step-strap", 305],    // ③ fastening the straps
-    ["step-check", 64],     // ④ checking the fit               — leftmost
-  ];
-  for (const [name, left] of STEP) {
-    await webp("poster", name, [178], {
-      extract: { left, top: 858, width: 178, height: 116 },
-      quality: 86,
-    });
+  if (want("steps")) {
+    console.log("fitting steps:");
+    const STEP = [
+      ["step-open", 769],     // ① hands holding the brace open   — rightmost
+      ["step-place", 537],    // ② placing it around the knee
+      ["step-strap", 305],    // ③ fastening the straps
+      ["step-check", 64],     // ④ checking the fit               — leftmost
+    ];
+    for (const [name, left] of STEP) {
+      await webp("poster", name, [178], {
+        extract: { left, top: 858, width: 178, height: 116 },
+        quality: 86,
+      });
+    }
   }
 
-  /* ── Three benefit photos ────────────────────────────────────────────────
-     The fourth frame of that row — the orange pain glow — is deliberately not
-     among them. See the note on `poster` above. */
-  console.log("benefits:");
-  const BEN = [
-    ["ben-run", 309, 184],    // a man running
-    ["ben-hinge", 533, 192],  // the hinge, close up
-    ["ben-walk", 763, 200],   // an older couple walking
-  ];
-  for (const [name, left, width] of BEN) {
-    await webp("poster", name, [width], {
-      extract: { left, top: 621, width, height: 123 },
-      quality: 86,
-    });
-  }
-
-  /* ── OpenGraph ───────────────────────────────────────────────────────────
-     1200×630 is WhatsApp's and Facebook's crop. The square hero is covered into
-     it centred, which keeps the brace and loses only sky and floor. JPEG, not
-     webp: some Moroccan WhatsApp builds still refuse a webp preview. */
-  console.log("og:");
-  const og = await sharp(must("outdoor"))
-    .resize({ width: 1200, height: 630, fit: "cover", position: "centre" })
-    .jpeg({ quality: 84, mozjpeg: true })
-    .toFile(join(IMG, "og-cover.jpg"));
-  console.log(`  og-cover.jpg  ${og.width}×${og.height}  ${(og.size / 1024).toFixed(0)}KB`);
+  /* The poster's three ~190px benefit photos (`ben-*`) are no longer built —
+     replaced in the strip by full-size frames from the fourth batch. The
+     row's fourth frame, the orange pain glow, never was; see `poster` above.
+     The outdoor OpenGraph image (`og-cover.jpg`) is retired the same way:
+     `og-football.jpg` is built in the scenes step. */
 
   /* ── Shared brand assets ─────────────────────────────────────────────────
      Copied, never regenerated: the wordmark has to be identical across every
      BelleVia page or the store reads as several stores. */
-  console.log("brand:");
-  for (const dir of ["fonts", "logo", "favicon"]) {
-    const from = join(root, "bellevia-weight-gain", "assets", dir);
-    const to = join(page, "assets", dir);
-    if (!existsSync(from)) {
-      console.log(`  ${dir}/ — source page not found, kept as-is`);
-      continue;
+  if (want("brand")) {
+    console.log("brand:");
+    for (const dir of ["fonts", "logo", "favicon"]) {
+      const from = join(root, "bellevia-weight-gain", "assets", dir);
+      const to = join(page, "assets", dir);
+      if (!existsSync(from)) {
+        console.log(`  ${dir}/ — source page not found, kept as-is`);
+        continue;
+      }
+      mkdirSync(to, { recursive: true });
+      for (const f of readdirSync(from)) copyFileSync(join(from, f), join(to, f));
+      console.log(`  ${dir}/ — ${readdirSync(to).length} files`);
     }
-    mkdirSync(to, { recursive: true });
-    for (const f of readdirSync(from)) copyFileSync(join(from, f), join(to, f));
-    console.log(`  ${dir}/ — ${readdirSync(to).length} files`);
   }
 
   console.log("[build-assets] done.");
