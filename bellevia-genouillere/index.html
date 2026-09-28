@@ -474,8 +474,23 @@
     </header>
 
     <div class="worth__in">
-      <div class="worth__price">
-        <p class="price" data-price-wrap>
+      <!-- The offer as the ad shows it: the same 1080×1350 creative the Meta
+           campaign runs (tools/ad-offer.html), so a visitor who tapped that ad
+           meets it again here. Its prices are PIXELS, not text, so
+           data-offer-art states them, and script.js swaps the picture for the
+           live price the moment config.js disagrees. The «اطلب دابا» in it is a
+           picture of a button: the whole picture is the link, and it opens the
+           form on the offer it sells — the pair. -->
+      <div class="worth__price worth__price--art">
+        <a class="worth__art" href="#commander" data-goto data-goto-offer="2"
+           data-offer-art="1:180,2:300" data-price-wrap>
+          <img src="./assets/images/offer-art-480.webp"
+               srcset="./assets/images/offer-art-480.webp 480w, ./assets/images/offer-art-960.webp 960w"
+               sizes="(min-width: 720px) 400px, min(calc(100vw - 32px), 400px)"
+               width="960" height="1200" loading="lazy" decoding="async"
+               alt="العرض: 2 بـ 300 درهم، 1 بـ 180 درهم. التوصيل مجاني والدفع عند الاستلام. اطلب دابا">
+        </a>
+        <p class="price" data-price-wrap data-art-fallback hidden>
           <b data-price hidden>—</b>
         </p>
         <p>هادشي كامل داخل فالثمن</p>

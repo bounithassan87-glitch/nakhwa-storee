@@ -100,9 +100,28 @@
       return;
     }
     /* The headline price is what ONE costs. The pair is the upsell, and it is
-       shown where it can be acted on — inside the chooser — rather than in the
-       hero, where a second number competes with the first. */
+       shown where it can be acted on — inside the chooser, and in the worth
+       section's creative, which is itself a link into the chooser — rather
+       than in the hero, where a second number competes with the first. */
     $$('[data-price]').forEach(function (el) { el.textContent = money(OFFERS[0].price); el.hidden = false; });
+
+    /* The offer creative carries its prices as pixels and states them in
+       data-offer-art. A picture of a price the form will not charge is worse
+       than no picture — under cash on delivery it is a refusal at the door —
+       so if config.js no longer agrees, the picture goes and the live price
+       takes its place. */
+    var live = OFFERS.map(function (o) { return o.qty + ':' + o.price; }).join(',');
+    $$('[data-offer-art]').forEach(function (art) {
+      var box = art.parentNode;
+      var fallback = box && box.querySelector('[data-art-fallback]');
+      if (art.getAttribute('data-offer-art') === live) {
+        if (fallback) fallback.remove();
+        return;
+      }
+      art.remove();
+      box.classList.remove('worth__price--art');
+      if (fallback) fallback.hidden = false;
+    });
 
     /* The chooser. Built from config rather than typed into the HTML, so a
        price can never disagree with the label beside it. Real radios in a real
@@ -223,6 +242,15 @@
       if (!card) return;
       e.preventDefault();
       card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // A link that sells one offer (the creative sells the pair) opens the
+      // form on it. The change event runs the chooser's own handler, so the
+      // total and the button label follow.
+      var wanted = a.getAttribute('data-goto-offer');
+      var pick = wanted && $('input[name="offer"][value="' + wanted + '"]');
+      if (pick && !pick.checked) {
+        pick.checked = true;
+        pick.dispatchEvent(new Event('change', { bubbles: true }));
+      }
       var first = $('input[name="offer"]:checked') || $('input[name="offer"]') || $('#fullname');
       var doneEl = $('#order-done');
       if (!first || (doneEl && !doneEl.hidden)) return;

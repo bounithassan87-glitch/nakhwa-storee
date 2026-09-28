@@ -11,7 +11,7 @@ C:/Users/ADmiN/OneDrive/Nouveau dossier/mochid rokba
 ```
 
 البناء: `node bellevia-genouillere/tools/build-assets.mjs` — أو خطوة وحدة:
-`… build-assets.mjs scenes` (الخطوات: `scenes`، `angles`، `diagram`، `steps`، `brand`).
+`… build-assets.mjs scenes` (الخطوات: `scenes`، `angles`، `diagram`، `steps`، `creative`، `brand`).
 
 ---
 
@@ -28,6 +28,24 @@ C:/Users/ADmiN/OneDrive/Nouveau dossier/mochid rokba
 | `angle-front/back/bent/inside` (200/400) | `angles-grid.jpg` | أربعة أرباع `400×400` | «الدعامة من كل الجهات» — و`angle-front-400` أول صورة في JSON-LD |
 | `diagram-ar-655.webp` | `infographic-ar.jpg` | `0, 130, 655×585` | قسم المكوّنات |
 | `step-open/place/strap/check-178.webp` | `poster-ar.webp` | صف التركيب، `y 858–974` | «طريقة التركيب في 4 خطوات» |
+| `offer-art-480/960.webp` | `tools/ad-offer-1080x1350.png` — إعلان Meta ديالنا | تصغير فقط، بلا قصّ | قسم «ماشي غير دعامة…» — الصورة كاملة رابط للفورم |
+
+### `offer-art` — الإعلان داخل الصفحة
+
+ماشي ملف ديال المورّد: هو نفس الإعلان اللي كيدور فـMeta (`tools/ad-offer.html`)،
+بكسلات المنتوج من `angle-front` والكتابة والتصميم ديالنا. الزبون اللي كليكا على
+الإعلان كيلقى نفس التصويرة فالصفحة.
+
+⚠️ **الأثمنة فيه بكسلات، ماشي نص.** العنصر كيصرّح بيهم فـ`data-offer-art="1:180,2:300"`،
+و`script.js` كيقارنهم مع `config.js` ملي كتتحل الصفحة: إلا ما تطابقوش، الصورة
+كتتحيد والثمن الحيّ كيرجع فبلاصتها. تصويرة ديال ثمن ما كيتخلصش فالفورم أسوأ من
+بلا تصويرة — فالدفع عند الاستلام هادي رفض فالباب.
+
+**إلا تبدّل العرض:** بدّل الأثمنة فـ`tools/ad-offer.html`، عاود render ديال الإعلان،
+`build-assets.mjs creative`، وبدّل `data-offer-art` فـ`index.html`.
+
+«اطلب دابا» فالصورة **تصويرة ديال زر** — داكشي علاش الصورة كاملة رابط، وكتحل
+الفورم على «قطعتين» ديجا مختارة، حيت هادا هو العرض اللي كتبيع.
 
 ---
 

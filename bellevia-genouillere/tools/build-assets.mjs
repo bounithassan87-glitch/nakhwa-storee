@@ -389,6 +389,25 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
      The outdoor OpenGraph image (`og-cover.jpg`) is retired the same way:
      `og-football.jpg` is built in the scenes step. */
 
+  /* ── The offer creative ──────────────────────────────────────────────────
+     Not a supplier file: the 1080×1350 Meta ad that tools/ad-offer.html
+     renders (product pixels from angle-front, keyed by build-ad.mjs; the type
+     and layout are ours). The worth section shows it so a visitor who tapped
+     the ad meets the same picture on the page. Its prices are pixels, so the
+     page removes it whenever config.js disagrees — re-render the ad when the
+     offer changes, then run `build-assets.mjs creative`. q88: the big «300»
+     and the small type are what a lower quality smears first. */
+  if (want("creative")) {
+    console.log("creative:");
+    for (const w of [480, 960]) {
+      const info = await sharp(join(here, "ad-offer-1080x1350.png"))
+        .resize({ width: w })
+        .webp({ quality: 88 })
+        .toFile(join(IMG, `offer-art-${w}.webp`));
+      console.log(`  offer-art-${w}.webp  ${info.width}×${info.height}  ${(info.size / 1024).toFixed(0)}KB`);
+    }
+  }
+
   /* ── Shared brand assets ─────────────────────────────────────────────────
      Copied, never regenerated: the wordmark has to be identical across every
      BelleVia page or the store reads as several stores. */
