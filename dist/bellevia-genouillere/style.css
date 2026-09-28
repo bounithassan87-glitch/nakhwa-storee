@@ -408,6 +408,20 @@ bdi { font-variant-numeric: tabular-nums; }
 .worth__price .price { justify-content: center; }
 .worth__price .price b { color: #fff; }
 .worth__price p { margin-top: 10px; font-size: 14px; color: var(--on-green-soft); }
+/* Holding the offer creative, the block drops its own frame: the creative is
+   already a framed dark-green card, and a box around a box reads as a mistake.
+   script.js removes the modifier if it has to swap the picture back out. */
+.worth__price--art { padding: 0; border: 0; background: none; }
+.worth__art {
+  display: block; max-width: 400px; margin-inline: auto;
+  border-radius: var(--r-lg); overflow: hidden;
+  border: 1px solid rgba(224, 190, 85, .34);
+  box-shadow: var(--sh-green);
+  transition: transform .2s ease;
+}
+.worth__art img { display: block; width: 100%; height: auto; }
+.worth__art:hover { transform: translateY(-3px); }
+.worth__art:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
 .wlist { display: grid; gap: 10px; }
 .wlist li {
   display: flex; align-items: flex-start; gap: 12px;
