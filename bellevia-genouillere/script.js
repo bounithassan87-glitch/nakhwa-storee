@@ -205,8 +205,15 @@
 
   /* ══ 05 · Smooth scroll to the form ════════════════════════════════════
      Every «اطلب» on the page, and the sticky bar, land here. Same tab, and the
-     first field is focused once the scroll has settled — focusing mid-flight
-     cancels the smooth scroll in Safari.
+     form's first control — the chosen offer — is focused once the scroll has
+     settled; focusing mid-flight cancels the smooth scroll in Safari.
+
+     The offer, not the name field. The offer sits above the fields, and
+     focusing a text input pops the phone keyboard, which makes the browser
+     scroll the input up into the space left — carrying the offer off the
+     top of the screen, the one thing the card now leads with. A radio takes
+     focus without a keyboard. With no prices set there is no offer, and the
+     name field is first again.
 
      Product photographs are deliberately NOT wired to this: a picture that
      jumps the page when you tap to look closer is a page fighting its reader. */
@@ -216,7 +223,7 @@
       if (!card) return;
       e.preventDefault();
       card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      var first = $('#fullname');
+      var first = $('input[name="offer"]:checked') || $('input[name="offer"]') || $('#fullname');
       var doneEl = $('#order-done');
       if (!first || (doneEl && !doneEl.hidden)) return;
       setTimeout(function () { first.focus({ preventScroll: true }); }, 520);
@@ -439,7 +446,7 @@
       // A second order in the same page view is a different conversion.
       leadEventId = newEventId();
       purchaseEventId = newEventId();
-      $('#fullname').focus();
+      (first || $('#fullname')).focus(); // the offer leads, as in section 05
     });
 
     /* ── Demo mode ───────────────────────────────────────────────────────

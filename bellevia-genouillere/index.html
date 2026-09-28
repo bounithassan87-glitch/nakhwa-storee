@@ -211,6 +211,22 @@
 
       <form id="order-form" novalidate>
         <div class="fields">
+          <!-- The offer, not a free quantity box. The catalogue prices this
+               product at 1 → 180 and 2 → 300 and sells it in no other
+               quantity, so a stepper that went to 5 would let someone pick a
+               number the API rejects. Both rows are built from config.js by
+               script.js, so a price can never disagree with the label beside
+               it, and «وفر 60 درهم» is computed rather than typed.
+
+               It comes FIRST, above the name: «2 بـ 300» is the reason to buy
+               two, and a visitor who meets it only after typing four fields
+               has already decided on one. It must stay inside the <form> —
+               script.js reads the choice from the form's own radios. -->
+          <fieldset class="offers" data-price-wrap>
+            <legend>اختر العرض</legend>
+            <div class="offers__list" data-offers></div>
+          </fieldset>
+
           <p class="field">
             <label for="fullname">الاسم الكامل</label>
             <input id="fullname" name="fullname" type="text" autocomplete="name"
@@ -244,17 +260,6 @@
                    enterkeyhint="done" required minlength="3" placeholder="الحي، الزنقة، رقم الدار">
             <span class="err" data-err-for="address" hidden></span>
           </p>
-
-          <!-- The offer, not a free quantity box. The catalogue prices this
-               product at 1 → 180 and 2 → 300 and sells it in no other
-               quantity, so a stepper that went to 5 would let someone pick a
-               number the API rejects. Both rows are built from config.js by
-               script.js, so a price can never disagree with the label beside
-               it, and «وفر 60 درهم» is computed rather than typed. -->
-          <fieldset class="offers" data-price-wrap>
-            <legend>اختر العرض</legend>
-            <div class="offers__list" data-offers></div>
-          </fieldset>
         </div>
 
         <p class="sum">
