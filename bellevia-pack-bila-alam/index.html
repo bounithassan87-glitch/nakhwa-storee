@@ -253,8 +253,8 @@
     <div class="order__card">
 
       <header class="order__head">
-        <h2>عمّر 3 معلومات وصافي</h2>
-        <p>الاسم، التيليفون والمدينة. كنعيّطو ليك باش نأكدو معاك الطلب وناخدو العنوان.</p>
+        <h2>عمّر 4 معلومات وصافي</h2>
+        <p>الاسم، التيليفون، المدينة والعنوان. كنعيّطو ليك باش نأكدو معاك الطلب.</p>
       </header>
 
       <p class="notice" id="order-notice" hidden></p>
@@ -280,6 +280,24 @@
             <input id="city" name="city" type="text" autocomplete="address-level2"
                    enterkeyhint="done" required minlength="2" placeholder="مثلا: الدار البيضاء">
             <span class="err" data-err-for="city" hidden></span>
+          </p>
+
+          <!-- After the city on purpose: a street only means something once the
+               town is settled, and the quantity is the last detail.
+
+               `address-line1`, not `street-address` — that token is for a
+               multi-line field and this is one line.
+
+               The value reaches the API exactly as the customer typed it. The
+               shared rule collapses runs of spaces and does nothing else: an
+               address nobody can read is a failed delivery, but an address the
+               page rewrote is a parcel sent somewhere they did not ask for. -->
+          <p class="field">
+            <label for="address">العنوان</label>
+            <input id="address" name="address" type="text" autocomplete="address-line1"
+                   enterkeyhint="done" required minlength="8" maxlength="100"
+                   placeholder="الحي، الزنقة، الرقم">
+            <span class="err" data-err-for="address" hidden></span>
           </p>
 
           <div class="field field--qty">
@@ -746,8 +764,8 @@
       <details class="qa">
         <summary>واش خاصني نكتب العنوان دابا؟</summary>
         <p>
-          لا. كتعمّر غير الاسم، التيليفون والمدينة. العنوان كناخدوه معاك
-          فمكالمة التأكيد، باش الفورم يبقى قصير وما يضيّعش عليك الوقت.
+          إيه. عمّر الحي، الزنقة والرقم فخانة العنوان. هكا كيوصل الطرد نيشان
+          وما كنضيعوش الوقت فمكالمات باش نلقاو الدار.
         </p>
       </details>
 

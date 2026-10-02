@@ -348,6 +348,38 @@
     return '';
   }
 
+  /**
+   * The street, inside a city the city field already validated.
+   *
+   * Deliberately looser than `cityError`: there is no canonical list of Moroccan
+   * street names to check against, and inventing one would reject real addresses.
+   * So this only rejects what cannot be an address at all — too short to carry a
+   * street and a number, digits alone, or one character held down.
+   *
+   * It does NOT normalise anything the caller will send. Collapsing runs of
+   * whitespace is the only change, and it is cosmetic; the value that reaches
+   * Space Seller is the customer's own words. An address nobody can read is a
+   * failed delivery, but an address this function rewrote is a parcel sent
+   * somewhere the customer did not ask for, which is worse.
+   *
+   * Length cap matches the API: `catalogSchema` takes max 200, and 100 here
+   * keeps the field well inside it while still fitting «حي الفتح، زنقة 5، رقم 12»
+   * several times over.
+   */
+  function addressError(raw) {
+    var v = String(raw == null ? '' : raw).replace(INVISIBLE, '').trim().replace(/\s+/g, ' ');
+    if (!v) return 'عمّر العنوان ديالك.';
+    if (v.length < 8) return 'عمّر العنوان بالتفصيل (الحي، الزنقة، الرقم).';
+    if (v.length > 100) return 'العنوان طويل بزاف.';
+    // Digits alone are a phone number or a house number with nothing around it.
+    if (/^[\d\s]+$/.test(v)) return 'عمّر عنوان صحيح.';
+    // One character held down — «ااااااا».
+    if (/(.)\1{5,}/.test(v)) return 'عمّر عنوان صحيح.';
+    // At least one letter, in either script, same test the name rule uses.
+    if (!/[ء-يa-zA-Z]/.test(v)) return 'كتب العنوان بالحروف.';
+    return '';
+  }
+
   /* ── City autocomplete ────────────────────────────────────────────────────
      A native <datalist> rather than a custom dropdown. It searches as the
      customer types on both iOS and Android, needs no CSS, and leaves the field
@@ -453,6 +485,7 @@
       fullname: nameError,
       phone: phoneError,
       city: cityError,
+      address: addressError,
     },
     normalizePhone: normalizePhone,
     resolveCity: resolveCity,

@@ -201,9 +201,9 @@
       return d;
     }
 
-    /* Three rules for three fields. There is no address rule because there is
-       no address field: `/api/orders` accepts a catalog order without one, and
-       the street is taken on the confirmation call. */
+    /* Four rules for four fields. The address rule is the newest: the page used
+       to take the street on the confirmation call instead, which cost a call
+       per order and lost the ones nobody answered. */
     /* Validation lives in /assets/js/order-form.js, shared by every
        storefront: the Moroccan phone shapes, the closed list of delivery
        cities, and what counts as a name. Tightening one rule used to mean
@@ -219,11 +219,15 @@
         return /^0[67]\d{8}$/.test(normalizePhone(v)) ? '' : 'الرقم ماشي صحيح. خاصو يبدا بـ 06 ولا 07.';
       },
       city: function (v) { return v && v.trim() ? '' : 'عمّر المدينة.'; },
+      address: function (v) {
+        return v && v.trim().length >= 8 ? '' : 'عمّر العنوان بالتفصيل (الحي، الزنقة، الرقم).';
+      },
     };
     var RULES = {
       fullname: SHARED.fullname || fallback.fullname,
       phone: SHARED.phone || fallback.phone,
       city: SHARED.city || fallback.city,
+      address: SHARED.address || fallback.address,
     };
 
     function setError(input, msg) {
@@ -292,11 +296,17 @@
         customerName: $('#fullname').value.trim(),
         phone: normalizePhone($('#phone').value),
         city: $('#city').value.trim(),
-        // No `address` key, on purpose. This form asks for three fields, and
-        // sending a stand-in sentence would overwrite the real street the same
-        // customer may already have on file from another BelleVia page —
-        // `Customer` is keyed by phone across all of them. Omitting the field
-        // makes the server leave that stored address alone.
+        // The street, exactly as typed — no normalising, no stand-in, no
+        // default. `trim()` is the only touch, the same as every field above.
+        //
+        // Worth knowing what sending this turns on. `Customer` is keyed by
+        // PHONE across every BelleVia storefront, and `persist()` writes the
+        // address only when the request carries one. While this page sent none,
+        // a repeat customer's street stored by another page was left alone.
+        // Now this page writes it, and no admin endpoint can put the old one
+        // back. That is the intended trade — a street the customer typed today
+        // beats one stored months ago — but the write is one-way.
+        address: $('#address').value.trim(),
         quantity: qty,
         source: CFG.source,
         // Attribution ids. If Meta is unreachable these are simply ignored and
