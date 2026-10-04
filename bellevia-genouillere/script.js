@@ -100,6 +100,9 @@
   (function prices() {
     if (!OFFERS.length) {
       $$('[data-price-wrap]').forEach(function (el) { el.remove(); });
+      // The banner went with them (it carries prices); its section falls
+      // back to the plain hero.
+      $$('[data-art-host]').forEach(function (h) { h.removeAttribute('data-art'); });
       return;
     }
     $$('[data-price]').forEach(function (el) { el.textContent = money(OFFERS[0].price); el.hidden = false; });
@@ -121,6 +124,19 @@
         el.appendChild(s);
       });
       el.hidden = false;
+    });
+
+    /* The hero banner carries its prices as pixels and states them in
+       data-offer-art. A picture of a price the form will not charge is worse
+       than no picture — under cash on delivery it is a refusal at the door —
+       so if config.js no longer agrees, the banner goes and its section drops
+       `data-art`, which brings the plain hero back. */
+    var live = OFFERS.map(function (o) { return o.qty + ':' + o.price; }).join(',');
+    $$('[data-offer-art]').forEach(function (art) {
+      if (art.getAttribute('data-offer-art') === live) return;
+      var host = art.closest('[data-art-host]');
+      art.remove();
+      if (host) host.removeAttribute('data-art');
     });
 
     /* The chooser. Built from config rather than typed into the HTML, so a

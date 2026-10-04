@@ -449,6 +449,14 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
       extract: { left: 400, top: 190, width: 960, height: 1200 },
       quality: 82,
     });
+    // The client's banner, WHOLE (2026-10-05: «dir hadi f lhero kima hiya»).
+    // Nothing cropped or covered — including its «تقليل الألم والضغط» icon,
+    // shown at the client's explicit request after the claim was flagged, and
+    // its typo «تحكّم في احركة». Its prices are pixels, so the page swaps it
+    // back out for the climber hero whenever config.js disagrees (see
+    // data-offer-art in index.html). q85: it is mostly type.
+    await webp("hikerBanner", "hero-banner", [640, 1000, 1600], { quality: 85 });
+
     const TILE = { left: 80, top: 0, width: 1333, height: 2000 };
     await webp("footballGreen", "who-sport", [360, 720], { extract: TILE, quality: 80 });
     await webp("runnerSunset", "who-run", [360, 720], { extract: TILE, quality: 80 });

@@ -36,12 +36,12 @@
 
 <link rel="preload" href="./assets/fonts/tajawal-800-ar.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="./assets/fonts/tajawal-400-ar.woff2" as="font" type="font/woff2" crossorigin>
-<!-- The hero photograph is the LCP element: preloaded, high priority, never
-     lazy. Nothing else is preloaded — a second preload only takes bandwidth
-     away from this one on a Moroccan 4G connection. -->
-<link rel="preload" as="image" href="./assets/images/hero-climb-480.webp"
-      imagesrcset="./assets/images/hero-climb-480.webp 480w, ./assets/images/hero-climb-720.webp 720w, ./assets/images/hero-climb-960.webp 960w"
-      imagesizes="(min-width: 600px) 560px, calc(100vw - 40px)" fetchpriority="high">
+<!-- The hero banner is the LCP element: preloaded, high priority, never lazy.
+     Nothing else is preloaded — a second preload only takes bandwidth away
+     from this one on a Moroccan 4G connection. -->
+<link rel="preload" as="image" href="./assets/images/hero-banner-1000.webp"
+      imagesrcset="./assets/images/hero-banner-640.webp 640w, ./assets/images/hero-banner-1000.webp 1000w, ./assets/images/hero-banner-1600.webp 1600w"
+      imagesizes="(min-width: 1120px) 1088px, calc(100vw - 32px)" fetchpriority="high">
 
 <link rel="stylesheet" href="./style.css">
 
@@ -106,17 +106,34 @@
 <main>
 
 <!-- ═══ 01 · HERO ═══════════════════════════════════════════════════════════
-     One photograph, then the promise, the offer and the button. The offer
-     lines are filled from config.js (data-offer-line) and removed if that
-     quantity is not on sale, so the first screen can never quote a price the
-     form will not charge. -->
-<section class="hero">
+     The client's banner, whole and unedited (2026-10-05: «dir hadi f lhero
+     kima hiya»). It carries the photograph, the headline, the line under it
+     and the icons, so while it is up (`data-art` on the section) those are
+     hidden here and the h1 stays for screen readers and search only. What
+     stays visible under it: the live offer lines, a real button, the
+     delivery line — the banner's own «اطلب دابا» is a picture of a button,
+     so the whole banner is the link, and it opens the form on the pair.
+
+     Its prices are PIXELS. data-offer-art states them; if config.js
+     disagrees, script.js removes the banner and drops `data-art`, and this
+     section falls back to the climber hero below, unchanged. -->
+<section class="hero" data-art-host data-art>
+  <div class="hero__wide" data-offer-art="1:180,2:300" data-price-wrap>
+    <a class="hero__banner" href="#commander" data-goto data-goto-offer="2">
+      <img src="./assets/images/hero-banner-1000.webp"
+           srcset="./assets/images/hero-banner-640.webp 640w, ./assets/images/hero-banner-1000.webp 1000w, ./assets/images/hero-banner-1600.webp 1600w"
+           sizes="(min-width: 1120px) 1088px, calc(100vw - 32px)"
+           width="1600" height="893" fetchpriority="high" decoding="async"
+           alt="BelleVia — تحرّك بلا حدود، الركبة الرياضية المحترفة. راجل كيمشي فالجبل بعصي المشي لابس دعامة الركبة فجوج ركابي. 2 بـ 300 درهم، 1 بـ 180 درهم، التوصيل مجاني لجميع المدن المغربية. اطلب دابا">
+    </a>
+  </div>
+
   <div class="wrap">
     <figure class="hero__shot">
       <img src="./assets/images/hero-climb-480.webp"
            srcset="./assets/images/hero-climb-480.webp 480w, ./assets/images/hero-climb-720.webp 720w, ./assets/images/hero-climb-960.webp 960w"
            sizes="(min-width: 600px) 560px, calc(100vw - 40px)"
-           width="960" height="1200" fetchpriority="high" decoding="async"
+           width="960" height="1200" loading="lazy" decoding="async"
            alt="رجل كيتسلق صخرة فالجبل، لابس دعامة الركبة الاحترافية على ركبته المثنية">
     </figure>
 

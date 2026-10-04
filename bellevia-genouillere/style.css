@@ -174,6 +174,27 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 .hero__note > span { display: inline-flex; align-items: center; gap: 6px; }
 .hero__note svg { width: 18px; height: 18px; flex: none; color: var(--green); }
 
+/* The client's banner. Wider than the column — it is 16:9 and full of small
+   type, so on a desktop it gets up to 1088px to be read at; on a phone it
+   takes the screen less a 16px gutter. */
+.hero__wide { width: 100%; max-width: 1120px; margin-inline: auto; padding-inline: 16px; }
+.hero__banner { display: block; border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); }
+.hero__banner img { width: 100%; }
+.hero__banner:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
+/* While the banner is up it IS the photograph, the headline, the line under
+   it and the icons; the h1 stays for screen readers and search only. Drop
+   `data-art` (script.js does, on a price mismatch) and the climber hero is
+   back exactly as it was. */
+.hero[data-art] .hero__shot,
+.hero[data-art] .hero__sub,
+.hero[data-art] .hero__icons { display: none; }
+.hero[data-art] h1 {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.hero[data-art] .hero__copy { margin-top: 18px; }
+.hero[data-art] .hero__price { margin-top: 0; }
+
 /* ── 07 · Offer lines «2 بـ 300 درهم» (written by script.js) ───────────── */
 .oline { display: flex; align-items: baseline; justify-content: center; gap: 8px; font-weight: 800; line-height: 1; }
 .oline--big { color: var(--green); }
