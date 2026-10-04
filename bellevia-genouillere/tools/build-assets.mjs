@@ -60,7 +60,8 @@
  *
  * Run from the repo root:  node bellevia-genouillere/tools/build-assets.mjs
  */
-import { mkdirSync, existsSync, copyFileSync, readdirSync } from "node:fs";
+import { mkdirSync, existsSync, copyFileSync, readdirSync, statSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import sharp from "sharp";
@@ -228,6 +229,8 @@ const F = {
   runnerSunset: "runner-sunset.jpg",
   footballGreen: "footballer-green.jpg",
   hikerBanner: "banner-hiker.jpg",
+  /* The product video, 2026-10-05 — see the "video" step. */
+  turntable: "product-turntable.mp4",
 };
 
 /** `node build-assets.mjs scenes angles` runs just those steps; no args, all. */
@@ -483,6 +486,37 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
       .webp({ quality: 88, alphaQuality: 100 })
       .toFile(join(IMG, "brace-cutout-382.webp"));
     console.log(`  brace-cutout-382.webp  ${cut.width}×${cut.height}  ${(cut.size / 1024).toFixed(0)}KB`);
+  }
+
+  /* ── The product video (2026-10-05) ─────────────────────────────────────
+     product-turntable.mp4: 10s, 1280×720, Gemini-generated. The brace alone
+     on a dark set — turning, the sleeve from above, the hinge in macro. No
+     people, no text, no claim, no visible watermark (corners checked).
+
+     • SQUARE, cropped from the centre (x 280–1000): the page is a phone page,
+       and 16:9 in its column is 358×201px; 1:1 is 358×358. Only plain
+       backdrop is lost — sampled every 0.5s, the brace stays whole.
+     • NO AUDIO (-an). It autoplays, and autoplay must be muted anyway; the
+       generated soundtrack's words, if any, are unverified.
+     • H.264 Main, yuv420p, +faststart: plays on every phone, and starts
+       before the file has finished arriving.
+     • A poster from the first frame, so the box is never empty. */
+  if (want("video")) {
+    console.log("video:");
+    const VID = join(page, "assets", "video");
+    mkdirSync(VID, { recursive: true });
+    const out = join(VID, "brace-spin-720.mp4");
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", must("turntable"),
+      "-vf", "crop=720:720:280:0", "-an", "-c:v", "libx264", "-profile:v", "main",
+      "-preset", "slow", "-crf", "27", "-pix_fmt", "yuv420p", "-r", "24",
+      "-movflags", "+faststart", out]);
+    console.log(`  brace-spin-720.mp4  720×720  ${(statSync(out).size / 1024).toFixed(0)}KB`);
+    const poster = join(IMG, "brace-spin-poster.png");
+    execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", must("turntable"),
+      "-vf", "crop=720:720:280:0", "-frames:v", "1", poster]);
+    const p = await sharp(poster).webp({ quality: 82 }).toFile(join(IMG, "brace-spin-poster-720.webp"));
+    rmSync(poster);
+    console.log(`  brace-spin-poster-720.webp  ${p.width}×${p.height}  ${(p.size / 1024).toFixed(0)}KB`);
   }
 
   /* ── Shared brand assets ─────────────────────────────────────────────────

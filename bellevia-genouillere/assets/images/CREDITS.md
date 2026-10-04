@@ -11,7 +11,7 @@ C:/Users/ADmiN/OneDrive/Nouveau dossier/mochid rokba
 ```
 
 البناء: `node bellevia-genouillere/tools/build-assets.mjs` — أو خطوة وحدة:
-`… build-assets.mjs scenes` (الخطوات: `scenes`، `angles`، `diagram`، `steps`، `creative`، `brand`).
+`… build-assets.mjs scenes` (الخطوات: `scenes`، `angles`، `diagram`، `steps`، `creative`، `redesign`، `video`، `brand`).
 
 ---
 
@@ -22,6 +22,7 @@ C:/Users/ADmiN/OneDrive/Nouveau dossier/mochid rokba
 | `hero-banner-640/1000/1600.webp` | `banner-hiker.jpg` | **كاملة، بلا قصّ** | الهيرو (2026-10-05، طلب الكليان «كيما هيا»). فيها «تقليل الألم والضغط» وغلطة «احركة» — خلاوهم بطلب صريح. الأثمنة مرسومة: `data-offer-art` كيحيدها ملي يتبدل `config.js` |
 | `hero-climb-480/720/960.webp` | `climber.jpg` | `400, 190, 960×1200` (4:5) | الهيرو **الاحتياطي**: كيبان غير إلا تحيدات البانر (ثمن مبدّل)؛ `loading=lazy` فما كيتحملش ما دام البانر طالع |
 | `problem-sofa-480/870.webp` | `sofa-fitting.webp` | `420, 0, 870×1086` (4:5) — بالوجه | «واش ركبتك كتمنعك…؟» |
+| `../video/brace-spin-720.mp4` + `brace-spin-poster-720.webp` | `product-turntable.mp4` (فيديو Gemini، 10 ثواني، 1280×720) | مربع `280, 0, 720×720` من الوسط، **بلا صوت**، H.264 crf 27 — 331KB بلاصة 2.1MB. البوستر = أول فريم | الحلّ، تحت الإشارات: «شوف الدعامة من كل جهة» (2026-10-05). ما فيه لا كتابة لا ادعاء لا علامة مائية — غير الدعامة كتدور فستوديو |
 | `brace-cutout-382.webp` | `tools/unit-cutout.png` (مقصوصة من `angle-front`) | بلا قصّ، بالشفافية | الحلّ (4 إشارات) + جوج دعامات فبطاقة العرض |
 | `who-sport-360/720.webp` | `footballer-green.jpg` | `80, 0, 1333×2000` (2:3) | «الرياضيين» |
 | `who-run-360/720.webp` | `runner-sunset.jpg` | `80, 0, 1333×2000` | «عشاق الجري» |
