@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0A2417">
+<meta name="theme-color" content="#1F5E3B">
 
 <title>دعامة الركبة الاحترافية | دعم وثبات أفضل أثناء الحركة — 180 درهم</title>
 <!-- Static meta is read before any script runs, so it describes what the brace
@@ -39,9 +39,9 @@
 <!-- The hero photograph is the LCP element: preloaded, high priority, never
      lazy. Nothing else is preloaded — a second preload only takes bandwidth
      away from this one on a Moroccan 4G connection. -->
-<link rel="preload" as="image" href="./assets/images/hero-run-400.webp"
-      imagesrcset="./assets/images/hero-run-400.webp 400w, ./assets/images/hero-run-800.webp 800w"
-      imagesizes="(min-width: 900px) 440px, calc(100vw - 40px)" fetchpriority="high">
+<link rel="preload" as="image" href="./assets/images/hero-climb-480.webp"
+      imagesrcset="./assets/images/hero-climb-480.webp 480w, ./assets/images/hero-climb-720.webp 720w, ./assets/images/hero-climb-960.webp 960w"
+      imagesizes="(min-width: 600px) 560px, calc(100vw - 40px)" fetchpriority="high">
 
 <link rel="stylesheet" href="./style.css">
 
@@ -62,7 +62,7 @@
   "description": "دعامة ركبة خارجية بمفصلات جانبية معدنية وأشرطة قابلة للتعديل وفتحة أمامية حول الرضفة، مصممة لتوفير دعم وثبات إضافيين أثناء المشي والحركة اليومية.",
   "image": [
     "https://belleviabeuty.com/bellevia-genouillere/assets/images/angle-front-400.webp",
-    "https://belleviabeuty.com/bellevia-genouillere/assets/images/hero-run-800.webp",
+    "https://belleviabeuty.com/bellevia-genouillere/assets/images/hero-climb-960.webp",
     "https://belleviabeuty.com/bellevia-genouillere/assets/images/og-football.jpg"
   ],
   "offers": {
@@ -89,139 +89,296 @@
 
 <a class="skip" href="#commander">دوز مباشرة للطلب</a>
 
-<!-- ═══ 00 · ANNOUNCEMENT BAR ═══════════════════════════════════════════════
-     One deep-green line carrying the three facts the page is built on. Static
-     and centred — no marquee, no countdown, no stock counter, no invented
-     urgency. Each item is written from config or removed, so a field turned off
-     cannot leave a promise behind on the page. -->
-<div class="ann">
-  <div class="wrap">
-    <ul class="ann__list">
-      <li data-price-wrap><b data-price hidden>—</b></li>
-      <li data-delivery-row hidden><span data-delivery></span></li>
-      <li data-cod>الدفع عند الاستلام</li>
-    </ul>
-  </div>
-</div>
+<!-- The 2026-10-04 redesign: one column, mobile first, the brief's ten
+     sections in its order. Two are deliberately not built — see the notes at
+     07 (size guide) and 08 (reviews) — and the trust bar carries only facts
+     that are confirmed. Every price is written from config.js. -->
 
 <header class="head">
   <div class="wrap head__in">
     <a class="head__logo" href="#top" aria-label="BelleVia — لفوق">
       <img src="./assets/logo/logo-171.webp" srcset="./assets/logo/logo-171.webp 171w, ./assets/logo/logo-342.webp 342w"
-           sizes="104px" width="104" height="30" alt="BelleVia">
+           sizes="112px" width="112" height="33" alt="BelleVia">
     </a>
-    <p class="head__note">كنتاصلو بيك باش نأكدو الطلب</p>
   </div>
 </header>
 
 <main>
 
 <!-- ═══ 01 · HERO ═══════════════════════════════════════════════════════════
-     Five seconds: what it is, what it does, what it costs, how it arrives,
-     what to do next. The price sits on a WHITE plate on the green field,
-     because it is the one block on the first screen that has to be read
-     without a moment's effort. -->
+     One photograph, then the promise, the offer and the button. The offer
+     lines are filled from config.js (data-offer-line) and removed if that
+     quantity is not on sale, so the first screen can never quote a price the
+     form will not charge. -->
 <section class="hero">
-  <div class="wrap hero__in">
-
-    <div class="hero__copy">
-      <p class="hero__badge">دعم قوي • ثبات مثالي • راحة يومية</p>
-      <h1>
-        دعامة ركبة احترافية
-        <em>لثبات ودعم أفضل أثناء الحركة</em>
-      </h1>
-      <p class="hero__lede">
-        تصميم قابل للتعديل مع مفصلات جانبية قوية لتوفير ثبات مريح أثناء
-        الاستخدام اليومي.
-      </p>
-    </div>
-
+  <div class="wrap">
     <figure class="hero__shot">
-      <img src="./assets/images/hero-run-400.webp"
-           srcset="./assets/images/hero-run-400.webp 400w, ./assets/images/hero-run-800.webp 800w"
-           sizes="(min-width: 900px) 440px, calc(100vw - 40px)"
-           width="800" height="800" fetchpriority="high" decoding="async"
-           alt="رجل يجري على كورنيش البحر وقت الغروب، لابس دعامة الركبة الاحترافية على ركبته اليمنى">
+      <img src="./assets/images/hero-climb-480.webp"
+           srcset="./assets/images/hero-climb-480.webp 480w, ./assets/images/hero-climb-720.webp 720w, ./assets/images/hero-climb-960.webp 960w"
+           sizes="(min-width: 600px) 560px, calc(100vw - 40px)"
+           width="960" height="1200" fetchpriority="high" decoding="async"
+           alt="رجل كيتسلق صخرة فالجبل، لابس دعامة الركبة الاحترافية على ركبته المثنية">
     </figure>
 
-    <div class="hero__buy">
-      <p class="hero__buy-kicker">قيمة احترافية بثمن معقول</p>
-      <p class="price" data-price-wrap>
-        <b data-price hidden>—</b>
-      </p>
-      <ul class="hero__facts">
-        <li data-delivery-row hidden>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fact-ic" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>
-          <span data-delivery></span>
+    <div class="hero__copy">
+      <h1>تحرّك بلا حدود</h1>
+      <p class="hero__sub">دعامة الركبة الرياضية المحترفة — عيش حياتك كيف ما بغيتي، فأي عمر</p>
+
+      <ul class="hero__icons">
+        <li>
+          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6"/><path d="M8 5.5l2 3.5M16 18.5l-2-3.5"/></svg></span>
+          ثبات للمفصل
         </li>
-        <li data-cod>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fact-ic" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>
-          الدفع عند الاستلام
+        <li>
+          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          حماية أثناء الحركة
+        </li>
+        <li>
+          <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+          راحة طول النهار
         </li>
       </ul>
-      <a class="btn btn--gold btn--block" href="#commander" data-goto>اطلبها الآن<span data-price-wrap> بـ <b data-price hidden>—</b></span></a>
-      <p class="hero__note"><span data-delivery-area hidden></span></p>
+
+      <div class="hero__price" data-price-wrap>
+        <p class="oline oline--big" data-offer-line="2" hidden></p>
+        <p class="oline oline--small" data-offer-line="1" hidden></p>
+      </div>
+
+      <a class="btn btn--cta btn--block" href="#commander" data-goto>اطلب دابا</a>
+
+      <p class="hero__note">
+        <span data-cod>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>
+          الدفع عند الاستلام
+        </span>
+        <span data-delivery-row hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>
+          <span data-delivery></span> <span data-delivery-area hidden></span>
+        </span>
+      </p>
     </div>
-
-    <ul class="hero__specs">
-      <li>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v6"/><path d="M16 15v6"/><circle cx="12" cy="12" r="3.2"/><path d="M8 9a4 4 0 004 3"/><path d="M16 15a4 4 0 00-4-3"/></svg>
-        مفصلات جانبية معدنية
-      </li>
-      <li>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="4" rx="1.6"/><rect x="3" y="14.5" width="18" height="4" rx="1.6"/><path d="M14 5.5v4M10 14.5v4"/></svg>
-        أشرطة قابلة للتعديل
-      </li>
-      <li>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="5"/><ellipse cx="12" cy="12" rx="3.4" ry="4"/></svg>
-        فتحة أمامية للرضفة
-      </li>
-      <li>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h11a2.5 2.5 0 10-2.5-2.5"/><path d="M3 12h15a2.5 2.5 0 11-2.5 2.5"/><path d="M3 16h8a2 2 0 112 2"/></svg>
-        خامة قابلة للتهوية
-      </li>
-      <li>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-        تثبيت مريح طول النهار
-      </li>
-    </ul>
-
   </div>
 </section>
 
-<!-- ═══ 02 · ORDER ══════════════════════════════════════════════════════════
-     Directly under the hero, because someone the first screen already
-     convinced must not scroll past nine sections to find the form. Five
-     fields, posted to the store's one order endpoint. The address IS
-     collected here — unlike the three-field BelleVia pages — because this
-     page hands the parcel a street rather than taking it on the call. -->
-<section class="sec sec--shade order" id="commander">
+<!-- ═══ 02 · TRUST BAR ══════════════════════════════════════════════════════
+     Four facts, all confirmed. The brief also asked for «إمكانية الاستبدال»
+     and «خدمة العملاء عبر واتساب»; neither an exchange policy nor a support
+     number has been confirmed, so they wait — a promised exchange that is then
+     refused is a lost customer and a refused parcel. -->
+<section class="tbar" aria-label="معلومات الطلب">
+  <ul class="wrap tbar__list">
+    <li data-cod>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>
+      الدفع عند الاستلام
+    </li>
+    <li data-delivery-row hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>
+      <span data-delivery></span>
+    </li>
+    <li data-area-row hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+      <span data-delivery-area></span>
+    </li>
+    <li>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h5l2 4-2.5 1.5a11 11 0 005 5L15 13l4 2v5a15 15 0 01-15-15z"/></svg>
+      تأكيد الطلب بالتيليفون
+    </li>
+  </ul>
+</section>
+
+<!-- ═══ 03 · PROBLEM ════════════════════════════════════════════════════════
+     The everyday situations, in the reader's words. No pain promise follows:
+     the next section answers with what the brace IS. -->
+<section class="sec problem">
   <div class="wrap">
+    <figure class="problem__shot">
+      <img src="./assets/images/problem-sofa-480.webp"
+           srcset="./assets/images/problem-sofa-480.webp 480w, ./assets/images/problem-sofa-870.webp 870w"
+           sizes="(min-width: 600px) 560px, calc(100vw - 40px)"
+           width="870" height="1086" loading="lazy" decoding="async"
+           alt="راجل كبير فالسن جالس فوق كنبة فالدار كيشدّ دعامة الركبة على ركبته">
+    </figure>
+    <h2>واش ركبتك كتمنعك من الحركة اللي كتبغيها؟</h2>
+    <p class="problem__text">الدروج، المشي الطويل، الرياضة... كل حركة ولات صعيبة.</p>
+  </div>
+</section>
+
+<!-- ═══ 04 · SOLUTION ═══════════════════════════════════════════════════════
+     The supplier's own product photograph (keyed by tools/build-ad.mjs) with
+     four live-text callouts. Each line ends on the part it names — measured
+     on the cutout: top strap (300,140), side hinge (285,330), patella opening
+     (95,315), fabric (90,425). The SVG and the labels share one 1000×820 box,
+     so they scale together at every width. -->
+<section class="sec sec--mint solution">
+  <div class="wrap">
+    <header class="sec__head">
+      <h2>ثبات لركبتك… وحرية&nbsp;لحركتك</h2>
+      <p class="sec__sub">أربع تفاصيل كتبان وكتلمس فالمنتوج.</p>
+    </header>
+
+    <figure class="anat">
+      <img class="anat__img" src="./assets/images/brace-cutout-382.webp" width="382" height="636"
+           loading="lazy" decoding="async"
+           alt="دعامة الركبة الاحترافية من القدّام: المفصلات المعدنية، فتحة الرضفة والأحزمة">
+      <svg class="anat__lines" viewBox="0 0 1000 820" preserveAspectRatio="none" aria-hidden="true">
+        <g fill="none" stroke="#1F5E3B" stroke-width="2.2" vector-effect="non-scaling-stroke">
+          <path d="M724 200 L608 233" vector-effect="non-scaling-stroke"/>
+          <path d="M724 470 L594 422" vector-effect="non-scaling-stroke"/>
+          <path d="M276 330 L405 407" vector-effect="non-scaling-stroke"/>
+          <path d="M276 600 L400 517" vector-effect="non-scaling-stroke"/>
+        </g>
+      </svg>
+      <span class="anat__dot" style="left:60.8%;top:28.4%"></span>
+      <span class="anat__dot" style="left:59.4%;top:51.5%"></span>
+      <span class="anat__dot" style="left:40.5%;top:49.7%"></span>
+      <span class="anat__dot" style="left:40%;top:63%"></span>
+
+      <span class="anat__lbl anat__lbl--r" style="top:24.4%">أحزمة قابلة للتعديل</span>
+      <span class="anat__lbl anat__lbl--r" style="top:57.3%">مفصلات معدنية على الجانبين</span>
+      <span class="anat__lbl anat__lbl--l" style="top:40.2%">فتحة للرضفة</span>
+      <span class="anat__lbl anat__lbl--l" style="top:73.2%">نسيج مهوّى ومريح</span>
+    </figure>
+  </div>
+</section>
+
+<!-- ═══ 05 · FOR WHO ════════════════════════════════════════════════════════
+     Four equal 2:3 tiles — the tallest box the hiker crop allows with both
+     of his braces whole (see tools/build-assets.mjs). -->
+<section class="sec who">
+  <div class="wrap">
+    <header class="sec__head">
+      <h2>لمن هاد الدعامة؟</h2>
+    </header>
+    <ul class="who__grid">
+      <li>
+        <figure>
+          <img src="./assets/images/who-sport-360.webp"
+               srcset="./assets/images/who-sport-360.webp 360w, ./assets/images/who-sport-720.webp 720w"
+               sizes="(min-width: 600px) 274px, calc((100vw - 52px) / 2)"
+               width="720" height="1080" loading="lazy" decoding="async"
+               alt="لاعب كرة القدم كيجري فالتيران لابس دعامة الركبة">
+          <figcaption>الرياضيين</figcaption>
+        </figure>
+      </li>
+      <li>
+        <figure>
+          <img src="./assets/images/who-run-360.webp"
+               srcset="./assets/images/who-run-360.webp 360w, ./assets/images/who-run-720.webp 720w"
+               sizes="(min-width: 600px) 274px, calc((100vw - 52px) / 2)"
+               width="720" height="1080" loading="lazy" decoding="async"
+               alt="مرا كتجري على الكورنيش وقت الغروب لابسة دعامة الركبة">
+          <figcaption>عشاق الجري</figcaption>
+        </figure>
+      </li>
+      <li>
+        <figure>
+          <img src="./assets/images/who-senior-360.webp"
+               srcset="./assets/images/who-senior-360.webp 360w, ./assets/images/who-senior-720.webp 720w"
+               sizes="(min-width: 600px) 274px, calc((100vw - 52px) / 2)"
+               width="720" height="1080" loading="lazy" decoding="async"
+               alt="مرا كبيرة فالسن كتمشى فحديقة لابسة دعامة الركبة">
+          <figcaption>كبار السن</figcaption>
+        </figure>
+      </li>
+      <li>
+        <figure>
+          <img src="./assets/images/who-hike-360.webp"
+               srcset="./assets/images/who-hike-360.webp 360w, ./assets/images/who-hike-504.webp 504w"
+               sizes="(min-width: 600px) 274px, calc((100vw - 52px) / 2)"
+               width="504" height="756" loading="lazy" decoding="async"
+               alt="راجل كيمشي فالجبل بعصي المشي، لابس دعامة الركبة فجوج ركابي">
+          <figcaption>المشي والجبال</figcaption>
+        </figure>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══ 06 · HOW TO WEAR ════════════════════════════════════════════════════
+     The supplier's fitting photos ①②③, each with its own green number burned
+     in — so the page draws no second number. ④ (checking the fit) is the
+     fourth photo of that row and is not needed for three steps. -->
+<section class="sec sec--mint howto">
+  <div class="wrap">
+    <header class="sec__head">
+      <h2>كيفاش تلبسها؟ 3 خطوات</h2>
+      <p class="sec__sub">بلا ما تحتاج حتى حد يعاونك.</p>
+    </header>
+
+    <ol class="steps">
+      <li class="step">
+        <img src="./assets/images/step-open-178.webp" width="178" height="116" loading="lazy" decoding="async"
+             alt="الخطوة الأولى: يدين كيحلّو الدعامة قبل اللبس">
+        <div>
+          <h3>دخّلها فالرجل</h3>
+          <p>حلّ الأحزمة وحطّ الدعامة على رجلك.</p>
+        </div>
+      </li>
+      <li class="step">
+        <img src="./assets/images/step-place-178.webp" width="178" height="116" loading="lazy" decoding="async"
+             alt="الخطوة الثانية: يدين كيحطّو الدعامة والفتحة فوق الرضفة">
+        <div>
+          <h3>حط الفتحة على الركبة</h3>
+          <p>خلّي الفتحة الأمامية فوق الرضفة بالضبط.</p>
+        </div>
+      </li>
+      <li class="step">
+        <img src="./assets/images/step-strap-178.webp" width="178" height="116" loading="lazy" decoding="async"
+             alt="الخطوة الثالثة: يدين كيشدّو أحزمة الدعامة">
+        <div>
+          <h3>شدّ الأحزمة</h3>
+          <p>السفلية أولاً ومن بعد الفوقانية، على حسب راحتك.</p>
+        </div>
+      </li>
+    </ol>
+
+    <p class="steps__note">ما تشدّش الأحزمة بزاف. إلا حسّيتي بوجع ولا تنميل، حلّها وعاود ضبطها.</p>
+  </div>
+</section>
+
+<!-- ═══ 07 · SIZE GUIDE — not built ═════════════════════════════════════════
+     The brief asks for a table with S / M / L / XL left as placeholders. The
+     supplier has never confirmed any size, and the form has no size field, so
+     a table here would either ship blanks or invent numbers. It goes in when
+     real measurements exist — with a size field in the form. -->
+
+<!-- ═══ 08 · REVIEWS ═════════════════════════════════════════════════════════
+     Built from config.js `reviews` and REMOVED while that list is empty. The
+     brief's grey placeholder cards with five stars would read as a rating
+     nobody gave; only a real customer's words, with their permission, go in. -->
+<section class="sec reviews" data-reviews hidden>
+  <div class="wrap">
+    <header class="sec__head">
+      <h2>آراء زبنائنا</h2>
+    </header>
+    <div class="reviews__list" data-reviews-list></div>
+  </div>
+</section>
+
+<!-- ═══ 09 · OFFER + ORDER ══════════════════════════════════════════════════
+     The offer card, then the form: offer, name, phone, city. Three fields
+     plus the choice — the address is taken on the confirmation call, as on
+     the other three-field BelleVia pages (the API omits the key, see
+     functions/api/orders.ts). The choice stays inside <form>: script.js reads
+     it from the form's own radios. -->
+<section class="sec sec--mint order" id="commander">
+  <div class="wrap">
+    <div class="deal" data-price-wrap>
+      <p class="deal__tag">عرض خاص</p>
+      <div class="deal__pair" aria-hidden="true">
+        <img class="deal__back" src="./assets/images/brace-cutout-382.webp" width="382" height="636" alt="" loading="lazy" decoding="async">
+        <img class="deal__front" src="./assets/images/brace-cutout-382.webp" width="382" height="636" alt="" loading="lazy" decoding="async">
+      </div>
+      <p class="oline oline--big oline--on-green" data-offer-line="2" hidden></p>
+      <p class="oline oline--small oline--on-green" data-offer-line="1" hidden></p>
+    </div>
+
     <div class="order__card">
-      <header class="order__head">
-        <h2>اطلب الآن واستفد من العرض</h2>
-        <p>عمّر معلوماتك وغادي نتاصلو بيك باش نأكدو الطلب.</p>
-      </header>
-
-      <p class="order__price" data-price-wrap>
-        <b data-price hidden>—</b>
-      </p>
-
+      <p class="order__lead">عمّر معلوماتك، وغادي نعيطو ليك نأكدو الطلب.</p>
       <p class="notice" id="order-notice" hidden></p>
 
       <form id="order-form" novalidate>
         <div class="fields">
-          <!-- The offer, not a free quantity box. The catalogue prices this
-               product at 1 → 180 and 2 → 300 and sells it in no other
-               quantity, so a stepper that went to 5 would let someone pick a
-               number the API rejects. Both rows are built from config.js by
-               script.js, so a price can never disagree with the label beside
-               it, and «وفر 60 درهم» is computed rather than typed.
-
-               It comes FIRST, above the name: «2 بـ 300» is the reason to buy
-               two, and a visitor who meets it only after typing four fields
-               has already decided on one. It must stay inside the <form> —
-               script.js reads the choice from the form's own radios. -->
           <fieldset class="offers" data-price-wrap>
             <legend>اختر العرض</legend>
             <div class="offers__list" data-offers></div>
@@ -238,27 +395,17 @@
             <label for="phone">رقم الهاتف</label>
             <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
                    enterkeyhint="next" required placeholder="06XXXXXXXX" dir="ltr">
-            <span class="field__hint">يمكن تكتبو بصيغة 06 ولا 07 ولا بالصيغة الدولية.</span>
             <span class="err" data-err-for="phone" hidden></span>
           </p>
 
           <p class="field">
-            <!-- A text input with a datalist, not a select: the list is a search
-                 box of the big cities, and anyone from a town that is not on it
-                 can simply type its name. A closed list would silently lose
-                 every order from a small town. -->
+            <!-- A text input with a datalist, not a select: anyone from a town
+                 that is not on the list can simply type its name. -->
             <label for="city">المدينة</label>
             <input id="city" name="city" type="text" list="cities" autocomplete="address-level2"
-                   enterkeyhint="next" required minlength="2" placeholder="قلّب على مدينتك ولا كتبها">
+                   enterkeyhint="done" required minlength="2" placeholder="قلّب على مدينتك ولا كتبها">
             <datalist id="cities"></datalist>
             <span class="err" data-err-for="city" hidden></span>
-          </p>
-
-          <p class="field">
-            <label for="address">العنوان</label>
-            <input id="address" name="address" type="text" autocomplete="street-address"
-                   enterkeyhint="done" required minlength="3" placeholder="الحي، الزنقة، رقم الدار">
-            <span class="err" data-err-for="address" hidden></span>
           </p>
         </div>
 
@@ -269,15 +416,14 @@
 
         <p class="err err--form" id="form-error" hidden></p>
 
-        <button class="btn btn--gold btn--block" type="submit" id="submit">
-          أكد طلبك الآن — <span data-sum-short>—</span>
+        <button class="btn btn--cta btn--block" type="submit" id="submit">
+          اطلب دابا — <span data-sum-short>—</span>
         </button>
 
-        <ul class="reassure">
-          <li data-cod>الدفع عند الاستلام</li>
-          <li data-delivery-row hidden><span data-delivery></span></li>
-          <li>تأكيد الطلب عبر الهاتف</li>
-        </ul>
+        <p class="safe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10" width="15" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+          معلوماتك آمنة — كنستعملوها غير باش نأكدو معاك الطلب.
+        </p>
       </form>
 
       <!-- Shown only once the server confirms. The page never claims an order
@@ -286,461 +432,55 @@
         <p class="done__tick" aria-hidden="true">✓</p>
         <h3>الطلب ديالك تسجل</h3>
         <p class="done__num">رقم الطلب: <b class="ltr" id="order-number"></b></p>
-        <p>غادي نعيطو ليك فالرقم اللي عطيتينا باش نأكدو معاك الطلب.</p>
-        <button class="btn btn--ghost btn--ghost-light" type="button" id="order-again">طلب جديد</button>
+        <p>غادي نعيطو ليك فالرقم اللي عطيتينا باش نأكدو معاك الطلب والعنوان.</p>
+        <button class="btn btn--ghost" type="button" id="order-again">طلب جديد</button>
       </div>
-
     </div>
   </div>
 </section>
 
-<!-- ═══ 03 · VALUE ══════════════════════════════════════════════════════════
-     Six specifications, each describing construction rather than outcome. The
-     section exists to move the reader from «شحال» to «شنو كناخد» — the whole
-     value argument on this page is what the object IS, not how cheap it is. -->
-<section class="sec value">
+<!-- ═══ 10 · FAQ ═════════════════════════════════════════════════════════════
+     The brief's list was cut off after its first question. Every answer here
+     is one this page already stood behind; the delivery and payment rows are
+     written from config, so they go if those switches are turned off. -->
+<section class="sec faq">
   <div class="wrap">
     <header class="sec__head">
-      <h2>ثبات لركبتك… وحرية&nbsp;لحركتك</h2>
-      <p class="sec__sub">ستة تفاصيل فالتصميم، كل وحدة كتبان وكتلمس فالمنتوج.</p>
-    </header>
-
-    <div class="vgrid">
-      <article class="vcard">
-        <span class="vcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
-        </span>
-        <h3>ثبات قوي</h3>
-        <p>التصميم كيساعد الدعامة تبقى فبلاصتها أثناء الحركة.</p>
-      </article>
-
-      <article class="vcard">
-        <span class="vcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v6"/><path d="M16 15v6"/><circle cx="12" cy="12" r="3.2"/><path d="M8 9a4 4 0 004 3"/><path d="M16 15a4 4 0 00-4-3"/></svg>
-        </span>
-        <h3>مفصلات جانبية</h3>
-        <p>جوج مفصلات معدنية على الجنبين كيدعمو الركبة مع السماح بالحركة.</p>
-      </article>
-
-      <article class="vcard">
-        <span class="vcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="4" rx="1.6"/><rect x="3" y="14.5" width="18" height="4" rx="1.6"/><path d="M14 5.5v4M10 14.5v4"/></svg>
-        </span>
-        <h3>أشرطة قابلة للتعديل</h3>
-        <p>كتشدها على قد راحتك، وكتبدل الضغط ملي بغيتي.</p>
-      </article>
-
-      <article class="vcard">
-        <span class="vcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
-        </span>
-        <h3>تصميم مريح</h3>
-        <p>بطانة داخلية ناعمة وفتحة أمامية كتخفف الضغط على الرضفة.</p>
-      </article>
-
-      <article class="vcard">
-        <span class="vcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11a2.5 2.5 0 10-2.5-2.5"/><path d="M3 12h15a2.5 2.5 0 11-2.5 2.5"/><path d="M3 16h8a2 2 0 112 2"/></svg>
-        </span>
-        <h3>تهوية أفضل</h3>
-        <p>خامة مصممة باش تبقى الركبة مرتاحة حتى فالاستعمال الطويل.</p>
-      </article>
-
-      <article class="vcard">
-        <span class="vcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20l3.5-4.5L7 11l-2 2"/><path d="M12 20l-1.5-5.5L14 11l1.5 4H19"/><circle cx="13.5" cy="5" r="2"/><path d="M9 8.5l4-1.5 2.5 3"/></svg>
-        </span>
-        <h3>للاستعمال اليومي</h3>
-        <p>مناسبة للمشي، للدرج، وللأنشطة اليومية حسب راحتك.</p>
-      </article>
-    </div>
-
-    <!-- Three scenes from the supplier's lifestyle set of 2026-09-28: the brace
-         on a bent knee, a footballer, and both hands fastening it at home. The
-         first is a close-up cut out of a sales graphic whose icon column makes
-         claims this page does not; only the knee is taken from it. (The
-         wording is kept out of this file — HTML comments ship in view-source,
-         and an ad reviewer reading the source should find no claim there
-         either. It is recorded in tools/build-assets.mjs.) The captions below
-         describe the scene and nothing more.
-
-         Full-size sources this time, so each tile has a real 2× in its srcset
-         — the poster crops these replace topped out at ~190px. -->
-    <ul class="bens">
-      <li>
-        <figure>
-          <img src="./assets/images/scene-knee-320.webp"
-               srcset="./assets/images/scene-knee-320.webp 320w, ./assets/images/scene-knee-562.webp 562w"
-               sizes="(min-width: 1160px) 352px, (min-width: 480px) calc((100vw - 64px) / 3), calc(100vw - 32px)"
-               width="562" height="360" loading="lazy" decoding="async"
-               alt="صورة مقرّبة لدعامة الركبة على ركبة مثنية، ويبان المفصل المعدني الجانبي">
-          <figcaption>المفصل المعدني عن قرب</figcaption>
-        </figure>
-      </li>
-      <li>
-        <figure>
-          <img src="./assets/images/scene-football-320.webp"
-               srcset="./assets/images/scene-football-320.webp 320w, ./assets/images/scene-football-704.webp 704w"
-               sizes="(min-width: 1160px) 352px, (min-width: 480px) calc((100vw - 64px) / 3), calc(100vw - 32px)"
-               width="704" height="451" loading="lazy" decoding="async"
-               alt="لاعب كرة القدم فالملعب كيدي الكرة وهو لابس الدعامة">
-          <figcaption>أثناء لعب الكرة</figcaption>
-        </figure>
-      </li>
-      <li>
-        <figure>
-          <img src="./assets/images/scene-home-320.webp"
-               srcset="./assets/images/scene-home-320.webp 320w, ./assets/images/scene-home-704.webp 704w"
-               sizes="(min-width: 1160px) 352px, (min-width: 480px) calc((100vw - 64px) / 3), calc(100vw - 32px)"
-               width="704" height="451" loading="lazy" decoding="async"
-               alt="يدين كيشدّو أحزمة الدعامة على الركبة، فوق كنبة فالدار">
-          <figcaption>تركيبها فالدار</figcaption>
-        </figure>
-      </li>
-    </ul>
-  </div>
-</section>
-
-<!-- ═══ 04 · ANATOMY ════════════════════════════════════════════════════════
-     The supplier's own Arabic callout diagram beside the same five facts as
-     live text. The picture and the words say the same thing in the same
-     language, which is why the diagram is shown openly here. -->
-<section class="sec sec--shade" id="anatomy">
-  <div class="wrap">
-    <header class="sec__head">
-      <h2>علاش هاد الدعامة مختلفة؟</h2>
-      <p class="sec__sub">التفاصيل اللي كتشوفها فالتصويرة، وحدة بوحدة.</p>
-    </header>
-
-    <div class="anat">
-      <figure class="anat__shot">
-        <img src="./assets/images/diagram-ar-655.webp"
-             sizes="(min-width: 720px) 520px, calc(100vw - 60px)"
-             width="655" height="585" loading="lazy" decoding="async"
-             alt="رسم توضيحي للدعامة بأسهم تشير إلى: نسيج جيد التهوية، مفصلات معدنية ثنائية الجانب، تصميم مفتوح للرضفة، بطانة داخلية ناعمة ومضادة للانزلاق، وأشرطة قابلة للتعديل">
-        <figcaption>الرسم التوضيحي كما وصل من المورّد، بدون أي تعديل.</figcaption>
-      </figure>
-
-      <ul class="alist">
-        <li>
-          <span class="alist__n" aria-hidden="true">١</span>
-          <div>
-            <h3>مفصلات جانبية معدنية</h3>
-            <p>على جوج جنوب الركبة، كيتحركو معاها وكيعطيو دعم جانبي.</p>
-          </div>
-        </li>
-        <li>
-          <span class="alist__n" aria-hidden="true">٢</span>
-          <div>
-            <h3>أربعة أشرطة قابلة للتعديل</h3>
-            <p>جوج لفوق وجوج لتحت، كل واحد كيتشد بوحدو حسب المقاس.</p>
-          </div>
-        </li>
-        <li>
-          <span class="alist__n" aria-hidden="true">٣</span>
-          <div>
-            <h3>فتحة أمامية للرضفة</h3>
-            <p>كتخلي الرضفة فبلاصتها وكتقلل الضغط عليها.</p>
-          </div>
-        </li>
-        <li>
-          <span class="alist__n" aria-hidden="true">٤</span>
-          <div>
-            <h3>بطانة داخلية ناعمة</h3>
-            <p>الوجه اللي كيمس الجلد ناعم ومضاد للانزلاق.</p>
-          </div>
-        </li>
-        <li>
-          <span class="alist__n" aria-hidden="true">٥</span>
-          <div>
-            <h3>ضبط المقاس بالأشرطة</h3>
-            <p>ماشي مقاس ثابت: الضغط كيتوزع على قد ما كتشد الأشرطة.</p>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ 05 · WORTH ══════════════════════════════════════════════════════════
-     The value argument, stated once and plainly. No comparison with a
-     competitor's price, because there is no verified competitor price to
-     compare with — the list is what this product has, and the number sits
-     next to it. -->
-<section class="sec sec--green worth">
-  <div class="wrap">
-    <header class="sec__head">
-      <h2>ماشي غير دعامة… تصميم مدروس للاستعمال اليومي</h2>
-    </header>
-
-    <div class="worth__in">
-      <!-- The offer as the ad shows it: the same 1080×1350 creative the Meta
-           campaign runs (tools/ad-offer.html), so a visitor who tapped that ad
-           meets it again here. Its prices are PIXELS, not text, so
-           data-offer-art states them, and script.js swaps the picture for the
-           live price the moment config.js disagrees. The «اطلب دابا» in it is a
-           picture of a button: the whole picture is the link, and it opens the
-           form on the offer it sells — the pair. -->
-      <div class="worth__price worth__price--art">
-        <a class="worth__art" href="#commander" data-goto data-goto-offer="2"
-           data-offer-art="1:180,2:300" data-price-wrap>
-          <img src="./assets/images/offer-art-480.webp"
-               srcset="./assets/images/offer-art-480.webp 480w, ./assets/images/offer-art-960.webp 960w"
-               sizes="(min-width: 720px) 400px, min(calc(100vw - 32px), 400px)"
-               width="960" height="1200" loading="lazy" decoding="async"
-               alt="العرض: 2 بـ 300 درهم، 1 بـ 180 درهم. التوصيل مجاني والدفع عند الاستلام. اطلب دابا">
-        </a>
-        <p class="price" data-price-wrap data-art-fallback hidden>
-          <b data-price hidden>—</b>
-        </p>
-        <p>هادشي كامل داخل فالثمن</p>
-      </div>
-
-      <ul class="wlist">
-        <li>تصميم احترافي</li>
-        <li>مفصلات جانبية معدنية</li>
-        <li>أشرطة قابلة للتعديل</li>
-        <li>دعم وثبات أثناء الحركة</li>
-        <li>بطانة مريحة وخامة قابلة للتهوية</li>
-        <li data-delivery-row hidden><span data-delivery></span></li>
-        <li data-cod>الدفع عند الاستلام</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ 06 · HOW TO WEAR ════════════════════════════════════════════════════
-     Four photographs of the brace actually being fitted — opened, placed,
-     strapped, checked. They replace four studio shots of the product lying
-     still, which showed the object but never the procedure the section is
-     about.
-
-     Each frame carries the supplier's own green number, so the page does NOT
-     draw its own badge here: two numbers in one corner is worse than the one
-     that is already correct. -->
-<section class="sec howto">
-  <div class="wrap">
-    <header class="sec__head">
-      <h2>طريقة التركيب في 4 خطوات</h2>
-      <p class="sec__sub">تركيب سهل وسريع، بلا ما تحتاج حتى حد يعاونك.</p>
-    </header>
-
-    <ol class="steps steps--shot">
-      <li class="step">
-        <figure>
-          <img src="./assets/images/step-open-178.webp" width="178" height="116"
-               loading="lazy" decoding="async"
-               alt="الخطوة الأولى: يدان كيحلّو أشرطة الدعامة وكيوجدوها قبل اللبس">
-        </figure>
-        <div class="step__body">
-          <h3>افتح الأشرطة</h3>
-          <p>حل جميع الأشرطة وجهّز الدعامة قبل ما تلبسها.</p>
-        </div>
-      </li>
-
-      <li class="step">
-        <figure>
-          <img src="./assets/images/step-place-178.webp" width="178" height="116"
-               loading="lazy" decoding="async"
-               alt="الخطوة الثانية: يدان كيحطّو الدعامة حول الركبة والفتحة فوق الرضفة">
-        </figure>
-        <div class="step__body">
-          <h3>ضعها على الركبة</h3>
-          <p>حط الدعامة حول الركبة وخلي الفتحة الأمامية فوق الرضفة.</p>
-        </div>
-      </li>
-
-      <li class="step">
-        <figure>
-          <img src="./assets/images/step-strap-178.webp" width="178" height="116"
-               loading="lazy" decoding="async"
-               alt="الخطوة الثالثة: يدان كيشدّو أشرطة الدعامة على الركبة">
-        </figure>
-        <div class="step__body">
-          <h3>ثبّت الأشرطة</h3>
-          <p>شد الأشرطة السفلية أولاً ثم العلوية، واضبطها حسب مقاسك.</p>
-        </div>
-      </li>
-
-      <li class="step">
-        <figure>
-          <img src="./assets/images/step-check-178.webp" width="178" height="116"
-               loading="lazy" decoding="async"
-               alt="الخطوة الرابعة: يدان كيتأكدو من ثبات الدعامة على الركبة قبل الحركة">
-        </figure>
-        <div class="step__body">
-          <h3>تأكد من الثبات</h3>
-          <p>تأكد بلي مريحة وثابتة قبل ما تتحرك — وصافي، وجدة للاستعمال.</p>
-        </div>
-      </li>
-    </ol>
-
-    <p class="steps__note">
-      ما تشدش الأشرطة بزاف. إيلا حسيتي بوجع ولا تنميل، حلّها وعاود ضبطها.
-    </p>
-  </div>
-</section>
-
-<!-- ═══ 07 · GALLERY ════════════════════════════════════════════════════════ -->
-<section class="sec sec--shade">
-  <div class="wrap">
-    <header class="sec__head">
-      <h2>المنتوج من كل الجهات</h2>
-      <p class="sec__sub">نفس الدعامة، مصوّرة من أربع زوايا.</p>
-    </header>
-
-    <div class="gal">
-      <figure>
-        <img src="./assets/images/angle-front-400.webp" width="400" height="400"
-             loading="lazy" decoding="async"
-             alt="دعامة الركبة من الأمام مع المفصل المعدني الجانبي والفتحة الأمامية">
-        <figcaption>من الأمام</figcaption>
-      </figure>
-      <figure>
-        <img src="./assets/images/angle-back-400.webp" width="400" height="400"
-             loading="lazy" decoding="async"
-             alt="دعامة الركبة من الخلف مع الفتحة المفتوحة خلف الركبة">
-        <figcaption>من الخلف</figcaption>
-      </figure>
-      <figure>
-        <img src="./assets/images/angle-bent-400.webp" width="400" height="400"
-             loading="lazy" decoding="async"
-             alt="دعامة الركبة في وضعية الثني ويظهر المفصل الجانبي وهو مطوي">
-        <figcaption>فوضعية الثني</figcaption>
-      </figure>
-      <figure>
-        <img src="./assets/images/angle-inside-400.webp" width="400" height="400"
-             loading="lazy" decoding="async"
-             alt="دعامة الركبة من الداخل وتظهر البطانة المبطنة الملامسة للجلد">
-        <figcaption>من الداخل</figcaption>
-      </figure>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ 08 · OBJECTIONS ═════════════════════════════════════════════════════ -->
-<section class="sec">
-  <div class="wrap">
-    <header class="sec__head">
-      <h2>واش غادي تكون مريحة فالاستخدام؟</h2>
+      <h2>أسئلة شائعة</h2>
     </header>
 
     <div class="qa__list">
       <details class="qa">
-        <summary>واش يمكن نعدّلها على قد رجلي؟</summary>
-        <p>نعم، الأشرطة قابلة للتعديل حسب المقاس، وكل شريط كيتشد بوحدو.</p>
+        <summary>واش كتناسب جميع القياسات؟</summary>
+        <p>الأحزمة قابلة للتعديل، وكل حزام كيتشدّ بوحدو على قد رجلك. إلا عندك سؤال على القياس، سولنا فمكالمة التأكيد.</p>
       </details>
-      <details class="qa">
-        <summary>واش نقدر نستعملها أثناء الحركة؟</summary>
-        <p>التصميم موجّه لتوفير الثبات والدعم أثناء النشاط، حسب راحتك.</p>
-      </details>
-      <details class="qa">
-        <summary>واش سهلة التركيب؟</summary>
-        <p>نعم، طريقة التركيب واضحة وبسيطة — أربع خطوات، مشروحة فوق.</p>
-      </details>
-      <details class="qa">
-        <summary>واش نقدر نخلص عند التوصل؟</summary>
-        <p data-cod>نعم، الدفع عند الاستلام.</p>
+      <details class="qa" data-cod>
+        <summary>كيفاش كنخلص؟</summary>
+        <p>الدفع عند الاستلام: كتخلص ملي توصلك الدعامة ليدك.</p>
       </details>
       <details class="qa" data-delivery-row hidden>
-        <summary>واش التوصيل مجاني؟</summary>
-        <p><span data-delivery></span> <span data-delivery-area hidden></span></p>
+        <summary>شحال كيكلف التوصيل؟</summary>
+        <p><span data-delivery></span> <span data-delivery-area hidden></span>.</p>
+      </details>
+      <details class="qa">
+        <summary>شنو كيوقع من بعد ما نطلب؟</summary>
+        <p>كنعيطو ليك باش نأكدو الطلب والعنوان قبل ما نصيفطوه.</p>
+      </details>
+      <details class="qa">
+        <summary>واش سهلة فاللبس؟</summary>
+        <p>نعم، ثلاث خطوات مشروحة فوق، بلا ما تحتاج شي حد يعاونك.</p>
+      </details>
+      <details class="qa">
+        <summary>واش نقدر نستعملها أثناء الحركة والرياضة؟</summary>
+        <p>التصميم موجّه للثبات والدعم أثناء النشاط، على حسب راحتك.</p>
       </details>
       <details class="qa">
         <summary>واش هادي دواء؟</summary>
-        <p>
-          لا. هي دعامة خارجية مصممة لتوفير الدعم والثبات، وما كتعوضش استشارة
-          المختص عند وجود إصابة ولا حالة صحية.
-        </p>
+        <p>لا. هي دعامة خارجية للدعم والثبات، وما كتعوضش استشارة المختص عند وجود إصابة ولا حالة صحية.</p>
       </details>
     </div>
   </div>
 </section>
-
-<!-- ═══ 09 · TRUST ══════════════════════════════════════════════════════════
-     No testimonials, and that is deliberate: nobody has supplied a real
-     customer review, and inventing names and stars is the one thing that turns
-     a page like this into a page nobody should trust. What is here instead is
-     what the buyer actually needs to know before ordering. -->
-<section class="sec sec--shade">
-  <div class="wrap">
-    <header class="sec__head">
-      <h2>شنو كيهمك قبل ما تطلب؟</h2>
-      <p class="sec__sub">مصممة باش تكون عملية وسهلة الاستعمال.</p>
-    </header>
-
-    <div class="trust">
-      <article class="tcard" data-delivery-row hidden>
-        <span class="tcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>
-        </span>
-        <div>
-          <h3 data-delivery>التوصيل</h3>
-          <p data-delivery-area hidden></p>
-        </div>
-      </article>
-
-      <article class="tcard" data-cod>
-        <span class="tcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/></svg>
-        </span>
-        <div>
-          <h3>الدفع عند الاستلام</h3>
-          <p>كتخلص ملي توصلك الدعامة ليدك.</p>
-        </div>
-      </article>
-
-      <article class="tcard">
-        <span class="tcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h5l2 4-2.5 1.5a11 11 0 005 5L15 13l4 2v5a15 15 0 01-15-15z"/></svg>
-        </span>
-        <div>
-          <h3>تأكيد بالتيليفون</h3>
-          <p>كنعيطو ليك باش نأكدو الطلب والعنوان قبل ما نصيفطوه.</p>
-        </div>
-      </article>
-
-      <article class="tcard">
-        <span class="tcard__ic" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10" width="15" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
-        </span>
-        <div>
-          <h3>معلوماتك عندك</h3>
-          <p>كنستعملو المعلومات ديالك غير باش نتواصلو معاك على هاد الطلب.</p>
-        </div>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ 10 · OFFER ══════════════════════════════════════════════════════════ -->
-<section class="sec sec--green offer">
-  <div class="wrap offer__in">
-    <figure class="offer__shot">
-      <img src="./assets/images/scene-walk-280.webp"
-           srcset="./assets/images/scene-walk-280.webp 280w, ./assets/images/scene-walk-512.webp 512w"
-           sizes="(min-width: 375px) 240px, 64vw"
-           width="512" height="1086" loading="lazy" decoding="async"
-           alt="رجل كبير فالسن كيتمشى بعصي المشي فحديقة، لابس دعامة الركبة الاحترافية على ركبته اليمنى">
-    </figure>
-
-    <div class="offer__copy">
-      <p class="offer__kicker">عرض اليوم</p>
-      <h2>دعامة الركبة الاحترافية</h2>
-      <p class="price" data-price-wrap>
-        <b data-price hidden>—</b>
-      </p>
-      <ul class="offer__facts">
-        <li data-delivery-row hidden><span data-delivery></span></li>
-        <li data-cod>الدفع عند الاستلام</li>
-        <li data-delivery-area hidden></li>
-      </ul>
-      <a class="btn btn--gold" href="#commander" data-goto>اطلب الآن</a>
-      <p class="offer__stock">الكمية المتوفرة حسب المخزون.</p>
-    </div>
-  </div>
-</section>
-
 
 </main>
 
@@ -761,9 +501,7 @@
      and the order form are off screen, so it is never a second copy of a button
      already on the same screen. -->
 <div class="sticky" id="sticky" hidden>
-  <a class="btn btn--gold btn--block" href="#commander" data-goto>
-    اطلب الآن<span data-price-wrap> بـ <b data-price hidden>—</b></span>
-  </a>
+  <a class="btn btn--cta btn--block" href="#commander" data-goto>اطلب دابا</a>
 </div>
 
 <!-- Shared Meta tracking for every BelleVia storefront: fires PageView itself

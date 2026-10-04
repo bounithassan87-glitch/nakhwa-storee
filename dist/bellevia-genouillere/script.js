@@ -6,9 +6,10 @@
    cannot throw.
 
    The form posts to `/api/orders` — the store's one order endpoint, the same
-   one every other BelleVia storefront uses. It sends five fields, the server
-   prices the order from the catalogue, and the page only ever reports an order
-   the API confirmed.
+   one every other BelleVia storefront uses. It sends the chosen offer and three
+   fields — name, phone, city; the address is taken on the confirmation call —
+   the server prices the order from the catalogue, and the page only ever
+   reports an order the API confirmed.
    ========================================================================== */
 (function () {
   'use strict';
@@ -82,8 +83,10 @@
   }
   if (CFG.deliveryArea) {
     $$('[data-delivery-area]').forEach(function (el) { el.textContent = CFG.deliveryArea; el.hidden = false; });
+    $$('[data-area-row]').forEach(function (el) { el.hidden = false; });
   } else {
-    $$('[data-delivery-area]').forEach(function (el) { el.remove(); });
+    // The row too, not just its text: an icon beside nothing is still a promise.
+    $$('[data-delivery-area], [data-area-row]').forEach(function (el) { el.remove(); });
   }
 
   /* ══ 02 · Prices ═══════════════════════════════════════════════════════
@@ -99,28 +102,25 @@
       $$('[data-price-wrap]').forEach(function (el) { el.remove(); });
       return;
     }
-    /* The headline price is what ONE costs. The pair is the upsell, and it is
-       shown where it can be acted on — inside the chooser, and in the worth
-       section's creative, which is itself a link into the chooser — rather
-       than in the hero, where a second number competes with the first. */
     $$('[data-price]').forEach(function (el) { el.textContent = money(OFFERS[0].price); el.hidden = false; });
 
-    /* The offer creative carries its prices as pixels and states them in
-       data-offer-art. A picture of a price the form will not charge is worse
-       than no picture — under cash on delivery it is a refusal at the door —
-       so if config.js no longer agrees, the picture goes and the live price
-       takes its place. */
-    var live = OFFERS.map(function (o) { return o.qty + ':' + o.price; }).join(',');
-    $$('[data-offer-art]').forEach(function (art) {
-      var box = art.parentNode;
-      var fallback = box && box.querySelector('[data-art-fallback]');
-      if (art.getAttribute('data-offer-art') === live) {
-        if (fallback) fallback.remove();
-        return;
-      }
-      art.remove();
-      box.classList.remove('worth__price--art');
-      if (fallback) fallback.hidden = false;
+    /* «2 بـ 300 درهم» — the hero and the offer card each name an offer by its
+       quantity (data-offer-line="2") and get its price from here. A quantity
+       that is not on sale removes its line, so neither can quote a price the
+       form will not charge. Three spans so the number can be the big one; the
+       order inside the flex row is the reading order, right to left. */
+    $$('[data-offer-line]').forEach(function (el) {
+      var qty = parseInt(el.getAttribute('data-offer-line'), 10);
+      var o = OFFERS.filter(function (x) { return x.qty === qty; })[0];
+      if (!o) { el.remove(); return; }
+      el.textContent = '';
+      [['oline__q', o.qty + ' بـ'], ['oline__n', String(o.price)], ['oline__c', CFG.currency]].forEach(function (p) {
+        var s = document.createElement('span');
+        s.className = p[0];
+        s.textContent = p[1];
+        el.appendChild(s);
+      });
+      el.hidden = false;
     });
 
     /* The chooser. Built from config rather than typed into the HTML, so a
@@ -170,6 +170,63 @@
       label.appendChild(body);
       box.appendChild(label);
     });
+  })();
+
+  /* ══ 02b · Reviews ═════════════════════════════════════════════════════
+     Real customers only, from config.js `reviews`. A card is drawn only when
+     it has a name and words; stars only when a rating was actually given. With
+     none, the whole section is removed — an empty card with five stars is a
+     rating nobody gave. */
+  (function reviews() {
+    var sec = $('[data-reviews]');
+    var list = $('[data-reviews-list]');
+    if (!sec || !list) return;
+    var rows = (Array.isArray(RAW.reviews) ? RAW.reviews : []).filter(function (r) {
+      return r && String(r.name || '').trim() && String(r.text || '').trim();
+    });
+    if (!rows.length) { sec.remove(); return; }
+    rows.forEach(function (r) {
+      var card = document.createElement('article');
+      card.className = 'rcard';
+      var head = document.createElement('div');
+      head.className = 'rcard__head';
+      if (r.photo) {
+        var img = document.createElement('img');
+        img.className = 'rcard__photo';
+        img.src = String(r.photo);
+        img.alt = '';
+        img.loading = 'lazy';
+        img.width = 48; img.height = 48;
+        head.appendChild(img);
+      }
+      var who = document.createElement('div');
+      var name = document.createElement('p');
+      name.className = 'rcard__name';
+      name.textContent = String(r.name).trim();
+      who.appendChild(name);
+      if (r.city) {
+        var city = document.createElement('p');
+        city.className = 'rcard__city';
+        city.textContent = String(r.city).trim();
+        who.appendChild(city);
+      }
+      head.appendChild(who);
+      var stars = parseInt(r.rating, 10);
+      if (stars >= 1 && stars <= 5) {
+        var st = document.createElement('p');
+        st.className = 'rcard__stars';
+        st.textContent = '★★★★★'.slice(0, stars) + '☆☆☆☆☆'.slice(0, 5 - stars);
+        st.setAttribute('aria-label', stars + ' من 5');
+        head.appendChild(st);
+      }
+      card.appendChild(head);
+      var text = document.createElement('p');
+      text.className = 'rcard__text';
+      text.textContent = String(r.text).trim();
+      card.appendChild(text);
+      list.appendChild(card);
+    });
+    sec.hidden = false;
   })();
 
   /* ══ 03 · City suggestions ═════════════════════════════════════════════
@@ -238,7 +295,9 @@
      jumps the page when you tap to look closer is a page fighting its reader. */
   $$('[data-goto]').forEach(function (a) {
     on(a, 'click', function (e) {
-      var card = $('.order__card');
+      // The section, not the form card: the offer card above the form is the
+      // first thing a buyer should see on arrival.
+      var card = $('#commander') || $('.order__card');
       if (!card) return;
       e.preventDefault();
       card.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -294,10 +353,10 @@
     renderTotal();
 
     /* ── Validation ──────────────────────────────────────────────────────
-       These four rules mirror `catalogSchema` in functions/api/orders.ts
-       exactly — name 2–100, Moroccan mobile, city 2–80, address 3–200. Being
-       stricter here than the server would reject orders the API would accept;
-       being looser would send the customer a round trip to be told no. */
+       These three rules mirror `catalogSchema` in functions/api/orders.ts
+       exactly — name 2–100, Moroccan mobile, city 2–80. Being stricter here
+       than the server would reject orders the API would accept; being looser
+       would send the customer a round trip to be told no. */
 
     /** Moroccan mobile, in whatever shape someone types it. */
     function normalizePhone(raw) {
@@ -330,12 +389,6 @@
         if (!v) return 'عمّر المدينة.';
         if (v.length < 2) return 'كتب اسم المدينة كامل.';
         if (v.length > 80) return 'اسم المدينة طويل بزاف.';
-        return '';
-      },
-      address: function (v) {
-        if (!v) return 'عمّر العنوان باش يوصلك الطلب.';
-        if (v.length < 3) return 'العنوان قصير بزاف.';
-        if (v.length > 200) return 'العنوان طويل بزاف — قصّرو شوية.';
         return '';
       },
     };
@@ -404,12 +457,11 @@
         customerName: $('#fullname').value.trim(),
         phone: normalizePhone($('#phone').value),
         city: $('#city').value.trim(),
-        // A real street, unlike the three-field BelleVia pages that omit the
-        // key entirely. `Customer` is keyed by phone across every storefront,
-        // so what goes here is written to that customer's record — which is
-        // exactly right when it is a genuine address, and exactly why a
-        // stand-in sentence must never be sent.
-        address: $('#address').value.trim(),
+        // No `address` key at all — not an empty one. The street is taken on
+        // the confirmation call, and catalogSchema treats an OMITTED address as
+        // "leave the stored one alone", while an empty string fails min(3).
+        // `Customer` is keyed by phone across every storefront, so a stand-in
+        // sentence here would overwrite a real customer's real street.
         quantity: picked ? picked.qty : 1,
         source: CFG.source,
         // Attribution ids. If Meta is unreachable these are simply ignored and
@@ -568,7 +620,7 @@
   (function sticky() {
     var bar = $('#sticky');
     var card = $('.order__card');
-    var heroCta = $('.hero__buy .btn');
+    var heroCta = $('.hero__copy .btn');
     var done = $('#order-done');
     if (!bar || !card || !('IntersectionObserver' in window)) return;
 
