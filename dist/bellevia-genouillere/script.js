@@ -628,6 +628,50 @@
     });
   })();
 
+  /* ══ 06b · Product video ═══════════════════════════════════════════════
+     preload="none" in the HTML, so nothing is fetched until it is wanted.
+     It plays once half of it is on screen and pauses when it leaves — never
+     burning a visitor's data while they read the form. It does NOT autoplay
+     on a data-saver connection or for a reader who asked for reduced motion:
+     they see the poster, and the button plays it. A visitor who pauses it
+     keeps it paused; scrolling back does not overrule them. */
+  (function productVideo() {
+    var v = $('.clip__video');
+    if (!v) return;
+    var btn = $('[data-clip-toggle]');
+    var userPaused = false;
+
+    function play() {
+      var p = v.play();
+      if (p && p.catch) p.catch(function () { /* autoplay refused: the button stays */ });
+    }
+    function sync() {
+      if (!btn) return;
+      var playing = !v.paused;
+      btn.classList.toggle('is-playing', playing);
+      btn.setAttribute('aria-label', playing ? 'وقّف الفيديو' : 'شغّل الفيديو');
+    }
+    function toggle() {
+      if (v.paused) { userPaused = false; play(); } else { userPaused = true; v.pause(); }
+    }
+    if (btn) { btn.hidden = false; on(btn, 'click', toggle); }
+    on(v, 'click', toggle);
+    on(v, 'play', sync);
+    on(v, 'pause', sync);
+    sync();
+
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var saveData = navigator.connection && navigator.connection.saveData;
+    if (reduce || saveData || !('IntersectionObserver' in window)) return;
+
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { if (!userPaused) play(); }
+        else if (!v.paused) v.pause();
+      });
+    }, { threshold: 0.5 }).observe(v);
+  })();
+
   /* ══ 07 · Sticky mobile CTA ════════════════════════════════════════════
      Up only once BOTH the hero button and the order card are off screen, so the
      opening screen is never two identical CTAs and the bar never covers the

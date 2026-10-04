@@ -157,11 +157,18 @@
       </ul>
 
       <div class="hero__price" data-price-wrap>
-        <p class="oline oline--big" data-offer-line="2" hidden></p>
-        <p class="oline oline--small" data-offer-line="1" hidden></p>
+        <p class="oline oline--big oline--on-green" data-offer-line="2" hidden></p>
+        <p class="oline oline--small oline--on-green" data-offer-line="1" hidden></p>
       </div>
 
       <a class="btn btn--cta btn--block" href="#commander" data-goto>اطلب دابا</a>
+
+      <!-- The client's own policy (2026-10-05): the buyer checks the parcel
+           before paying. Tied to the cash-on-delivery switch like every COD line. -->
+      <p class="inspect" data-cod>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>
+        قلّب الكوموند ديالك عاد خلّص
+      </p>
 
       <p class="hero__note">
         <span data-cod>
@@ -173,6 +180,99 @@
           <span data-delivery></span> <span data-delivery-area hidden></span>
         </span>
       </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 09 · OFFER + ORDER — placed directly under the hero (2026-10-05) ═════
+     Moved up from the brief's ninth place at the client's request: a buyer
+     the banner already convinced should not scroll seven sections to order.
+     The offer card, then the form: offer, name, phone, city. Three fields
+     plus the choice — the address is taken on the confirmation call, as on
+     the other three-field BelleVia pages (the API omits the key, see
+     functions/api/orders.ts). The choice stays inside <form>: script.js reads
+     it from the form's own radios. -->
+<section class="sec sec--sage order" id="commander">
+  <div class="wrap">
+    <div class="deal" data-price-wrap>
+      <p class="deal__tag">عرض خاص</p>
+      <div class="deal__pair" aria-hidden="true">
+        <img class="deal__back" src="./assets/images/brace-cutout-382.webp" width="382" height="636" alt="" loading="lazy" decoding="async">
+        <img class="deal__front" src="./assets/images/brace-cutout-382.webp" width="382" height="636" alt="" loading="lazy" decoding="async">
+      </div>
+      <p class="oline oline--big oline--on-green" data-offer-line="2" hidden></p>
+      <p class="oline oline--small oline--on-green" data-offer-line="1" hidden></p>
+    </div>
+
+    <div class="order__card">
+      <p class="order__lead">عمّر معلوماتك، وغادي نعيطو ليك نأكدو الطلب.</p>
+      <p class="notice" id="order-notice" hidden></p>
+
+      <form id="order-form" novalidate>
+        <div class="fields">
+          <fieldset class="offers" data-price-wrap>
+            <legend>اختر العرض</legend>
+            <div class="offers__list" data-offers></div>
+          </fieldset>
+
+          <p class="field">
+            <label for="fullname">الاسم الكامل</label>
+            <input id="fullname" name="fullname" type="text" autocomplete="name"
+                   enterkeyhint="next" required minlength="2" placeholder="مثلا: عبد الله الحسني">
+            <span class="err" data-err-for="fullname" hidden></span>
+          </p>
+
+          <p class="field">
+            <label for="phone">رقم الهاتف</label>
+            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
+                   enterkeyhint="next" required placeholder="06XXXXXXXX" dir="ltr">
+            <span class="err" data-err-for="phone" hidden></span>
+          </p>
+
+          <p class="field">
+            <!-- A text input with a datalist, not a select: anyone from a town
+                 that is not on the list can simply type its name. -->
+            <label for="city">المدينة</label>
+            <input id="city" name="city" type="text" list="cities" autocomplete="address-level2"
+                   enterkeyhint="done" required minlength="2" placeholder="قلّب على مدينتك ولا كتبها">
+            <datalist id="cities"></datalist>
+            <span class="err" data-err-for="city" hidden></span>
+          </p>
+        </div>
+
+        <p class="sum">
+          <span>المجموع</span>
+          <b data-sum-total>—</b>
+        </p>
+
+        <p class="err err--form" id="form-error" hidden></p>
+
+        <button class="btn btn--cta btn--block" type="submit" id="submit">
+          اطلب دابا — <span data-sum-short>—</span>
+        </button>
+
+        <!-- The client's own policy (2026-10-05): the buyer checks the parcel
+             before paying. Tied to the cash-on-delivery switch like every COD line. -->
+        <p class="inspect" data-cod>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>
+          قلّب الكوموند ديالك عاد خلّص
+        </p>
+
+        <p class="safe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10" width="15" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+          معلوماتك آمنة — كنستعملوها غير باش نأكدو معاك الطلب.
+        </p>
+      </form>
+
+      <!-- Shown only once the server confirms. The page never claims an order
+           that the API did not commit. -->
+      <div class="done" id="order-done" hidden>
+        <p class="done__tick" aria-hidden="true">✓</p>
+        <h3>الطلب ديالك تسجل</h3>
+        <p class="done__num">رقم الطلب: <b class="ltr" id="order-number"></b></p>
+        <p>غادي نعيطو ليك فالرقم اللي عطيتينا باش نأكدو معاك الطلب والعنوان.</p>
+        <button class="btn btn--ghost" type="button" id="order-again">طلب جديد</button>
+      </div>
     </div>
   </div>
 </section>
@@ -226,7 +326,7 @@
      on the cutout: top strap (300,140), side hinge (285,330), patella opening
      (95,315), fabric (90,425). The SVG and the labels share one 1000×820 box,
      so they scale together at every width. -->
-<section class="sec sec--mint solution">
+<section class="sec sec--sage solution">
   <div class="wrap">
     <header class="sec__head">
       <h2>ثبات لركبتك… وحرية&nbsp;لحركتك</h2>
@@ -254,6 +354,29 @@
       <span class="anat__lbl anat__lbl--r" style="top:57.3%">مفصلات معدنية على الجانبين</span>
       <span class="anat__lbl anat__lbl--l" style="top:40.2%">فتحة للرضفة</span>
       <span class="anat__lbl anat__lbl--l" style="top:73.2%">نسيج مهوّى ومريح</span>
+    </figure>
+
+    <!-- The product video: the brace turning on a dark set, the sleeve from
+         above, the hinge in macro — the same object as the callouts above,
+         seen moving. Square, silent, 331KB (tools/build-assets.mjs, "video").
+         preload="none": nothing is fetched until it scrolls into view, where
+         script.js plays it; it never autoplays on a data-saver connection or
+         for a reader who asked for reduced motion — they get the poster and a
+         play button. The button also pauses it: anything moving for more than
+         five seconds has to be stoppable. -->
+    <figure class="clip">
+      <div class="clip__frame">
+        <video class="clip__video" muted loop playsinline preload="none"
+               poster="./assets/images/brace-spin-poster-720.webp" width="720" height="720"
+               aria-label="فيديو: دعامة الركبة الاحترافية كتدور، من القدّام، من الداخل، والمفصل المعدني من قريب">
+          <source src="./assets/video/brace-spin-720.mp4" type="video/mp4">
+        </video>
+        <button class="clip__toggle" type="button" data-clip-toggle hidden aria-label="شغّل الفيديو">
+          <svg class="clip__play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
+          <svg class="clip__pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
+        </button>
+      </div>
+      <figcaption>شوف الدعامة من كل جهة</figcaption>
     </figure>
   </div>
 </section>
@@ -315,7 +438,7 @@
      The supplier's fitting photos ①②③, each with its own green number burned
      in — so the page draws no second number. ④ (checking the fit) is the
      fourth photo of that row and is not needed for three steps. -->
-<section class="sec sec--mint howto">
+<section class="sec sec--sage howto">
   <div class="wrap">
     <header class="sec__head">
       <h2>كيفاش تلبسها؟ 3 خطوات</h2>
@@ -372,89 +495,6 @@
   </div>
 </section>
 
-<!-- ═══ 09 · OFFER + ORDER ══════════════════════════════════════════════════
-     The offer card, then the form: offer, name, phone, city. Three fields
-     plus the choice — the address is taken on the confirmation call, as on
-     the other three-field BelleVia pages (the API omits the key, see
-     functions/api/orders.ts). The choice stays inside <form>: script.js reads
-     it from the form's own radios. -->
-<section class="sec sec--mint order" id="commander">
-  <div class="wrap">
-    <div class="deal" data-price-wrap>
-      <p class="deal__tag">عرض خاص</p>
-      <div class="deal__pair" aria-hidden="true">
-        <img class="deal__back" src="./assets/images/brace-cutout-382.webp" width="382" height="636" alt="" loading="lazy" decoding="async">
-        <img class="deal__front" src="./assets/images/brace-cutout-382.webp" width="382" height="636" alt="" loading="lazy" decoding="async">
-      </div>
-      <p class="oline oline--big oline--on-green" data-offer-line="2" hidden></p>
-      <p class="oline oline--small oline--on-green" data-offer-line="1" hidden></p>
-    </div>
-
-    <div class="order__card">
-      <p class="order__lead">عمّر معلوماتك، وغادي نعيطو ليك نأكدو الطلب.</p>
-      <p class="notice" id="order-notice" hidden></p>
-
-      <form id="order-form" novalidate>
-        <div class="fields">
-          <fieldset class="offers" data-price-wrap>
-            <legend>اختر العرض</legend>
-            <div class="offers__list" data-offers></div>
-          </fieldset>
-
-          <p class="field">
-            <label for="fullname">الاسم الكامل</label>
-            <input id="fullname" name="fullname" type="text" autocomplete="name"
-                   enterkeyhint="next" required minlength="2" placeholder="مثلا: عبد الله الحسني">
-            <span class="err" data-err-for="fullname" hidden></span>
-          </p>
-
-          <p class="field">
-            <label for="phone">رقم الهاتف</label>
-            <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
-                   enterkeyhint="next" required placeholder="06XXXXXXXX" dir="ltr">
-            <span class="err" data-err-for="phone" hidden></span>
-          </p>
-
-          <p class="field">
-            <!-- A text input with a datalist, not a select: anyone from a town
-                 that is not on the list can simply type its name. -->
-            <label for="city">المدينة</label>
-            <input id="city" name="city" type="text" list="cities" autocomplete="address-level2"
-                   enterkeyhint="done" required minlength="2" placeholder="قلّب على مدينتك ولا كتبها">
-            <datalist id="cities"></datalist>
-            <span class="err" data-err-for="city" hidden></span>
-          </p>
-        </div>
-
-        <p class="sum">
-          <span>المجموع</span>
-          <b data-sum-total>—</b>
-        </p>
-
-        <p class="err err--form" id="form-error" hidden></p>
-
-        <button class="btn btn--cta btn--block" type="submit" id="submit">
-          اطلب دابا — <span data-sum-short>—</span>
-        </button>
-
-        <p class="safe">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10" width="15" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
-          معلوماتك آمنة — كنستعملوها غير باش نأكدو معاك الطلب.
-        </p>
-      </form>
-
-      <!-- Shown only once the server confirms. The page never claims an order
-           that the API did not commit. -->
-      <div class="done" id="order-done" hidden>
-        <p class="done__tick" aria-hidden="true">✓</p>
-        <h3>الطلب ديالك تسجل</h3>
-        <p class="done__num">رقم الطلب: <b class="ltr" id="order-number"></b></p>
-        <p>غادي نعيطو ليك فالرقم اللي عطيتينا باش نأكدو معاك الطلب والعنوان.</p>
-        <button class="btn btn--ghost" type="button" id="order-again">طلب جديد</button>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- ═══ 10 · FAQ ═════════════════════════════════════════════════════════════
      The brief's list was cut off after its first question. Every answer here
@@ -473,7 +513,7 @@
       </details>
       <details class="qa" data-cod>
         <summary>كيفاش كنخلص؟</summary>
-        <p>الدفع عند الاستلام: كتخلص ملي توصلك الدعامة ليدك.</p>
+        <p>الدفع عند الاستلام: كتوصلك الدعامة، كتقلّب الكوموند ديالك، وعاد كتخلّص.</p>
       </details>
       <details class="qa" data-delivery-row hidden>
         <summary>شحال كيكلف التوصيل؟</summary>
