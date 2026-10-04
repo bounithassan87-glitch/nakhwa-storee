@@ -91,4 +91,12 @@ window.GENOUILLERE_CONFIG = {
     'الصخيرات', 'بوزنيقة', 'الحاجب', 'قلعة السراغنة', 'اليوسفية', 'طاطا',
     'تيزنيت', 'سيدي إفني', 'بيوكرى', 'أولاد تايمة', 'الرماني', 'تيفلت',
   ],
+
+  /* «آراء زبنائنا». EMPTY = the section is not shown at all.
+     Only a real customer's own words, with their permission. A card needs
+     a name and a text; city, rating (1–5) and photo are optional — and a
+     photo only with the customer's consent. Never invent one: under cash on
+     delivery a fake review is the one thing that costs the store its trust.
+       { name: 'سعيد', city: 'فاس', rating: 5, text: '…', photo: './assets/images/review-1.webp' }, */
+  reviews: [],
 };

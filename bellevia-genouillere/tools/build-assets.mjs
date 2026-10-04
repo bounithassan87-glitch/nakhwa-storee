@@ -200,6 +200,34 @@ const F = {
   sofa: "sofa-fitting.webp",
   walker: "walker-poles.webp",
   lunge: "lunge-panel.webp",
+
+  /* ── Fifth batch, 2026-10-04: the redesign ────────────────────────────────
+     Thirteen files came with the redesign brief. Six are clean photography
+     (1493×2000, no text); the rest are finished graphics.
+
+     climber.jpg          A man climbing a rock face, brace on the bent knee.
+                          → the HERO. Sharp at full size, and «تحرّك بلا حدود»
+                          is the picture.
+     senior-walk.jpg      An older woman walking in a park. → «كبار السن».
+     runner-sunset.jpg    A woman running on a waterfront at sunset. → «عشاق الجري».
+     footballer-green.jpg A player in a green-and-white kit. → «الرياضيين».
+     banner-hiker.jpg     A sales banner, 2000×1116. → «المشي والجبال»: the hiker
+                          only, x 1080–1584, between the text panel and the side
+                          photos. ⚠️ NOT built — the panel itself, whose icon row
+                          reads «تقليل الألم والضغط».
+
+     Not copied here, and not built (the brief's own files, kept in chat):
+     the gym lunge and the tennis player (clean, simply not needed for four
+     tiles); an «المكونات والفوائد» text panel with «تخفيف الألم، تقليل التورم
+     وتسريع الشفاء» and a garbled line («للاياخببى»); a BelleVia infographic
+     whose benefits column repeats those claims beside a red-glow knee; a
+     close-up under a brush slogan; and an offer banner with a typo («عرّ خاص»)
+     and a STRUCK-THROUGH 180 — a fake discount, which this page never shows. */
+  climber: "climber.jpg",
+  seniorWalk: "senior-walk.jpg",
+  runnerSunset: "runner-sunset.jpg",
+  footballGreen: "footballer-green.jpg",
+  hikerBanner: "banner-hiker.jpg",
 };
 
 /** `node build-assets.mjs scenes angles` runs just those steps; no args, all. */
@@ -406,6 +434,47 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
         .toFile(join(IMG, `offer-art-${w}.webp`));
       console.log(`  offer-art-${w}.webp  ${info.width}×${info.height}  ${(info.size / 1024).toFixed(0)}KB`);
     }
+  }
+
+  /* ── The redesign (fifth batch) ──────────────────────────────────────────
+     Boxes measured on a grid over each source. The four «لمن؟» tiles are 2:3,
+     which is the tallest box the hiker allows (see below); the 1493×2000
+     photographs lose 80px a side, and every subject is centred. */
+  if (want("redesign")) {
+    console.log("redesign:");
+    // Head to foot plus the rock face beside him, 4:5. 960 is the box's own
+    // width, so the large file is the crop at 1:1. 720 exists for the 2× phone:
+    // the LCP image, and the rock texture makes the 960 file 213KB.
+    await webp("climber", "hero-climb", [480, 720, 960], {
+      extract: { left: 400, top: 190, width: 960, height: 1200 },
+      quality: 82,
+    });
+    const TILE = { left: 80, top: 0, width: 1333, height: 2000 };
+    await webp("footballGreen", "who-sport", [360, 720], { extract: TILE, quality: 80 });
+    await webp("runnerSunset", "who-run", [360, 720], { extract: TILE, quality: 80 });
+    await webp("seniorWalk", "who-senior", [360, 720], { extract: TILE, quality: 80 });
+    // The hiker alone. Both neighbours are SLANTED, so both edges were traced
+    // row by row, not read off the grid: the text panel ends at x≈1074 at the
+    // top and leans away below; the side photos' white frame starts at x≥1590
+    // (a grid estimate of 1635 let it in from half-way down). 504 wide at 2:3
+    // reaches y=756 — head to ankles, both braces whole; 3:4 would have cut
+    // the lower brace at y=672.
+    await webp("hikerBanner", "who-hike", [360, 504], {
+      extract: { left: 1080, top: 0, width: 504, height: 756 },
+      quality: 82,
+    });
+    // «المشكل»: the sofa photograph, now WITH his face — the problem section
+    // is the one place a concerned look belongs. 4:5, face to brace.
+    await webp("sofa", "problem-sofa", [480, 870], {
+      extract: { left: 420, top: 0, width: 870, height: 1086 },
+      quality: 82,
+    });
+    // The keyed product (tools/build-ad.mjs), alpha kept, for the callout
+    // figure and the pair in the offer card.
+    const cut = await sharp(join(here, "unit-cutout.png"))
+      .webp({ quality: 88, alphaQuality: 100 })
+      .toFile(join(IMG, "brace-cutout-382.webp"));
+    console.log(`  brace-cutout-382.webp  ${cut.width}×${cut.height}  ${(cut.size / 1024).toFixed(0)}KB`);
   }
 
   /* ── Shared brand assets ─────────────────────────────────────────────────
