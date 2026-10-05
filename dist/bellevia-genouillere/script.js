@@ -117,7 +117,11 @@
       var o = OFFERS.filter(function (x) { return x.qty === qty; })[0];
       if (!o) { el.remove(); return; }
       el.textContent = '';
-      [['oline__q', o.qty + ' بـ'], ['oline__n', String(o.price)], ['oline__c', CFG.currency]].forEach(function (p) {
+      [['oline__q', o.qty + ' بـ'], ['oline__n', String(o.price)], ['oline__c', CFG.currency]].forEach(function (p, i) {
+        // A space between the parts: the flex gap spaces them on screen, the
+        // space is for anything that reads the text («2 بـ 300 درهم», not
+        // «2 بـ300درهم») — a screen reader, a share preview, a crawler.
+        if (i) el.appendChild(document.createTextNode(' '));
         var s = document.createElement('span');
         s.className = p[0];
         s.textContent = p[1];
@@ -142,9 +146,14 @@
     /* The chooser. Built from config rather than typed into the HTML, so a
        price can never disagree with the label beside it. Real radios in a real
        fieldset: arrow keys work, the group is one tab stop, and a screen reader
-       announces "1 of 2" without a line of ARIA. */
+       announces "1 of 2" without a line of ARIA. index.html carries the same
+       radios pre-rendered, so the chooser is there before this runs; a choice
+       made in that moment survives the rebuild. */
     var box = $('[data-offers]');
     if (!box) return;
+    var early = $('input[name="offer"]:checked', box);
+    var keep = early ? early.value : '';
+    if (!OFFERS.some(function (o) { return String(o.qty) === keep; })) keep = String(OFFERS[0].qty);
     box.textContent = '';
 
     OFFERS.forEach(function (o, i) {
@@ -155,7 +164,7 @@
       input.name = 'offer';
       input.value = String(o.qty);
       input.className = 'pick__radio';
-      if (i === 0) input.checked = true;
+      if (String(o.qty) === keep) input.checked = true;
 
       var name = document.createElement('span');
       name.className = 'pick__name';
@@ -352,7 +361,9 @@
        A pack ladder, not a multiplier: the catalogue prices 1 at 180 and 2 at
        300 and sells no other quantity, so the total is the row's own price —
        never unit × quantity, which would quote 360 for the pair. */
-    var picked = OFFERS.length ? OFFERS[0] : null;
+    var checkedNow = $('input[name="offer"]:checked', form);
+    var picked = (checkedNow && OFFERS.filter(function (o) { return String(o.qty) === checkedNow.value; })[0])
+      || (OFFERS.length ? OFFERS[0] : null);
 
     function renderTotal() {
       var text = picked ? money(picked.price) : '—';
@@ -629,17 +640,21 @@
   })();
 
   /* ══ 06b · Product video ═══════════════════════════════════════════════
-     preload="none" in the HTML, so nothing is fetched until it is wanted.
-     It plays once half of it is on screen and pauses when it leaves — never
-     burning a visitor's data while they read the form. It does NOT autoplay
-     on a data-saver connection or for a reader who asked for reduced motion:
-     they see the poster, and the button plays it. A visitor who pauses it
-     keeps it paused; scrolling back does not overrule them. */
+     The markup says autoplay + muted + playsinline, so it plays on iPhone and
+     Android even if this script never runs. When it does run, it takes over:
+     the video plays only while half of it is on screen and pauses when it
+     leaves — the browser's own autoplay would start it far below the fold,
+     burning battery while the visitor reads the form. On a data-saver
+     connection or for a reader who asked for reduced motion it stays on the
+     poster, and the button plays it. A visitor who pauses it keeps it paused;
+     scrolling back does not overrule them. */
   (function productVideo() {
     var v = $('.clip__video');
     if (!v) return;
     var btn = $('[data-clip-toggle]');
     var userPaused = false;
+    var userPlayed = false; // a tap on play wins even if under half is in view
+    var inView = false;
 
     function play() {
       var p = v.play();
@@ -652,7 +667,8 @@
       btn.setAttribute('aria-label', playing ? 'وقّف الفيديو' : 'شغّل الفيديو');
     }
     function toggle() {
-      if (v.paused) { userPaused = false; play(); } else { userPaused = true; v.pause(); }
+      if (v.paused) { userPaused = false; userPlayed = true; play(); }
+      else { userPaused = true; userPlayed = false; v.pause(); }
     }
     if (btn) { btn.hidden = false; on(btn, 'click', toggle); }
     on(v, 'click', toggle);
@@ -662,12 +678,21 @@
 
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var saveData = navigator.connection && navigator.connection.saveData;
-    if (reduce || saveData || !('IntersectionObserver' in window)) return;
+    if (reduce || saveData) { v.removeAttribute('autoplay'); v.pause(); return; }
+    if (!('IntersectionObserver' in window)) return; // the markup's autoplay stands
+
+    // From here this script decides when it plays. The browser's autoplay can
+    // still fire after this line (it waits for data), so any start while off
+    // screen is undone the moment it happens.
+    v.removeAttribute('autoplay');
+    if (!v.paused) v.pause();
+    on(v, 'play', function () { if (!inView && !userPlayed) v.pause(); });
 
     new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (en.isIntersecting) { if (!userPaused) play(); }
-        else if (!v.paused) v.pause();
+        inView = en.isIntersecting;
+        if (inView) { if (!userPaused) play(); }
+        else { userPlayed = false; if (!v.paused) v.pause(); }
       });
     }, { threshold: 0.5 }).observe(v);
   })();

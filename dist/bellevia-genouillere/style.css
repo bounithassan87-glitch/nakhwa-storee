@@ -153,6 +153,9 @@ fieldset { border: 0; min-width: 0; }
 h2 { font-size: clamp(24px, 6.6vw, 32px); font-weight: 800; line-height: 1.35; }
 h3 { font-size: 18px; font-weight: 800; line-height: 1.4; }
 .sec__sub { margin-top: 8px; color: var(--muted); }
+/* Headings and the short lines under them break into even lines rather than
+   leaving one word alone on the last («…ولات / صعيبة.»). */
+h1, h2, h3, .sec__sub, .problem__text, .steps__note, .hero__sub { text-wrap: balance; }
 
 /* A thin green line icon on a mint disc — the one icon style on the page. */
 .ic {
@@ -231,14 +234,17 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 
 /* ── 08 · Trust bar ─────────────────────────────────────────────────────── */
 .tbar { background: var(--green); color: #fff; }
-.tbar__list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; padding-block: 16px; }
-.tbar__list li { display: flex; align-items: center; gap: 8px; font-size: var(--fs-sm); font-weight: 700; line-height: 1.35; }
+/* Three facts, each once: icon over two short lines on a phone, one row on
+   a desktop. */
+.tbar__list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-block: 16px; }
+.tbar__list li {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  font-size: var(--fs-sm); font-weight: 700; line-height: 1.35;
+}
 .tbar__list svg { width: 22px; height: 22px; flex: none; }
 
 /* ── 09 · Problem ───────────────────────────────────────────────────────── */
 .problem { text-align: center; }
-.problem__shot img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--r); }
-.problem h2 { margin-top: 26px; }
 .problem__text { margin-top: 10px; color: var(--ink-2); }
 
 /* ── 10 · Solution: the product with four callouts ──────────────────────────
@@ -273,13 +279,14 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 }
 
 /* ── 12 · How to wear ───────────────────────────────────────────────────────
-   The fitting photos are ~178px wide at source; at 128px they stay sharp. */
+   The fitting photos are ~178px wide at source; at 128px they stay sharp.
+   178:126 keeps each photo's number badge whole. */
 .steps { display: grid; gap: 12px; }
 .step {
   display: grid; grid-template-columns: 128px 1fr; gap: 14px; align-items: center;
   background: #fff; border-radius: var(--r); padding: 12px; box-shadow: var(--sh);
 }
-.step img { width: 128px; aspect-ratio: 178 / 116; object-fit: cover; border-radius: var(--r-sm); }
+.step img { width: 128px; aspect-ratio: 178 / 126; object-fit: cover; border-radius: var(--r-sm); }
 .step p { margin-top: 4px; font-size: var(--fs-sm); color: var(--ink-2); line-height: 1.6; }
 .steps__note { margin-top: 18px; font-size: var(--fs-sm); color: var(--muted); text-align: center; }
 
@@ -425,7 +432,8 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 }
 @media (min-width: 900px) {
   .tbar .wrap { max-width: 1000px; }
-  .tbar__list { grid-template-columns: repeat(4, auto); justify-content: center; gap: 12px 40px; }
+  .tbar__list { grid-template-columns: repeat(3, auto); justify-content: center; gap: 12px 48px; }
+  .tbar__list li { flex-direction: row; gap: 8px; }
 }
 
 /* ── 19 · «قلّب الكوموند ديالك عاد خلّص» ─────────────────────────────────────
