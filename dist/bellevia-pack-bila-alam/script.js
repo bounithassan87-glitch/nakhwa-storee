@@ -20,7 +20,6 @@
     oldPrice: String(RAW.oldPrice || '').trim(),
     currency: String(RAW.currency || 'درهم').trim(),
     currencyCode: String(RAW.currencyCode || 'MAD').trim().toUpperCase(),
-    maxQuantity: Math.max(1, Math.min(10, parseInt(RAW.maxQuantity, 10) || 5)),
     delivery: String(RAW.delivery || '').trim(),
     deliveryTime: String(RAW.deliveryTime || '').trim(),
     cashOnDelivery: RAW.cashOnDelivery !== false,
@@ -31,6 +30,16 @@
   /** Digits only counts as a number; anything else is text the client wrote. */
   function numeric(v) { return /^\d+(?:[.,]\d+)?$/.test(v) ? parseFloat(v.replace(',', '.')) : null; }
   var UNIT = numeric(CFG.price);
+
+  /** config.offers, kept only where both the quantity and the total are real
+      numbers. Each price is the offer's whole total, not a unit price. */
+  var OFFERS = (Array.isArray(RAW.offers) ? RAW.offers : []).map(function (o) {
+    return {
+      qty: parseInt(o && o.qty, 10),
+      price: numeric(String((o && o.price) || '').trim()),
+      name: String((o && o.name) || '').trim(),
+    };
+  }).filter(function (o) { return o.qty > 0 && o.price !== null; });
 
   /** "329 درهم" — an Arabic phrase, so it inherits the page's RTL. */
   function money(n) {
@@ -88,6 +97,43 @@
         ld.textContent = JSON.stringify(data);
       } catch (err) { /* a malformed block is not worth breaking the page over */ }
     }
+  })();
+
+  /* ══ 02b · Offers ══════════════════════════════════════════════════════
+     The picks in the form and the «جوج باكات» lines are written from
+     config.offers, and the saving is computed — (2 × 329) − 549 — never typed,
+     so changing a price cannot leave a stale «وفّر» behind. */
+  (function offers() {
+    var single = null;
+    OFFERS.forEach(function (o) { if (o.qty === 1) single = o.price; });
+
+    function saving(o) {
+      return single === null || o.qty < 2 ? 0 : single * o.qty - o.price;
+    }
+
+    $$('input[name="offer"]').forEach(function (radio) {
+      var o = null;
+      OFFERS.forEach(function (x) { if (x.qty === parseInt(radio.value, 10)) o = x; });
+      var label = radio.closest('.pick');
+      if (!o) { if (label) label.remove(); return; }
+      if (!label) return;
+      var name = $('.pick__name', label); var price = $('.pick__price', label); var save = $('.pick__save', label);
+      if (name && o.name) name.textContent = o.name;
+      if (price) price.textContent = money(o.price);
+      var s = saving(o);
+      if (save) { save.textContent = 'وفّر ' + money(s); save.hidden = s <= 0; }
+    });
+
+    var two = null;
+    OFFERS.forEach(function (o) { if (o.qty === 2) two = o; });
+    $$('[data-offer-two]').forEach(function (el) {
+      if (!two) { el.hidden = true; return; }
+      var s = saving(two);
+      el.innerHTML = '';
+      el.appendChild(document.createTextNode((two.name || 'جوج باكات') + ' بـ '));
+      var b = document.createElement('b'); b.textContent = money(two.price); el.appendChild(b);
+      if (s > 0) el.appendChild(document.createTextNode(' · وفّر ' + money(s)));
+    });
   })();
 
   /* ══ 03 · Contact ══════════════════════════════════════════════════════ */
@@ -162,34 +208,32 @@
     var doneAgain = $('#order-again');
     var notice = $('#order-notice');
 
-    /* ── Quantity ────────────────────────────────────────────────────────
-       A plain multiplier, not a pack ladder: the catalogue prices this product
-       at a unit price and the server bills unit × quantity, so anything else on
-       screen would be a number the customer is not actually charged. */
+    /* ── Offer: one pack or two ──────────────────────────────────────────
+       The server prices this product from PACK_PRICING and sells it in these
+       quantities only, so the form offers exactly config.offers and the total
+       shown is the offer's own total, never unit × quantity. */
     var qty = 1;
-    var qtyOut = $('[data-qty-value]');
-    var qtyHint = $('[data-qty-hint]');
+
+    function offerTotal(q) {
+      for (var i = 0; i < OFFERS.length; i++) if (OFFERS[i].qty === q) return OFFERS[i].price;
+      return UNIT === null ? null : UNIT * q;
+    }
 
     function renderTotal() {
-      var total = UNIT === null ? null : UNIT * qty;
+      var total = offerTotal(qty);
       var text = total === null ? '[PRICE]' : money(total);
-      if (qtyOut) qtyOut.textContent = String(qty);
       $$('[data-sum-total]').forEach(function (el) { el.textContent = text; });
       $$('[data-sum-short]').forEach(function (el) { el.textContent = text; });
-      if (qtyHint) {
-        qtyHint.textContent = UNIT === null || qty < 2 ? '' : qty + ' × ' + money(UNIT);
-      }
-      var down = $('[data-qty-down]'); var up = $('[data-qty-up]');
-      if (down) down.disabled = qty <= 1;
-      if (up) up.disabled = qty >= CFG.maxQuantity;
     }
 
-    function setQty(n) {
-      qty = Math.max(1, Math.min(CFG.maxQuantity, n));
-      renderTotal();
-    }
-    on($('[data-qty-down]'), 'click', function () { setQty(qty - 1); });
-    on($('[data-qty-up]'), 'click', function () { setQty(qty + 1); });
+    $$('input[name="offer"]', form).forEach(function (radio) {
+      if (radio.checked) qty = parseInt(radio.value, 10) || 1;
+      on(radio, 'change', function () {
+        if (!radio.checked) return;
+        qty = parseInt(radio.value, 10) || 1;
+        renderTotal();
+      });
+    });
     renderTotal();
 
     /* ── Validation ────────────────────────────────────────────────────── */
@@ -346,7 +390,7 @@
          optimises against revenue that does not match the sale. */
       var value = result && result.total != null
         ? result.total / 100
-        : (UNIT === null ? undefined : UNIT * qty);
+        : (offerTotal(qty) === null ? undefined : offerTotal(qty));
       var currency = (result && result.currency) || CFG.currencyCode;
 
       trackPixel('Lead', {
@@ -381,7 +425,9 @@
       if (done) done.hidden = true;
       if (notice) notice.hidden = !DEMO;
       form.hidden = false;
-      setQty(1);
+      // form.reset() puts the radios back on their default (one pack).
+      qty = 1;
+      renderTotal();
       // A second order in the same page view is a different conversion.
       leadEventId = newEventId();
       purchaseEventId = newEventId();
@@ -417,7 +463,7 @@
          customer who mistypes a phone number, corrects it and resubmits is one
          checkout, not two. */
       trackBoth('InitiateCheckout', {
-        value: UNIT === null ? undefined : UNIT * qty,
+        value: offerTotal(qty) === null ? undefined : offerTotal(qty),
         currency: CFG.currencyCode,
         content_type: CONTENT.content_type,
         contents: [{ id: CFG.productSlug, quantity: qty }],

@@ -34,7 +34,7 @@
       imagesrcset="./assets/images/pack-duo-420.webp 420w, ./assets/images/pack-duo-836.webp 836w"
       imagesizes="(min-width: 900px) 410px, (min-width: 720px) 42vw, 74vw" fetchpriority="high">
 
-<link rel="stylesheet" href="./style.css?v=5ad8ebc814">
+<link rel="stylesheet" href="./style.css?v=9eaabbf90d">
 
 <script type="application/ld+json" id="ld-product">
 {
@@ -234,6 +234,7 @@
           <s data-old-price hidden></s>
         </span>
       </p>
+      <p class="offer-two" data-offer-two>جوج باكات بـ <b>549 درهم</b> · وفّر 109 درهم</p>
       <ul class="offer-line__facts">
         <li data-delivery hidden></li>
         <li data-delivery-time hidden></li>
@@ -301,15 +302,17 @@
             <span class="err" data-err-for="address" hidden></span>
           </p>
 
-          <div class="field field--qty">
-            <label for="qty-value">الكمية</label>
-            <div class="qty">
-              <button type="button" class="qty__btn" data-qty-down aria-label="نقّص الكمية">−</button>
-              <output class="qty__value ltr" id="qty-value" data-qty-value aria-live="polite">1</output>
-              <button type="button" class="qty__btn" data-qty-up aria-label="زيد الكمية">+</button>
+          <!-- The two offers, and nothing else: the server sells this product in
+               exactly these quantities (PACK_PRICING) and refuses any other.
+               Prices are written here so they show before JS; script.js
+               rewrites both from config.offers. -->
+          <fieldset class="offers" data-offers>
+            <legend>اختار العرض ديالك</legend>
+            <div class="offers__list">
+              <label class="pick"><input type="radio" name="offer" value="1" class="pick__radio" checked><span class="pick__box"><span class="pick__head"><span class="pick__name">باك واحد</span><b class="pick__price">329 درهم</b></span></span></label>
+              <label class="pick"><input type="radio" name="offer" value="2" class="pick__radio"><span class="pick__box"><span class="pick__head"><span class="pick__name">جوج باكات</span><b class="pick__price">549 درهم</b></span><span class="pick__save">وفّر 109 درهم</span></span></label>
             </div>
-            <p class="qty__hint" data-qty-hint></p>
-          </div>
+          </fieldset>
         </div>
 
         <p class="sum">
@@ -720,6 +723,7 @@
         <b data-price-main>—</b>
         <s data-old-price hidden></s>
       </p>
+      <p class="offer-two offer-two--on-dark" data-offer-two>جوج باكات بـ <b>549 درهم</b> · وفّر 109 درهم</p>
       <ul class="offer__facts">
         <li data-delivery hidden></li>
         <li data-delivery-time hidden></li>
@@ -749,7 +753,7 @@
 
       <details class="qa">
         <summary>شحال الثمن؟</summary>
-        <p>الباك كامل بـ <b data-price-main>—</b> <s data-old-price hidden></s>. <span data-delivery hidden></span></p>
+        <p>الباك كامل بـ <b data-price-main>—</b> <s data-old-price hidden></s>. <span data-offer-two>جوج باكات بـ <b>549 درهم</b> · وفّر 109 درهم</span>. <span data-delivery hidden></span></p>
       </details>
 
       <details class="qa">
@@ -824,8 +828,8 @@
      exposes window.nkTrack. Same file, same pixel, same Conversions API as the
      main store — this page adds no second tracking system. -->
 <script src="/nk-track.js?v=7346ea4921" defer></script>
-<script src="./config.js?v=3b447acc2b" defer></script>
+<script src="./config.js?v=db2adead9f" defer></script>
 <script src="/assets/js/order-form.js?v=06462e8d67" defer></script>
-<script src="./script.js?v=bce9fba726" defer></script>
+<script src="./script.js?v=75771ae087" defer></script>
 </body>
 </html>
