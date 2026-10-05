@@ -12,6 +12,7 @@
 //
 // Run after the other build steps: node scripts/copy-landing-pages.mjs
 import { cpSync, existsSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { LANDING_PAGES } from "../shared/landing-pages.js";
@@ -85,6 +86,23 @@ for (const name of PAGES) {
     // reported rather than left to be found later.
     out = out.split("__ORIGIN__").join(origin);
     if (out.includes("__ORIGIN__")) console.warn(`[copy-landing-pages] ${name}: unstamped __ORIGIN__ remains`);
+
+    // Every same-origin stylesheet and script gets ?v=<its own hash>. Pages
+    // serves them with max-age=14400 and the HTML with max-age=0, so without
+    // this a phone that opened the page in the last four hours runs the NEW
+    // html against the OLD css and js. On 2026-10-05 that hid the knee brace
+    // hero's price (white text on the old white ground) and left its new
+    // video without the script that drives it. The hash only changes when the
+    // file does, so an unchanged file stays cached.
+    out = out.replace(/(<(?:link|script)\b[^>]*?\s(?:href|src)=")([^"?#:]+\.(?:css|js))(")/g, (m, a, url, c) => {
+      const file = url.startsWith("/") ? join(root, url) : join(dest, url);
+      if (!existsSync(file)) {
+        console.warn(`[copy-landing-pages] ${name}: ${url} not found — left unversioned`);
+        return m;
+      }
+      const v = createHash("sha256").update(readFileSync(file)).digest("hex").slice(0, 10);
+      return `${a}${url}?v=${v}${c}`;
+    });
 
     writeFileSync(html, out);
   }

@@ -407,8 +407,11 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
       ["step-check", 64],     // ④ checking the fit               — leftmost
     ];
     for (const [name, left] of STEP) {
+      // From y=848: each photo's number badge starts at y=850 and the row
+      // title's lowest ink ends at y=847. Starting at 858 (until 2026-10-05)
+      // sliced the top off every badge.
       await webp("poster", name, [178], {
-        extract: { left, top: 858, width: 178, height: 116 },
+        extract: { left, top: 848, width: 178, height: 126 },
         quality: 86,
       });
     }
@@ -445,11 +448,13 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
      photographs lose 80px a side, and every subject is centred. */
   if (want("redesign")) {
     console.log("redesign:");
-    // Head to foot plus the rock face beside him, 4:5. 960 is the box's own
-    // width, so the large file is the crop at 1:1. 720 exists for the 2× phone:
-    // the LCP image, and the rock texture makes the 960 file 213KB.
-    await webp("climber", "hero-climb", [480, 720, 960], {
-      extract: { left: 400, top: 190, width: 960, height: 1200 },
+    // Head to foot plus the rock face beside him, 4:5. 1080 is the box's own
+    // width, so the large file is the crop at 1:1 — for the 3× phone, which
+    // wants ~1050px (2026-10-05; the box was 960 wide at 400,190 before, and
+    // grew 60/75px a side, centred, to reach 1080 without enlarging a pixel).
+    // 720 exists for the 2× phone.
+    await webp("climber", "hero-climb", [480, 720, 960, 1080], {
+      extract: { left: 340, top: 115, width: 1080, height: 1350 },
       quality: 82,
     });
     // The client's banner, WHOLE (2026-10-05: «dir hadi f lhero kima hiya»).
@@ -474,8 +479,10 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
       extract: { left: 1080, top: 0, width: 504, height: 756 },
       quality: 82,
     });
-    // «المشكل»: the sofa photograph, now WITH his face — the problem section
-    // is the one place a concerned look belongs. 4:5, face to brace.
+    // «المشكل»: the sofa photograph, WITH his face. NOT SHOWN since
+    // 2026-10-05: he is wearing the brace, and the problem section is about
+    // the knee before it. No supplier photo shows a bare knee except
+    // before-after.jpg's red-glow half, which stays excluded (see above).
     await webp("sofa", "problem-sofa", [480, 870], {
       extract: { left: 420, top: 0, width: 870, height: 1086 },
       quality: 82,
