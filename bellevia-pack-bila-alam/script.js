@@ -287,6 +287,12 @@
     var purchaseEventId = newEventId();
 
     function payload() {
+      // Click ids for the server-side Lead and Purchase. Without them Meta gets
+      // the conversion but cannot tie it to the ad click (no fbc), which is what
+      // Events Manager flagged. Absent if nk-track.js was blocked; the order is
+      // unaffected either way.
+      var u = {};
+      try { if (window.nkTrack && window.nkTrack.userData) u = window.nkTrack.userData() || {}; } catch (e) { /* never block */ }
       return {
         productSlug: CFG.productSlug,
         // Joins this order to the funnel events from the same visit, so the
@@ -314,6 +320,12 @@
         // order from the catalogue and would discard one if it were.
         eventId: leadEventId,
         purchaseEventId: purchaseEventId,
+        fbp: u.fbp,
+        fbc: u.fbc,
+        externalId: u.externalId,
+        // The API caps this at 500 chars and rejects the whole order past it;
+        // a long ad link must never cost a sale, so drop it instead.
+        eventSourceUrl: u.eventSourceUrl && u.eventSourceUrl.length <= 500 ? u.eventSourceUrl : undefined,
       };
     }
 
