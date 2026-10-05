@@ -45,11 +45,12 @@ describe("Bellevia pack pricing", () => {
     assert.deepEqual(packQuantitiesFor(SLUG), [1, 2, 3]);
   });
 
-  test("exactly two products are pack-priced", () => {
+  test("exactly three products are pack-priced", () => {
     // A guard on the blast radius: adding a slug here changes what it charges,
     // so a new entry should be a deliberate edit to this test too.
     assert.deepEqual(Object.keys(PACK_PRICING).sort(), [
       "bellevia-genouillere",
+      "bellevia-pack-bila-alam",
       "bellevia-weight-gain",
     ]);
   });
@@ -98,5 +99,44 @@ describe("Genouillere pack pricing", () => {
   test("adding the row did not disturb the other pack-priced product", () => {
     assert.equal(packTotalFor("bellevia-weight-gain", 2), 34900);
     assert.equal(packTotalFor("bellevia-pack-raha", 2), null);
+  });
+});
+
+/* باك بلا ألم: 1 for 329, 2 for 549.
+ *
+ * Same contract as the brace: the page sends a quantity, the server reads the
+ * total here, and `bellevia-pack-bila-alam/config.js` quotes the same two
+ * numbers. These tests keep the two copies honest. */
+describe("Pack bila alam pricing", () => {
+  const SLUG = "bellevia-pack-bila-alam";
+
+  test("two packs are charged 549, not twice 329", () => {
+    assert.equal(packTotalFor(SLUG, 1), 32900); // 329.00 DH
+    assert.equal(packTotalFor(SLUG, 2), 54900); // 549.00, not 2 × 329 = 658
+  });
+
+  test("the pair saves the 109 DH the page claims", () => {
+    const unit = packTotalFor(SLUG, 1);
+    assert.equal(unit * 2 - packTotalFor(SLUG, 2), 10900); // «وفّر 109 درهم»
+  });
+
+  test("it is sold in ONE and TWO only", () => {
+    assert.deepEqual(packQuantitiesFor(SLUG), [1, 2]);
+    assert.equal(packTotalFor(SLUG, 3), undefined);
+    assert.equal(packTotalFor(SLUG, 0), undefined);
+  });
+
+  test("the page config quotes exactly what the server charges", async () => {
+    // config.js is a browser script that assigns window.BELLEVIA_CONFIG, so it
+    // is evaluated against a stand-in window rather than imported.
+    const { readFile } = await import("node:fs/promises");
+    const { runInNewContext } = await import("node:vm");
+    const src = await readFile(new URL("../bellevia-pack-bila-alam/config.js", import.meta.url), "utf8");
+    const win = {};
+    runInNewContext(src, { window: win });
+    const offers = win.BELLEVIA_CONFIG.offers;
+    // Array.from: the vm context has its own Array, which deepEqual tells apart.
+    assert.deepEqual(Array.from(offers, (o) => o.qty), packQuantitiesFor(SLUG));
+    for (const o of offers) assert.equal(Number(o.price) * 100, packTotalFor(SLUG, o.qty));
   });
 });

@@ -480,6 +480,19 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
 .offer-line__price b { font-size: 36px; font-weight: 800; color: var(--accent-ink); line-height: 1.05; }
 .offer-line__price s { font-size: 15px; }
 
+/* «جوج باكات بـ 549 · وفّر 109» — written by script.js from config.offers. */
+.offer-two {
+  margin-top: 12px; padding: 8px 12px; border-radius: var(--r-sm);
+  background: var(--accent-soft); color: var(--accent-ink);
+  font-size: 14.5px; font-weight: 700; text-align: center;
+}
+.offer-two b { font-weight: 800; }
+.offer-two[hidden] { display: none; }
+.offer-two--on-dark {
+  background: transparent; border: 1px solid var(--gold); color: var(--accent-on-dark);
+  display: inline-block; margin-top: 14px;
+}
+
 .offer-line__facts {
   display: flex; flex-wrap: wrap; gap: 8px;
   margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line);
@@ -533,22 +546,42 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   border-radius: var(--r-sm); padding: 10px 14px; margin-top: 14px;
 }
 
-.field--qty { gap: 8px; }
-.qty {
-  display: inline-flex; align-items: center; gap: 4px;
-  border: 1.5px solid var(--line); border-radius: var(--r-sm);
-  background: #FDFCF9; padding: 4px; width: max-content;
+/* One pack or two. Same picks as the knee brace page, in this page's greens. */
+.offers { border: 0; padding: 0; margin: 0; min-width: 0; }
+.offers legend { font-size: 14px; font-weight: 800; margin-bottom: 10px; padding: 0; }
+.offers__list { display: grid; gap: 10px; }
+.pick { display: block; cursor: pointer; }
+/* Clipped, not display:none — a hidden input leaves the tab order and the
+   radio group, and takes the arrow keys with it. */
+.pick__radio {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
 }
-.qty__btn {
-  font: inherit; font-size: 22px; font-weight: 700; line-height: 1;
-  width: 46px; height: 44px; border: 0; border-radius: 9px;
-  background: var(--g-50); color: var(--g-800); cursor: pointer;
+.pick__box {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+  border: 1.5px solid var(--line); border-radius: var(--r-sm); padding: 14px; background: #FDFCF9;
+  transition: border-color .15s ease, background-color .15s ease;
 }
-.qty__btn:hover:not([disabled]) { background: var(--g-100); }
-.qty__btn[disabled] { opacity: .4; cursor: not-allowed; }
-.qty__value { min-width: 46px; text-align: center; font-size: 18px; font-weight: 800; }
-.qty__hint { font-size: 13px; color: var(--muted); }
-.qty__hint:empty { display: none; }
+.pick__head { display: flex; align-items: center; gap: 10px; flex: 1 1 auto; min-width: 0; }
+.pick__head::before {
+  content: ''; flex: none; width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid #B9C7B1; background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.pick__name { font-weight: 700; color: var(--g-900); }
+.pick__price { margin-inline-start: auto; font-size: 19px; font-weight: 800; white-space: nowrap; color: var(--accent-ink); }
+/* The saving is computed in script.js — (2 × 329) − 549 — never typed. */
+.pick__save {
+  font-size: 13px; font-weight: 800; color: #fff; background: var(--g-700);
+  border-radius: 999px; padding: 2px 10px;
+}
+.pick__save[hidden] { display: none; }
+.pick__radio:checked + .pick__box { border-color: var(--g-700); background: var(--g-50); }
+.pick__radio:checked + .pick__box .pick__head::before {
+  border-color: var(--g-700); box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 20px var(--g-700);
+}
+.pick:hover .pick__box { border-color: #9FB89A; }
+.pick__radio:focus-visible + .pick__box { outline: 3px solid var(--g-700); outline-offset: 2px; }
 
 .sum {
   display: flex; align-items: baseline; justify-content: space-between; gap: 10px;

@@ -33,6 +33,11 @@ export const PACK_PRICING = {
   // back to unit × quantity would charge someone 540 off a page that never
   // quoted it. The order form offers exactly these two and nothing else.
   "bellevia-genouillere": { 1: 18000, 2: 30000 },
+  // 1 pack for 329, 2 for 549, and the page says
+  // «وفّر 109 درهم» because (2 × 329) − 549 = 109. Like the brace, this also
+  // CAPS the product at these two quantities: the page used to offer a 1–5
+  // stepper at unit × quantity, and there is no agreed price past 2.
+  "bellevia-pack-bila-alam": { 1: 32900, 2: 54900 },
 };
 
 /**
