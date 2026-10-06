@@ -87,14 +87,18 @@ for (const name of PAGES) {
     out = out.split("__ORIGIN__").join(origin);
     if (out.includes("__ORIGIN__")) console.warn(`[copy-landing-pages] ${name}: unstamped __ORIGIN__ remains`);
 
-    // Every same-origin stylesheet and script gets ?v=<its own hash>. Pages
-    // serves them with max-age=14400 and the HTML with max-age=0, so without
-    // this a phone that opened the page in the last four hours runs the NEW
-    // html against the OLD css and js. On 2026-10-05 that hid the knee brace
-    // hero's price (white text on the old white ground) and left its new
-    // video without the script that drives it. The hash only changes when the
-    // file does, so an unchanged file stays cached.
-    out = out.replace(/(<(?:link|script)\b[^>]*?\s(?:href|src)=")([^"?#:]+\.(?:css|js))(")/g, (m, a, url, c) => {
+    // Every same-origin stylesheet, script and <video> source (src, or the
+    // data-src a page attaches lazily) gets
+    // ?v=<its own hash>. Pages serves them with max-age=14400 and the HTML
+    // with max-age=0, so without this a phone that opened the page in the
+    // last four hours runs the NEW html against the OLD files. On 2026-10-05
+    // that hid the knee brace hero's price (white text on the old white
+    // ground) and left its new video without the script that drives it; the
+    // same day the clip gained its music under the same file name, and a
+    // phone holding the silent copy would have tapped «شغّل الصوت» and heard
+    // nothing. The hash only changes when the file does, so an unchanged
+    // file stays cached.
+    out = out.replace(/(<(?:link|script|source)\b[^>]*?\s(?:href|src|data-src)=")([^"?#:]+\.(?:css|js|mp4|webm))(")/g, (m, a, url, c) => {
       const file = url.startsWith("/") ? join(root, url) : join(dest, url);
       if (!existsSync(file)) {
         console.warn(`[copy-landing-pages] ${name}: ${url} not found — left unversioned`);

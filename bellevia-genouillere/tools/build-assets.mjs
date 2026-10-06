@@ -503,10 +503,15 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
      • SQUARE, cropped from the centre (x 280–1000): the page is a phone page,
        and 16:9 in its column is 358×201px; 1:1 is 358×358. Only plain
        backdrop is lost — sampled every 0.5s, the brace stays whole.
-     • NO AUDIO (-an). It autoplays, and autoplay must be muted anyway; the
-       generated soundtrack's words, if any, are unverified.
+     • WITH ITS MUSIC since 2026-10-05 (client: «خاصو يخدم بالموسيقى ديالو»).
+       The track is copied, not re-encoded: AAC-LC 128k stereo 48kHz, which
+       Safari and Chrome both play. Its spectrum is music — chords held ~1.3s
+       over a steady beat, no speech formants — so it carries no spoken claim.
+       It autoplays muted (browsers allow nothing else); the page's
+       «شغّل الصوت» button unmutes it from the start.
      • H.264 Main, yuv420p, +faststart: plays on every phone, and starts
-       before the file has finished arriving.
+       before the file has finished arriving. crf 22: 834KB with the audio,
+       SSIM 0.992 against the source crop (crf 27 was 492KB at 0.987).
      • A poster from the first frame, so the box is never empty. */
   if (want("video")) {
     console.log("video:");
@@ -514,9 +519,10 @@ async function webp(key, out, widths, { extract = null, quality = 82, height = n
     mkdirSync(VID, { recursive: true });
     const out = join(VID, "brace-spin-720.mp4");
     execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", must("turntable"),
-      "-vf", "crop=720:720:280:0", "-an", "-c:v", "libx264", "-profile:v", "main",
-      "-preset", "slow", "-crf", "27", "-pix_fmt", "yuv420p", "-r", "24",
-      "-movflags", "+faststart", out]);
+      "-map", "0:v:0", "-map", "0:a:0",
+      "-vf", "crop=720:720:280:0", "-c:v", "libx264", "-profile:v", "main",
+      "-preset", "slow", "-crf", "22", "-pix_fmt", "yuv420p", "-r", "24",
+      "-c:a", "copy", "-movflags", "+faststart", out]);
     console.log(`  brace-spin-720.mp4  720×720  ${(statSync(out).size / 1024).toFixed(0)}KB`);
     const poster = join(IMG, "brace-spin-poster.png");
     execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", must("turntable"),
