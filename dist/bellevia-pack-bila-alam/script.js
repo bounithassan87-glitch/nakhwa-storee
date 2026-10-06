@@ -136,6 +136,18 @@
     });
   })();
 
+  /* ══ 02c · WhatsApp inquiry ════════════════════════════════════════════
+     Every [data-wa] link is built from config.whatsapp, with the message
+     already typed so the chat opens on this product. No number, no link: the
+     wrapper stays hidden rather than pointing somewhere dead. */
+  (function whatsappAsk() {
+    if (!CFG.whatsapp) return;
+    var text = 'السلام عليكم، بغيت نستفسر على باك بلا ألم ديال BelleVia.';
+    var href = 'https://wa.me/' + CFG.whatsapp + '?text=' + encodeURIComponent(text);
+    $$('[data-wa]').forEach(function (a) { a.href = href; });
+    $$('[data-wa-wrap]').forEach(function (el) { el.hidden = false; });
+  })();
+
   /* ══ 03 · Contact ══════════════════════════════════════════════════════ */
   (function contact() {
     var out = $('[data-contact]');

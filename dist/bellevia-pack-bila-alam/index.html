@@ -34,7 +34,7 @@
       imagesrcset="./assets/images/pack-duo-420.webp 420w, ./assets/images/pack-duo-836.webp 836w"
       imagesizes="(min-width: 900px) 410px, (min-width: 720px) 42vw, 74vw" fetchpriority="high">
 
-<link rel="stylesheet" href="./style.css?v=9eaabbf90d">
+<link rel="stylesheet" href="./style.css?v=0fe4d8afea">
 
 <script type="application/ld+json" id="ld-product">
 {
@@ -331,6 +331,9 @@
           <li data-delivery hidden></li>
           <li data-delivery-time hidden></li>
         </ul>
+
+        <!-- For the customer who hesitates at the form with a question. -->
+        <p class="form-ask" data-wa-wrap hidden>عندك شي سؤال؟ <a data-wa target="_blank" rel="noopener" href="#">سولنا فواتساب</a></p>
       </form>
 
       <!-- Shown only once the server confirms. The page never claims an order
@@ -783,6 +786,14 @@
         </p>
       </details>
     </div>
+
+    <!-- Inquiry only, like Pack Raha and Anti-Lice: a plain wa.me link the
+         customer taps themselves, NOT part of the order flow. After the FAQ so
+         it catches the question the FAQ did not answer. The href is written
+         by script.js from config.whatsapp; without a number it stays hidden. -->
+    <p class="faq__ask" data-wa-wrap hidden>
+      <a class="btn btn--ghost btn--wa" data-wa target="_blank" rel="noopener" href="#">💬 للاستفسار عبر واتساب</a>
+    </p>
   </div>
 </section>
 
@@ -828,8 +839,8 @@
      exposes window.nkTrack. Same file, same pixel, same Conversions API as the
      main store — this page adds no second tracking system. -->
 <script src="/nk-track.js?v=7346ea4921" defer></script>
-<script src="./config.js?v=db2adead9f" defer></script>
+<script src="./config.js?v=813611c8d5" defer></script>
 <script src="/assets/js/order-form.js?v=06462e8d67" defer></script>
-<script src="./script.js?v=75771ae087" defer></script>
+<script src="./script.js?v=915423a10e" defer></script>
 </body>
 </html>
