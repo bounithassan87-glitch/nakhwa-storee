@@ -214,6 +214,15 @@ s { color: var(--muted); text-decoration-thickness: 1.5px; font-weight: 700; }
   border: 1.5px solid var(--line-2); min-height: 46px; font-size: 16px;
 }
 .btn--ghost:hover { background: var(--g-50); }
+
+/* WhatsApp inquiry — same treatment as Pack Raha: the page's own green, not
+   WhatsApp's, so the section keeps reading as one design. */
+.faq__ask { margin-top: 18px; text-align: center; }
+.faq__ask[hidden], .form-ask[hidden] { display: none; }
+.btn--wa { min-width: 264px; font-weight: 800; border: 2px solid var(--g-700); }
+.btn--wa:hover { background: var(--g-700); color: #fff; }
+.form-ask { margin-top: 12px; text-align: center; font-size: 14px; color: var(--muted); }
+.form-ask a { color: var(--g-700); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
 .btn--block { width: 100%; }
 .btn:active { transform: translateY(1px); }
 .btn[disabled] { opacity: .62; cursor: progress; }
