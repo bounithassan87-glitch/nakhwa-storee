@@ -652,25 +652,56 @@
   })();
 
   /* ══ 06b · Product video ═══════════════════════════════════════════════
-     The markup says autoplay + muted + playsinline, so it plays on iPhone and
-     Android even if this script never runs. When it does run, it takes over:
-     the video plays only while half of it is on screen and pauses when it
-     leaves — the browser's own autoplay would start it far below the fold,
-     burning battery while the visitor reads the form. On a data-saver
-     connection or for a reader who asked for reduced motion it stays on the
-     poster, and the button plays it. A visitor who pauses it keeps it paused;
-     scrolling back does not overrule them. */
+     The markup says autoplay + muted + loop + playsinline + preload=metadata,
+     but its <source> carries the file as data-src: with a real src, the
+     autoplay attribute makes Chrome download the whole 834KB clip while the
+     visitor is still on the hero (measured — preload=metadata does not stop
+     it). So the file is attached here, one screen before the video comes into
+     view, and buffered from then on. A <noscript> twin in the markup plays
+     it for a browser without JavaScript.
+
+     It plays (muted — no browser allows more on its own) once half of it is
+     on screen and pauses when it leaves. On a data-saver connection or for a
+     reader who asked for reduced motion it stays on the poster until tapped.
+     A visitor who pauses it keeps it paused; scrolling back does not overrule
+     them. «🔊 شغّل الصوت» restarts it from the top with its music. */
   (function productVideo() {
-    var v = $('.clip__video');
+    var v = $('.clip__video[data-lazy]');
     if (!v) return;
+    var srcEl = $('source[data-src]', v);
     var btn = $('[data-clip-toggle]');
+    var sound = $('[data-clip-sound]');
     var userPaused = false;
     var userPlayed = false; // a tap on play wins even if under half is in view
     var inView = false;
 
+    /** Give the element its file. 'metadata' fetches the few KB of the moov
+        box; 'auto' buffers ahead so it starts the moment it is seen. */
+    function attach(preload) {
+      if (!srcEl) return;
+      if (srcEl.getAttribute('src')) {
+        if (preload === 'auto') v.preload = 'auto';
+        return;
+      }
+      v.preload = preload;
+      srcEl.setAttribute('src', srcEl.getAttribute('data-src'));
+      v.load();
+    }
+
     function play() {
+      attach('auto');
       var p = v.play();
-      if (p && p.catch) p.catch(function () { /* autoplay refused: the button stays */ });
+      if (p && p.catch) p.catch(function () {
+        // Refused. With sound, that is a browser that wants a fresh tap for
+        // audio (a resume after scrolling back): keep the picture moving,
+        // silently, and the button offers the sound again. Muted, it is
+        // autoplay itself refused (iPhone Low Power Mode): the buttons stay.
+        if (!v.muted) {
+          v.muted = true;
+          var q = v.play();
+          if (q && q.catch) q.catch(function () {});
+        }
+      });
     }
     function sync() {
       if (!btn) return;
@@ -688,17 +719,54 @@
     on(v, 'pause', sync);
     sync();
 
+    /* «🔊 شغّل الصوت»: the music, from the top. The tap is what lets the
+       browser play sound, so unmute and play() run inside it. On, it becomes
+       «🔇», which only mutes — the picture keeps going. */
+    function soundUI() {
+      if (!sound) return;
+      var heard = !v.muted;
+      sound.classList.toggle('is-on', heard);
+      sound.setAttribute('aria-label', heard ? 'طفّي الصوت' : 'شغّل الصوت');
+    }
+    if (sound) {
+      sound.hidden = false;
+      on(sound, 'click', function () {
+        if (v.muted) {
+          v.muted = false;
+          try { v.currentTime = 0; } catch (e) { /* not seekable yet: plays from the top anyway */ }
+          userPaused = false; userPlayed = true;
+          play();
+        } else {
+          v.muted = true;
+        }
+        soundUI();
+      });
+      on(v, 'volumechange', soundUI);
+      soundUI();
+    }
+
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var saveData = navigator.connection && navigator.connection.saveData;
-    if (reduce || saveData) { v.removeAttribute('autoplay'); v.pause(); return; }
-    if (!('IntersectionObserver' in window)) return; // the markup's autoplay stands
+    if (reduce || saveData) {
+      // Poster and buttons only; the metadata lets a tap start at once.
+      v.removeAttribute('autoplay');
+      attach('metadata');
+      return;
+    }
+    if (!('IntersectionObserver' in window)) { attach('auto'); return; } // the markup's autoplay plays it
 
-    // From here this script decides when it plays. The browser's autoplay can
-    // still fire after this line (it waits for data), so any start while off
-    // screen is undone the moment it happens.
+    // From here this script decides when it plays: never while off screen.
     v.removeAttribute('autoplay');
-    if (!v.paused) v.pause();
     on(v, 'play', function () { if (!inView && !userPlayed) v.pause(); });
+
+    // One screen ahead: fetch it, so it is ready when it is seen.
+    var near = new IntersectionObserver(function (entries) {
+      if (entries.some(function (en) { return en.isIntersecting; })) {
+        attach('auto');
+        near.disconnect();
+      }
+    }, { rootMargin: '100% 0px 100% 0px' });
+    near.observe(v);
 
     new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {

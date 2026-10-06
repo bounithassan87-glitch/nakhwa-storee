@@ -43,7 +43,7 @@
       imagesrcset="./assets/images/hero-banner-640.webp 640w, ./assets/images/hero-banner-1000.webp 1000w, ./assets/images/hero-banner-1600.webp 1600w"
       imagesizes="(min-width: 1120px) 1088px, calc(100vw - 32px)" fetchpriority="high">
 
-<link rel="stylesheet" href="./style.css?v=12a43aaeda">
+<link rel="stylesheet" href="./style.css?v=24cd0c672c">
 
 <!-- Product schema, with confirmed facts ONLY.
      The offer is confirmed — a price, a currency, and a page you order it
@@ -160,8 +160,8 @@
            they show before any script runs (or if one never does), there so
            config.js stays the one place to change them. Change both. -->
       <div class="hero__price" data-price-wrap>
-        <p class="oline oline--big oline--on-green" data-offer-line="2"><span class="oline__q">2 بـ</span> <span class="oline__n">300</span> <span class="oline__c">درهم</span></p>
-        <p class="oline oline--small oline--on-green" data-offer-line="1"><span class="oline__q">1 بـ</span> <span class="oline__n">180</span> <span class="oline__c">درهم</span></p>
+        <p class="oline oline--big" data-offer-line="2"><span class="oline__q">2 بـ</span> <span class="oline__n">300</span> <span class="oline__c">درهم</span></p>
+        <p class="oline oline--small" data-offer-line="1"><span class="oline__q">1 بـ</span> <span class="oline__n">180</span> <span class="oline__c">درهم</span></p>
       </div>
 
       <a class="btn btn--cta btn--block" href="#commander" data-goto>اطلب دابا</a>
@@ -195,7 +195,7 @@
      the other three-field BelleVia pages (the API omits the key, see
      functions/api/orders.ts). The choice stays inside <form>: script.js reads
      it from the form's own radios. -->
-<section class="sec sec--sage order" id="commander">
+<section class="sec order" id="commander">
   <div class="wrap">
     <div class="deal" data-price-wrap>
       <p class="deal__tag">عرض خاص</p>
@@ -310,7 +310,7 @@
 <!-- ═══ 03 · PROBLEM ════════════════════════════════════════════════════════
      The everyday situations, in the reader's words. No pain promise follows:
      the next section answers with what the brace IS. -->
-<section class="sec problem">
+<section class="sec sec--white problem">
   <div class="wrap">
     <h2>واش ركبتك كتمنعك من الحركة اللي كتبغيها؟</h2>
     <p class="problem__text">الدروج، المشي الطويل، الرياضة... كل حركة ولات صعيبة.</p>
@@ -323,7 +323,7 @@
      on the cutout: top strap (300,140), side hinge (285,330), patella opening
      (95,315), fabric (90,425). The SVG and the labels share one 1000×820 box,
      so they scale together at every width. -->
-<section class="sec sec--sage solution">
+<section class="sec solution">
   <div class="wrap">
     <header class="sec__head">
       <h2>ثبات لركبتك… وحرية&nbsp;لحركتك</h2>
@@ -355,19 +355,37 @@
 
     <!-- The product video: the brace turning on a dark set, the sleeve from
          above, the hinge in macro — the same object as the callouts above,
-         seen moving. Square, silent, 331KB (tools/build-assets.mjs, "video").
-         autoplay + muted + playsinline in the markup, so it plays on iPhone
-         and Android with no script at all. script.js then pauses it while it
-         is off screen, stops it for a reader on data saver or reduced motion
-         (they get the poster and a play button), and drives the button —
-         anything moving for more than five seconds has to be stoppable. -->
+         seen moving. Square, with its music, 834KB (tools/build-assets.mjs,
+         "video"). autoplay + muted + loop + playsinline + preload=metadata —
+         muted, because no browser lets a page start sound on its own.
+         «🔊 شغّل الصوت» (script.js) is the tap that may: it unmutes and
+         restarts from the top, then becomes «🔇».
+         The file is data-src, attached by script.js one screen before the
+         video is seen: with a plain src the autoplay attribute downloads all
+         834KB while the visitor is on the hero, whatever preload says. The
+         <noscript> twin is the same video for a browser without JavaScript.
+         script.js also pauses it off screen, keeps it on the poster for data
+         saver and reduced motion, and drives the pause button — anything
+         moving for more than five seconds has to be stoppable. -->
     <figure class="clip">
       <div class="clip__frame">
-        <video class="clip__video" autoplay muted loop playsinline
+        <video class="clip__video" autoplay muted loop playsinline preload="metadata" data-lazy
                poster="./assets/images/brace-spin-poster-720.webp" width="720" height="720"
                aria-label="فيديو: دعامة الركبة الاحترافية كتدور، من القدّام، من الداخل، والمفصل المعدني من قريب">
-          <source src="./assets/video/brace-spin-720.mp4" type="video/mp4">
+          <source data-src="./assets/video/brace-spin-720.mp4?v=a457930061" type="video/mp4">
         </video>
+        <noscript>
+          <style>.clip__video[data-lazy] { display: none; }</style>
+          <video class="clip__video" autoplay muted loop playsinline controls preload="metadata"
+                 poster="./assets/images/brace-spin-poster-720.webp" width="720" height="720"
+                 aria-label="فيديو: دعامة الركبة الاحترافية كتدور، من القدّام، من الداخل، والمفصل المعدني من قريب">
+            <source src="./assets/video/brace-spin-720.mp4?v=a457930061" type="video/mp4">
+          </video>
+        </noscript>
+        <button class="clip__sound" type="button" data-clip-sound hidden aria-label="شغّل الصوت">
+          <span class="clip__sound-off" aria-hidden="true">🔊 شغّل الصوت</span>
+          <span class="clip__sound-on" aria-hidden="true">🔇</span>
+        </button>
         <button class="clip__toggle" type="button" data-clip-toggle hidden aria-label="شغّل الفيديو">
           <svg class="clip__play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>
           <svg class="clip__pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1" fill="currentColor"/></svg>
@@ -381,7 +399,7 @@
 <!-- ═══ 05 · FOR WHO ════════════════════════════════════════════════════════
      Four equal 2:3 tiles — the tallest box the hiker crop allows with both
      of his braces whole (see tools/build-assets.mjs). -->
-<section class="sec who">
+<section class="sec sec--white who">
   <div class="wrap">
     <header class="sec__head">
       <h2>لمن هاد الدعامة؟</h2>
@@ -435,7 +453,7 @@
      The supplier's fitting photos ①②③, each with its own green number burned
      in — so the page draws no second number. ④ (checking the fit) is the
      fourth photo of that row and is not needed for three steps. -->
-<section class="sec sec--sage howto">
+<section class="sec howto">
   <div class="wrap">
     <header class="sec__head">
       <h2>كيفاش تلبسها؟ 3 خطوات</h2>
@@ -483,7 +501,7 @@
      Built from config.js `reviews` and REMOVED while that list is empty. The
      brief's grey placeholder cards with five stars would read as a rating
      nobody gave; only a real customer's words, with their permission, go in. -->
-<section class="sec reviews" data-reviews hidden>
+<section class="sec sec--white reviews" data-reviews hidden>
   <div class="wrap">
     <header class="sec__head">
       <h2>آراء زبنائنا</h2>
@@ -497,7 +515,7 @@
      The brief's list was cut off after its first question. Every answer here
      is one this page already stood behind; the delivery and payment rows are
      written from config, so they go if those switches are turned off. -->
-<section class="sec faq">
+<section class="sec sec--white faq">
   <div class="wrap">
     <header class="sec__head">
       <h2>أسئلة شائعة</h2>
@@ -564,6 +582,6 @@
      library of any kind. -->
 <script src="/nk-track.js?v=7346ea4921" defer></script>
 <script src="./config.js?v=6c45d9e8a6" defer></script>
-<script src="./script.js?v=be80b51bdc" defer></script>
+<script src="./script.js?v=e4131c7bcd" defer></script>
 </body>
 </html>

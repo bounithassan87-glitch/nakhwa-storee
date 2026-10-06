@@ -5,14 +5,13 @@
 
    The brief's design system, as given:
      green  #1F5E3B — headlines, icons, the offer card, the trust bar
-     ground #F8F5EE — the page itself: a warm ivory, never pure white, so the
-                      white cards (form, steps, FAQ, tiles) lift off it, and
-                      warm like the logo's gold leaf
-     sage   #E4EDE6 — every other section, so the bands read
-     the hero is deep green, the same gradient as the offer card
-   (2026-10-05: the client asked for a background that reads as trustworthy
-   and professional. The brief's white + mint #F2F7F3 was too close to white
-   to be seen; four quieter tints were tried first and none showed.)
+     mint   #F2F7F3 — the page's ground
+     white  #FFFFFF — every other section (.sec--white), so white and mint
+                      alternate and each section reads as its own
+   (2026-10-05, the client's own call, the brief's original pair — after a
+   deep-green hero on ivory and sage was tried and replaced the same day.
+   Order: hero white · order mint · trust bar green · problem white ·
+   solution mint · who white · how-to mint · FAQ white · footer dark green.)
      ink    #1A1A1A — text
      orange #F28C28 — BUTTONS ONLY. Nothing else on the page is orange.
 
@@ -63,10 +62,8 @@
   --green: #1F5E3B;
   --green-d: #174A2E;
   --green-dd: #0F3320;
-  --ground: #F8F5EE;
-  --sage: #E4EDE6;
-  --sage-line: #CADCCE;
-  --mint: #F2F7F3;  /* tints INSIDE white cards only — invisible on the ground */
+  --mint: #F2F7F3;
+  --mint-line: #D2E2D7;
   --ink: #1A1A1A;
   --ink-2: #3D4440;
   --muted: #5B6760;
@@ -99,7 +96,7 @@ body {
   margin: 0;
   font-family: Tajawal, "Segoe UI", Tahoma, sans-serif;
   font-size: var(--fs); line-height: 1.7;
-  color: var(--ink); background: var(--ground);
+  color: var(--ink); background: var(--mint);
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, p, ul, ol, figure, fieldset, legend { margin: 0; padding: 0; }
@@ -123,7 +120,7 @@ fieldset { border: 0; min-width: 0; }
 .skip:focus { top: 12px; }
 
 /* ── 03 · Header ────────────────────────────────────────────────────────── */
-.head { background: var(--ground); }
+.head { background: var(--white); border-bottom: 1px solid var(--line); }
 .head__in { display: flex; justify-content: center; padding-block: 12px; }
 .head__logo img { width: 112px; }
 
@@ -148,7 +145,10 @@ fieldset { border: 0; min-width: 0; }
 
 /* ── 05 · Sections ──────────────────────────────────────────────────────── */
 .sec { padding-block: 56px; }
-.sec--sage { background: var(--sage); }
+.sec--white { background: var(--white); }
+/* With reviews on the page they take the white after the how-to, and the FAQ
+   turns mint, so two whites never meet. */
+.reviews:not([hidden]) + .faq.sec--white { background: var(--mint); }
 .sec__head { text-align: center; margin-bottom: 26px; }
 h2 { font-size: clamp(24px, 6.6vw, 32px); font-weight: 800; line-height: 1.35; }
 h3 { font-size: 18px; font-weight: 800; line-height: 1.4; }
@@ -160,27 +160,20 @@ h1, h2, h3, .sec__sub, .problem__text, .steps__note, .hero__sub { text-wrap: bal
 /* A thin green line icon on a mint disc — the one icon style on the page. */
 .ic {
   width: 50px; height: 50px; border-radius: 50%;
-  background: var(--sage); color: var(--green);
+  background: var(--mint); color: var(--green);
   display: grid; place-items: center;
 }
 .ic svg { width: 26px; height: 26px; }
 
 /* ── 06 · Hero ──────────────────────────────────────────────────────────── */
-/* Deep green, white type, the orange button at its strongest — the first
-   screen is the brand. Everything in it has an on-dark colour below. */
-.hero {
-  padding-block: 16px 44px; color: #fff;
-  background: linear-gradient(180deg, var(--green) 0%, var(--green-d) 55%, var(--green-dd) 100%);
-}
+.hero { padding-block: 16px 44px; background: var(--white); }
 .hero__shot img {
   width: 100%; aspect-ratio: 4 / 5; object-fit: cover;
-  border-radius: var(--r); box-shadow: 0 14px 38px rgba(0, 0, 0, .35);
+  border-radius: var(--r); box-shadow: var(--sh-lg);
 }
 .hero__copy { margin-top: 24px; text-align: center; }
 h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; color: var(--green); }
-.hero h1 { color: #fff; }
-.hero__sub { margin-top: 10px; color: #CFE0D5; }
-.hero .ic { background: rgba(255, 255, 255, .12); color: #BFE3CB; }
+.hero__sub { margin-top: 10px; color: var(--ink-2); }
 .hero__icons { margin-top: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .hero__icons li {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
@@ -189,20 +182,18 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 .hero__price { margin: 26px 0 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .hero__note {
   margin-top: 14px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px;
-  font-size: var(--fs-sm); color: #CFE0D5;
+  font-size: var(--fs-sm); color: var(--muted);
 }
 .hero__note > span { display: inline-flex; align-items: center; gap: 6px; }
-.hero__note svg { width: 18px; height: 18px; flex: none; color: #9FD3B0; }
-.hero .inspect { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .22); color: #fff; }
-.hero .btn:focus-visible { outline-color: #fff; }
+.hero__note svg { width: 18px; height: 18px; flex: none; color: var(--green); }
 
 /* The client's banner. Wider than the column — it is 16:9 and full of small
    type, so on a desktop it gets up to 1088px to be read at; on a phone it
    takes the screen less a 16px gutter. */
 .hero__wide { width: 100%; max-width: 1120px; margin-inline: auto; padding-inline: 16px; }
-.hero__banner { display: block; border-radius: var(--r); overflow: hidden; box-shadow: 0 14px 38px rgba(0, 0, 0, .35); }
+.hero__banner { display: block; border-radius: var(--r); overflow: hidden; box-shadow: var(--sh-lg); }
 .hero__banner img { width: 100%; }
-.hero__banner:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.hero__banner:focus-visible { outline: 3px solid var(--green); outline-offset: 3px; }
 /* While the banner is up it IS the photograph, the headline, the line under
    it and the icons; the h1 stays for screen readers and search only. Drop
    `data-art` (script.js does, on a price mismatch) and the climber hero is
@@ -225,11 +216,11 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 .oline--big .oline__c { font-size: 24px; }
 .oline--small {
   display: inline-flex; font-size: 18px; color: var(--ink-2);
-  background: #fff; border-radius: 999px; padding: 9px 20px; box-shadow: inset 0 0 0 1px var(--line);
+  background: var(--mint); border-radius: 999px; padding: 9px 20px;
 }
 .oline--small .oline__n { color: var(--ink); }
 .oline--on-green.oline--big { color: #fff; }
-.oline--on-green.oline--small { background: rgba(255, 255, 255, .12); box-shadow: none; color: #DCEBE1; }
+.oline--on-green.oline--small { background: rgba(255, 255, 255, .12); color: #DCEBE1; }
 .oline--on-green.oline--small .oline__n { color: #fff; }
 
 /* ── 08 · Trust bar ─────────────────────────────────────────────────────── */
@@ -271,7 +262,7 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 
 /* ── 11 · For who ───────────────────────────────────────────────────────── */
 .who__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.who__grid figure { border-radius: var(--r); overflow: hidden; background: #fff; box-shadow: var(--sh); }
+.who__grid figure { border-radius: var(--r); overflow: hidden; background: #fff; border: 1px solid var(--line); box-shadow: var(--sh); }
 .who__grid img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
 .who__grid figcaption {
   padding: 10px 8px 12px; text-align: center;
@@ -437,13 +428,13 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 }
 
 /* ── 19 · «قلّب الكوموند ديالك عاد خلّص» ─────────────────────────────────────
-   The client's inspect-before-paying promise. A sage pill in green, under the
+   The client's inspect-before-paying promise. A mint pill in green, under the
    hero button and under the order button — the two places a buyer decides —
    strong enough to be read, quiet enough not to compete with the orange. */
 .inspect {
   margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 10px 14px; border-radius: var(--r-sm);
-  background: var(--sage); border: 1px solid var(--sage-line); color: var(--green);
+  background: var(--mint); border: 1px solid var(--mint-line); color: var(--green);
   font-size: var(--fs); font-weight: 800; line-height: 1.4;
 }
 .inspect svg { width: 22px; height: 22px; flex: none; }
@@ -462,7 +453,7 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
    square crop keeps centred. */
 .clip__toggle {
   position: absolute; bottom: 12px; inset-inline-end: 12px;
-  width: 44px; height: 44px; border: 0; border-radius: 50%;
+  width: 48px; height: 48px; border: 0; border-radius: 50%;
   display: grid; place-items: center; cursor: pointer;
   background: rgba(15, 20, 17, .62); color: #fff;
   -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
@@ -472,4 +463,25 @@ h1 { font-size: clamp(38px, 11vw, 54px); font-weight: 800; line-height: 1.15; co
 .clip__toggle.is-playing .clip__play { display: none; }
 .clip__toggle.is-playing .clip__pause { display: block; }
 .clip__toggle:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+/* «🔊 شغّل الصوت» — the one thing on the video meant to be tapped first:
+   a white pill on the dark set, in the video's other bottom corner, 48px
+   tall. Once the sound is on it shrinks to a round «🔇» that matches the
+   pause button opposite. */
+.clip__sound {
+  position: absolute; bottom: 12px; inset-inline-start: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 0 20px; border: 0; border-radius: 999px; cursor: pointer;
+  background: #fff; color: var(--ink);
+  font-size: var(--fs); font-weight: 800; line-height: 1;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+.clip__sound-on { display: none; font-size: 20px; }
+.clip__sound.is-on {
+  width: 48px; padding: 0;
+  background: rgba(15, 20, 17, .62); color: #fff; box-shadow: none;
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+}
+.clip__sound.is-on .clip__sound-off { display: none; }
+.clip__sound.is-on .clip__sound-on { display: inline; }
+.clip__sound:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
 .clip figcaption { margin-top: 12px; text-align: center; font-weight: 800; color: var(--green); }
