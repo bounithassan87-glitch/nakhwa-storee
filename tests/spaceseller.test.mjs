@@ -22,6 +22,7 @@ import {
   PACK_COMPOSITION,
   packComponents,
 } from "../shared/spaceseller-mapping.js";
+import { packTotalFor } from "../shared/catalog.js";
 
 /* ── Fixtures ─────────────────────────────────────────────────────────── */
 
@@ -627,10 +628,14 @@ test("باك بلا ألم reaches Space Seller as its two components, never as 
   for (const line of r.body.products) assert.equal("unit_price" in line, false);
 });
 
-test("ordering several باك بلا ألم multiplies both component SKUs", () => {
+test("the two-pack offer reaches Space Seller as 2 of each SKU, collecting 549", () => {
+  // The total is read from the same PACK_PRICING row the order API charges, so
+  // this is the exact figure the courier will collect: 549, not 2 × 329 = 658.
+  const totalPrice = packTotalFor("bellevia-pack-bila-alam", 2);
+  assert.equal(totalPrice, 54900);
   const order = anOrder({
-    quantity: 3,
-    totalPrice: 98700, // 3 × 329
+    quantity: 2,
+    totalPrice,
     items: [{ product: { sku: "BVP-BILA-001", name: "باك بلا ألم", slug: "bellevia-pack-bila-alam" } }],
   });
   const r = buildSpaceSellerOrder(order);
@@ -638,10 +643,11 @@ test("ordering several باك بلا ألم multiplies both component SKUs", () 
   assert.deepEqual(
     [...r.body.products].sort((a, b) => a.sku.localeCompare(b.sku)),
     [
-      { sku: "articulaire-comp", quantity: 3 },
-      { sku: "joint-creme", quantity: 3 },
+      { sku: "articulaire-comp", quantity: 2 },
+      { sku: "joint-creme", quantity: 2 },
     ],
   );
+  assert.equal(r.body.total_price, 549);
 });
 
 test("the باك بلا ألم composition is exactly the two supplied SKUs, each on the right item", () => {
